@@ -148,6 +148,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- BTTS Logic ---
     const calculateBtts = () => {
+        // Ensure UI panels match selected market
+        applyBttsMarketUI();
         const localScored = clamp(toNumber(bttsLocalScored.value), 0, 100);
         const localConceded = clamp(toNumber(bttsLocalConceded.value), 0, 100);
         const visitorScored = clamp(toNumber(bttsVisitorScored.value), 0, 100);
