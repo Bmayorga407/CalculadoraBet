@@ -48,32 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const bttsSample = document.getElementById('btts-sample');
     const bttsHouseOdd = document.getElementById('btts-house-odd');
-  // Market toggle (BTTS / Over 2.5)
-  const marketBttsBtn = document.getElementById('market-btts');
-  const marketOver25Btn = document.getElementById('market-over25');
-  const marketModelLabel = document.getElementById('market-model-label');
-  const marketFinalLabel = document.getElementById('market-final-label');
-  const marketGoalsLabel = document.getElementById('market-goals-label');
-  const marketFairLabel = document.getElementById('market-fair-label');
-
-  let currentMarket = 'BTTS'; // 'BTTS' | 'OVER25'
-
-  function setMarket(next){
-    currentMarket = next;
-    if(marketBttsBtn && marketOver25Btn){
-      marketBttsBtn.classList.toggle('active', next === 'BTTS');
-      marketOver25Btn.classList.toggle('active', next === 'OVER25');
-      marketBttsBtn.setAttribute('aria-selected', next === 'BTTS' ? 'true' : 'false');
-      marketOver25Btn.setAttribute('aria-selected', next === 'OVER25' ? 'true' : 'false');
-    }
-    if(marketModelLabel) marketModelLabel.textContent = next === 'BTTS' ? 'BTTS Modelo' : 'Over 2.5 Modelo';
-    if(marketFinalLabel) marketFinalLabel.textContent = next === 'BTTS' ? 'BTTS Final' : 'Over 2.5 Final';
-    if(marketGoalsLabel) marketGoalsLabel.textContent = next === 'BTTS' ? 'Prom. Goles (Ambos)' : 'xG Total (Ambos)';
-    if(marketFairLabel) marketFairLabel.textContent = 'Cuota Justa';
-    calculateBtts(); // recalc
-    saveBTTSState();
-  }
-
 
     // BTTS Result Elements
     const bttsAvgProb = document.getElementById('btts-avg-prob');
@@ -92,6 +66,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoModal = document.getElementById('info-modal');
     const modalBody = document.getElementById('modal-body');
     const modalCloseBtn = document.getElementById('modal-close-btn');
+
+    // Over/Under Elements
+    const btnMarketBtts = document.getElementById('btn-market-btts');
+    const btnMarketOu = document.getElementById('btn-market-ou');
+    const bttsResultsPanel = document.getElementById('btts-results-panel');
+    const ouResultsPanel = document.getElementById('ou-results-panel');
+    const ouOverProb = document.getElementById('ou-over-prob');
+    const ouUnderProb = document.getElementById('ou-under-prob');
+    const ouFairOver = document.getElementById('ou-fair-over');
+    const ouFairUnder = document.getElementById('ou-fair-under');
+    const ouHouseOddOver = document.getElementById('ou-house-odd-over');
+    const ouEdgeOver = document.getElementById('ou-edge-over');
+    const ouEvOver = document.getElementById('ou-ev-over');
+    const ouKellyCard = document.getElementById('ou-kelly-card');
+    const ouKellyStake = document.getElementById('ou-kelly-stake');
+    const ouSampleWarning = document.getElementById('ou-sample-warning');
 
     // Constants
     const DECIMAL_PLACES_PROB = 1;
@@ -153,16 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('info-xg-visitor').onclick = () => showDetail(xgVisitorData);
 
         const probabilityPoisson = (1 - Math.exp(-lambdaHome) - Math.exp(-lambdaAway) + Math.exp(-(lambdaHome + lambdaAway))) * 100;
-    // Probabilidad Over 2.5 con Poisson (total goles)
-    const lambdaTotal = lambdaHome + lambdaAway;
-    const p0 = Math.exp(-lambdaTotal);
-    const p1 = p0 * lambdaTotal;
-    const p2 = p1 * lambdaTotal / 2;
-    const probabilityOver25 = (1 - (p0 + p1 + p2)) * 100;
-
-    // Elegimos qué probabilidad mostrar según el mercado
-    const marketModelProbability = currentMarket === 'OVER25' ? probabilityOver25 : probabilityPoisson;
-
 
         // Individual probabilities (Prob % boxes)
         const probLocal = (1 - Math.exp(-lambdaHome)) * 100;
@@ -173,26 +153,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (bttsLocalProb) bttsLocalProb.textContent = probLocal.toFixed(1);
         if (bttsVisitorProb) bttsVisitorProb.textContent = probVisitor.toFixed(1);
 
-    // HYBRID MODEL:
-    // - BTTS: mezcla entre % real (marcó %) y Poisson (xG)
-    // - Over 2.5: usamos Poisson total y lo suavizamos hacia 50% con muestras pequeñas
-    let probability;
-    if(currentMarket === 'OVER25'){
-      const w = sampleSize / (sampleSize + 10);
-      probability = (w * marketModelProbability) + ((1 - w) * 50);
-    }else{
-      const w = sampleSize / (sampleSize + 10);
-      probability = (w * probPercentage) + ((1 - w) * marketModelProbability);
-    }
-    probability = Math.max(0, Math.min(100, probability));
+        // HYBRID MODEL: Poisson + Empirical Percentage with shrinkage
+        const probPercentage = (localScored * visitorScored) / 100;
+        const baseline = 53;
+        const k = 10;
+        const w = sampleSize / (sampleSize + k);
+        const adjustedEmpirical = (w * probPercentage) + ((1 - w) * baseline);
 
-    // Display model probability (sin suavizado) y final (suavizada)
-    bttsModelProb.textContent = marketModelProbability.toFixed(1) + '%';
-    bttsAvgProb.textContent = probability.toFixed(1) + '%';
-    bttsModelProb.title = currentMarket === 'OVER25' ? 'Probabilidad Over 2.5 calculada con Poisson (total goles)' : 'Modelo Poisson para BTTS (ambos anotan)';
-    bttsAvgProb.title = 'Probabilidad final (suavizada por muestra)';
-    bttsModelProb.title = currentMarket === 'OVER25' ? 'Probabilidad Over 2.5 calculada con Poisson (total goles)' : 'Modelo Poisson para BTTS (ambos anotan)';
-    bttsAvgProb.title = 'Probabilidad final (suavizada por muestra)';
+        let probability;
+        if (sampleSize < 8) {
+            probability = (0.3 * probabilityPoisson) + (0.7 * adjustedEmpirical);
+        } else if (sampleSize <= 15) {
+            probability = (0.5 * probabilityPoisson) + (0.5 * adjustedEmpirical);
+        } else {
+            probability = (0.7 * probabilityPoisson) + (0.3 * adjustedEmpirical);
+        }
+
+        // Display both values
+        const bttsModelProb = document.getElementById('btts-model-prob');
+        if (bttsModelProb) {
+            bttsModelProb.textContent = probabilityPoisson.toFixed(1);
+            bttsModelProb.parentElement.title = "Probabilidad pura basada en promedio de goles (Poisson).";
+        }
+
+        bttsAvgProb.textContent = probability.toFixed(1);
+        lastBttsProbability = probability;
+        updateMarketHighlight();
+        if (bttsFinalDisplay) {
+            bttsFinalDisplay.title = "Probabilidad combinada (Modelo + Porcentaje Real) ajustada por muestra.";
+        }
+
         // Reliability UI feedback (n < 5)
         if (sampleSize < 5) {
             if (bttsSampleWarning) bttsSampleWarning.style.display = 'inline-block';
@@ -209,12 +199,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const lambdaAwayAdj = (rawLambdaAway * sampleSize + neutralBaseline * kGoals) / (sampleSize + kGoals);
         const combinedAvg = lambdaHomeAdj + lambdaAwayAdj;
 
+        // Share lambda with O/U calculation
+        currentOuLambda = combinedAvg;
+
         if (bttsCombinedAvg) {
             bttsCombinedAvg.textContent = combinedAvg > 0 ? combinedAvg.toFixed(2) : "---";
         }
 
         const goalsData = {
-            title: currentMarket === "OVER25" ? "xG Total (Ajustado)" : "Promedio Goles (Ajustado)",
+            title: "Promedio Goles (Ajustado)",
             raw: rawLambdaHome + rawLambdaAway,
             used: combinedAvg,
             weight: sampleSize / (sampleSize + kGoals)
@@ -529,46 +522,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (el) el.addEventListener('input', calculate);
     });
 
-
-  // Persist BTTS inputs so you don't have to reescribir todo cada vez
-  function saveBTTSState(){
-    try{
-      const payload = {
-        currentMarket,
-        localScored: bttsLocalScored?.value ?? '',
-        localConceded: bttsLocalConceded?.value ?? '',
-        visitorScored: bttsVisitorScored?.value ?? '',
-        visitorConceded: bttsVisitorConceded?.value ?? '',
-        sample: bttsSample?.value ?? '',
-        houseOdd: bttsHouseOdd?.value ?? ''
-      };
-      localStorage.setItem('btts_state_v1', JSON.stringify(payload));
-    }catch(e){}
-  }
-
-  function loadBTTSState(){
-    try{
-      const raw = localStorage.getItem('btts_state_v1');
-      if(!raw) return;
-      const data = JSON.parse(raw);
-      if(bttsLocalScored && data.localScored !== undefined) bttsLocalScored.value = data.localScored;
-      if(bttsLocalConceded && data.localConceded !== undefined) bttsLocalConceded.value = data.localConceded;
-      if(bttsVisitorScored && data.visitorScored !== undefined) bttsVisitorScored.value = data.visitorScored;
-      if(bttsVisitorConceded && data.visitorConceded !== undefined) bttsVisitorConceded.value = data.visitorConceded;
-      if(bttsSample && data.sample !== undefined) bttsSample.value = data.sample;
-      if(bttsHouseOdd && data.houseOdd !== undefined) bttsHouseOdd.value = data.houseOdd;
-      if(data.currentMarket === 'OVER25') setMarket('OVER25');
-    }catch(e){}
-  }
-
     // BTTS Listeners
     [bttsLocalScored, bttsLocalConceded, bttsVisitorScored, bttsVisitorConceded, bttsSample, bttsHouseOdd].forEach(el => {
-        if (el) el.addEventListener('input', () => { calculateBtts(); saveBTTSState(); });
+        if (el) el.addEventListener('input', calculateBtts);
     });
-
-    // Toggle mercado
-    if (marketBttsBtn) marketBttsBtn.addEventListener('click', () => setMarket('BTTS'));
-    if (marketOver25Btn) marketOver25Btn.addEventListener('click', () => setMarket('OVER25'));
 
     // Global updates
     if (currencySelect) currencySelect.addEventListener('change', () => {
@@ -611,7 +568,119 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Initial State
+    // --- Over/Under 2.5 Logic ---
+    let currentOuLambda = 0;
+    let lastBttsProbability = 0;
+    let lastOverProbability = 0;
+
+    const updateMarketHighlight = () => {
+        if (!btnMarketBtts || !btnMarketOu) return;
+        btnMarketBtts.classList.remove('recommended');
+        btnMarketOu.classList.remove('recommended');
+        if (lastBttsProbability > 0 || lastOverProbability > 0) {
+            if (lastBttsProbability >= lastOverProbability) {
+                btnMarketBtts.classList.add('recommended');
+            } else {
+                btnMarketOu.classList.add('recommended');
+            }
+        }
+    };
+
+    const calculateOu = () => {
+        if (!ouOverProb) return;
+        const sampleSize = parseInt(bttsSample.value) || 10;
+        const bankroll = parseFloat(bankrollInput.value) || 1000;
+        const currency = getCurrencySymbol(currencySelect);
+        const houseOddOver = parseFloat(ouHouseOddOver ? ouHouseOddOver.value : 0) || 0;
+
+        // Reuse raw lambdas stored on last calculateBtts call
+        const lambda = currentOuLambda;
+
+        // Poisson CDF: P(X <= 2) = e^-λ * (1 + λ + λ²/2)
+        const pUnder = lambda > 0
+            ? Math.exp(-lambda) * (1 + lambda + (lambda * lambda) / 2)
+            : 1;
+        const pOver = Math.max(0, 1 - pUnder);
+
+        const pOverPct = pOver * 100;
+        const pUnderPct = pUnder * 100;
+
+        ouOverProb.textContent = pOverPct.toFixed(1);
+        ouUnderProb.textContent = pUnderPct.toFixed(1);
+        lastOverProbability = pOverPct;
+        updateMarketHighlight();
+
+        if (ouFairOver) ouFairOver.textContent = pOver > 0 ? (1 / pOver).toFixed(2) : '-.--';
+        if (ouFairUnder) ouFairUnder.textContent = pUnder > 0 ? (1 / pUnder).toFixed(2) : '-.--';
+
+        // Sample warning
+        if (ouSampleWarning) ouSampleWarning.style.display = sampleSize < 5 ? 'inline-block' : 'none';
+
+        // Edge / EV for Over
+        if (houseOddOver > 0 && pOverPct > 0) {
+            const evOver = (pOverPct / 100 * houseOddOver) - 1;
+            const edgeOver = evOver * 100;
+            if (ouEdgeOver) {
+                ouEdgeOver.textContent = (edgeOver > 0 ? '+' : '') + edgeOver.toFixed(2) + '%';
+                ouEdgeOver.style.color = edgeOver > 0 ? 'var(--accent-color)' : '#ef4444';
+            }
+            if (ouEvOver) {
+                ouEvOver.textContent = (edgeOver > 0 ? '+' : '') + edgeOver.toFixed(2) + '%';
+                ouEvOver.style.color = edgeOver > 0 ? 'var(--accent-color)' : '#ef4444';
+            }
+            // Stake
+            let stakeUnit = 0;
+            if (edgeOver >= 3 && edgeOver < 6) stakeUnit = 1;
+            else if (edgeOver >= 6 && edgeOver < 9) stakeUnit = 2;
+            else if (edgeOver >= 9 && edgeOver < 12) stakeUnit = 3;
+            else if (edgeOver >= 12 && edgeOver < 15) stakeUnit = 4;
+            else if (edgeOver >= 15 && edgeOver <= 20) stakeUnit = 5;
+
+            const stakeAmount = Math.floor(bankroll * (stakeUnit / 100));
+            if (ouKellyCard) ouKellyCard.style.display = stakeUnit > 0 ? 'flex' : 'none';
+            if (ouKellyStake) {
+                if (edgeOver < 0) {
+                    ouKellyStake.textContent = 'Stake 0 (No Bet)';
+                    ouKellyStake.style.color = '#ef4444';
+                } else if (edgeOver > 20) {
+                    ouKellyStake.textContent = 'Edge > 20% (Revisar)';
+                    ouKellyStake.style.color = '#ef4444';
+                } else if (stakeUnit === 0) {
+                    ouKellyStake.textContent = 'Stake 0 (Low Edge)';
+                    ouKellyStake.style.color = '#ef4444';
+                    if (ouKellyCard) ouKellyCard.style.display = 'flex';
+                } else {
+                    ouKellyStake.textContent = `Stake ${stakeUnit}/5 (${currency}${stakeAmount})`;
+                    ouKellyStake.style.color = 'var(--accent-color)';
+                }
+            }
+        } else {
+            if (ouEdgeOver) { ouEdgeOver.textContent = '0.00%'; ouEdgeOver.style.color = ''; }
+            if (ouEvOver) { ouEvOver.textContent = '0.00%'; ouEvOver.style.color = ''; }
+            if (ouKellyCard) ouKellyCard.style.display = 'none';
+        }
+    };
+
+    // Market toggle
+    if (btnMarketBtts && btnMarketOu) {
+        btnMarketBtts.addEventListener('click', () => {
+            btnMarketBtts.classList.add('active');
+            btnMarketOu.classList.remove('active');
+            if (bttsResultsPanel) bttsResultsPanel.style.display = '';
+            if (ouResultsPanel) ouResultsPanel.style.display = 'none';
+        });
+        btnMarketOu.addEventListener('click', () => {
+            btnMarketOu.classList.add('active');
+            btnMarketBtts.classList.remove('active');
+            if (ouResultsPanel) ouResultsPanel.style.display = '';
+            if (bttsResultsPanel) bttsResultsPanel.style.display = 'none';
+            calculateOu();
+        });
+    }
+
+    // Recalculate O/U when house odd changes
+    if (ouHouseOddOver) ouHouseOddOver.addEventListener('input', calculateOu);
+
     calculate();
-    loadBTTSState();
     calculateBtts();
 });
