@@ -937,3 +937,21 @@ input[type=number] {
 /* Label + badge row (prevents HTML artifacts in headings) */
 .label-line{display:flex;align-items:center;gap:10px;justify-content:flex-start;}
 .label-line h2{margin:0;}
+
+
+/* Focus visible (teclado) */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}

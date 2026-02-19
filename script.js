@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const bttsSample = document.getElementById('btts-sample');
     const bttsHouseOdd = document.getElementById('btts-house-odd');
+    const bttsMode = document.getElementById('btts-mode');
 
     // BTTS Result Elements
     const bttsAvgProb = document.getElementById('btts-avg-prob');
@@ -73,99 +74,130 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Helper functions
     const getCurrencySymbol = (selectEl) => {
-        if (!selectEl) return '$';
-        const match = selectEl.options[selectEl.selectedIndex].text.match(/\((.*?)\)/);
-        return match ? match[1] : '$';
+        const code = (selectEl && selectEl.value) ? selectEl.value : 'CLP';
+        const map = { CLP: '$', USD: '$', EUR: '€', GBP: '£' };
+        return map[code] || '$';
     };
 
-    // --- BTTS Logic ---
+    
+    const clamp = (num, min, max) => Math.min(max, Math.max(min, num));
+
+    const toNumber = (value, fallback = 0) => {
+        const n = Number(value);
+        return Number.isFinite(n) ? n : fallback;
+    };
+
+    const debounce = (fn, delay = 150) => {
+        let t = null;
+        return (...args) => {
+            if (t) clearTimeout(t);
+            t = setTimeout(() => fn(...args), delay);
+        };
+    };
+
+    // Kelly fraction for decimal odds
+    // Full Kelly: f* = (b*p - q) / b, where b = odds - 1, q = 1-p
+    const kellyFraction = (p, odds, fraction = 0.25) => {
+        if (!(p > 0 && p < 1) || !(odds > 1)) return 0;
+        const b = odds - 1;
+        const q = 1 - p;
+        const full = (b * p - q) / b;
+        const scaled = full * fraction;
+        return clamp(scaled, 0, 1);
+    };
+
+    const formatSigned = (n, decimals = 2) => {
+        if (!Number.isFinite(n)) return "0.00";
+        const sign = n > 0 ? "+" : "";
+        return sign + n.toFixed(decimals);
+    };
+
+// --- BTTS Logic ---
     const calculateBtts = () => {
-        const localScored = parseFloat(bttsLocalScored.value) || 0;
-        const localConceded = parseFloat(bttsLocalConceded.value) || 0;
-        const visitorScored = parseFloat(bttsVisitorScored.value) || 0;
-        const visitorConceded = parseFloat(bttsVisitorConceded.value) || 0;
-        const houseOdd = parseFloat(bttsHouseOdd.value) || 0;
-        const sampleSize = parseInt(bttsSample.value) || 10;
-        const bankroll = parseFloat(bankrollInput.value) || 1000;
+        const localScored = clamp(toNumber(bttsLocalScored.value), 0, 100);
+        const localConceded = clamp(toNumber(bttsLocalConceded.value), 0, 100);
+        const visitorScored = clamp(toNumber(bttsVisitorScored.value), 0, 100);
+        const visitorConceded = clamp(toNumber(bttsVisitorConceded.value), 0, 100);
+
+        const houseOdd = toNumber(bttsHouseOdd.value, 0);
+        const sampleSizeRaw = Math.round(toNumber(bttsSample.value, 10));
+        const sampleSize = clamp(sampleSizeRaw, 1, 20);
+
+        const bankroll = Math.max(0, toNumber(bankrollInput.value, 1000));
         const currency = getCurrencySymbol(currencySelect);
+        const mode = (bttsMode && bttsMode.value) ? bttsMode.value : "hybrid";
 
-        // NEW: Poisson-based probability source
-        // P(BTTS) = P(Local scores) * P(Visitor scores)
-        const avgSLocal = parseFloat(bttsLocalAvgScored.value) || 0;
-        const avgCLocal = parseFloat(bttsLocalAvgConceded.value) || 0;
-        const avgSVisitor = parseFloat(bttsVisitorAvgScored.value) || 0;
-        const avgCVisitor = parseFloat(bttsVisitorAvgConceded.value) || 0;
+        // Keep the input itself consistent with clamps
+        if (bttsSample && String(bttsSample.value) !== String(sampleSize)) bttsSample.value = sampleSize;
 
-        // ISOLATED CALCULATIONS: Home and Away use distinct parameters
+        // Averages from manual entry (goals)
+        const avgSLocal = Math.max(0, toNumber(bttsLocalAvgScored.value, 0));
+        const avgCLocal = Math.max(0, toNumber(bttsLocalAvgConceded.value, 0));
+        const avgSVisitor = Math.max(0, toNumber(bttsVisitorAvgScored.value, 0));
+        const avgCVisitor = Math.max(0, toNumber(bttsVisitorAvgConceded.value, 0));
+
+        // xG (simple blend)
         let lambdaHome = (avgSLocal + avgCVisitor) / 2;
         let lambdaAway = (avgSVisitor + avgCLocal) / 2;
 
         const rawLambdaHome = lambdaHome;
         const rawLambdaAway = lambdaAway;
 
-        // DYNAMIC SMOOTHING WEIGHT (w): w=0.1 at N=1, w=1.0 at N=20
+        // smoothing weight: w=0.1 at N=1, w=1 at N=20
         const xgWeight = Math.min(1, 0.1 + (sampleSize - 1) * (0.9 / 19));
 
-        // PROGRESSIVE CAP: Apply smoothing for xG_raw > 3.0 (Dynamic based on N)
-        if (lambdaHome > 3.0) {
-            lambdaHome = 3.0 + (lambdaHome - 3.0) * xgWeight;
-        }
-        if (lambdaAway > 3.0) {
-            lambdaAway = 3.0 + (lambdaAway - 3.0) * xgWeight;
-        }
+        // Progressive cap for extreme xG
+        if (lambdaHome > 3.0) lambdaHome = 3.0 + (lambdaHome - 3.0) * xgWeight;
+        if (lambdaAway > 3.0) lambdaAway = 3.0 + (lambdaAway - 3.0) * xgWeight;
 
         const bttsLocalXg = document.getElementById('btts-local-xg');
         const bttsVisitorXg = document.getElementById('btts-visitor-xg');
         if (bttsLocalXg) bttsLocalXg.textContent = lambdaHome.toFixed(2);
         if (bttsVisitorXg) bttsVisitorXg.textContent = lambdaAway.toFixed(2);
 
-        // Store data for tooltips/modals
+        // Tooltips/modals
         const xgLocalData = { title: "xG (Local)", raw: rawLambdaHome, used: lambdaHome, weight: xgWeight };
         const xgVisitorData = { title: "xG (Visita)", raw: rawLambdaAway, used: lambdaAway, weight: xgWeight };
+        const btnInfoLocal = document.getElementById('info-xg-local');
+        const btnInfoVisitor = document.getElementById('info-xg-visitor');
+        if (btnInfoLocal) btnInfoLocal.onclick = () => showDetail(xgLocalData);
+        if (btnInfoVisitor) btnInfoVisitor.onclick = () => showDetail(xgVisitorData);
 
-        document.getElementById('info-xg-local').onclick = () => showDetail(xgLocalData);
-        document.getElementById('info-xg-visitor').onclick = () => showDetail(xgVisitorData);
-
+        // Poisson BTTS
         const probabilityPoisson = (1 - Math.exp(-lambdaHome) - Math.exp(-lambdaAway) + Math.exp(-(lambdaHome + lambdaAway))) * 100;
 
-        // Individual probabilities (Prob % boxes)
+        // Individual score probabilities
         const probLocal = (1 - Math.exp(-lambdaHome)) * 100;
         const probVisitor = (1 - Math.exp(-lambdaAway)) * 100;
-
-        const bttsLocalProb = document.getElementById('btts-local-prob');
-        const bttsVisitorProb = document.getElementById('btts-visitor-prob');
         if (bttsLocalProb) bttsLocalProb.textContent = probLocal.toFixed(1);
         if (bttsVisitorProb) bttsVisitorProb.textContent = probVisitor.toFixed(1);
 
-        // HYBRID MODEL: Poisson + Empirical Percentage with shrinkage
-        const probPercentage = (localScored * visitorScored) / 100;
+        // Empirical BTTS approximation + shrinkage
+        const probPercentageRaw = (localScored * visitorScored) / 100;
         const baseline = 53;
         const k = 10;
         const w = sampleSize / (sampleSize + k);
-        const adjustedEmpirical = (w * probPercentage) + ((1 - w) * baseline);
+        const adjustedEmpirical = (w * probPercentageRaw) + ((1 - w) * baseline);
 
-        let probability;
-        if (sampleSize < 8) {
-            probability = (0.3 * probabilityPoisson) + (0.7 * adjustedEmpirical);
-        } else if (sampleSize <= 15) {
-            probability = (0.5 * probabilityPoisson) + (0.5 * adjustedEmpirical);
+        // Hybrid weight by sample size (same idea, cleaner)
+        let probabilityFinal = adjustedEmpirical;
+        if (mode === "model") {
+            probabilityFinal = probabilityPoisson;
+        } else if (mode === "empirical") {
+            probabilityFinal = adjustedEmpirical;
         } else {
-            probability = (0.7 * probabilityPoisson) + (0.3 * adjustedEmpirical);
+            // hybrid
+            if (sampleSize < 8) probabilityFinal = (0.3 * probabilityPoisson) + (0.7 * adjustedEmpirical);
+            else if (sampleSize <= 15) probabilityFinal = (0.5 * probabilityPoisson) + (0.5 * adjustedEmpirical);
+            else probabilityFinal = (0.7 * probabilityPoisson) + (0.3 * adjustedEmpirical);
         }
 
-        // Display both values
+        // Display model and final
         const bttsModelProb = document.getElementById('btts-model-prob');
-        if (bttsModelProb) {
-            bttsModelProb.textContent = probabilityPoisson.toFixed(1);
-            bttsModelProb.parentElement.title = "Probabilidad pura basada en promedio de goles (Poisson).";
-        }
+        if (bttsModelProb) bttsModelProb.textContent = probabilityPoisson.toFixed(1);
+        if (bttsAvgProb) bttsAvgProb.textContent = probabilityFinal.toFixed(1);
 
-        bttsAvgProb.textContent = probability.toFixed(1);
-        if (bttsFinalDisplay) {
-            bttsFinalDisplay.title = "Probabilidad combinada (Modelo + Porcentaje Real) ajustada por muestra.";
-        }
-
-        // Reliability UI feedback (n < 5)
+        // Reliability hint
         if (sampleSize < 5) {
             if (bttsSampleWarning) bttsSampleWarning.style.display = 'inline-block';
             if (bttsModelContainer) bttsModelContainer.style.opacity = '0.4';
@@ -174,16 +206,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (bttsModelContainer) bttsModelContainer.style.opacity = '1';
         }
 
-        // Calculate Adjusted Average goals (Neutral Shrinkage per team)
-        const neutralBaseline = 1.33; // ~2.66 total
+        // Combined goals (adjusted shrinkage)
+        const neutralBaseline = 1.33;
         const kGoals = 10;
         const lambdaHomeAdj = (rawLambdaHome * sampleSize + neutralBaseline * kGoals) / (sampleSize + kGoals);
         const lambdaAwayAdj = (rawLambdaAway * sampleSize + neutralBaseline * kGoals) / (sampleSize + kGoals);
         const combinedAvg = lambdaHomeAdj + lambdaAwayAdj;
-
-        if (bttsCombinedAvg) {
-            bttsCombinedAvg.textContent = combinedAvg > 0 ? combinedAvg.toFixed(2) : "---";
-        }
+        if (bttsCombinedAvg) bttsCombinedAvg.textContent = combinedAvg > 0 ? combinedAvg.toFixed(2) : "---";
 
         const goalsData = {
             title: "Promedio Goles (Ajustado)",
@@ -191,132 +220,107 @@ document.addEventListener('DOMContentLoaded', () => {
             used: combinedAvg,
             weight: sampleSize / (sampleSize + kGoals)
         };
-        document.getElementById('info-goals-combined').onclick = () => showDetail(goalsData);
+        const btnInfoGoals = document.getElementById('info-goals-combined');
+        if (btnInfoGoals) btnInfoGoals.onclick = () => showDetail(goalsData);
 
-        if (probability > 0) {
-            const fairOdd = (100 / probability);
-            bttsFairOdd.textContent = fairOdd.toFixed(2);
+        // Fair odd + EV/Edge + Kelly 1/4
+        const p = clamp(probabilityFinal / 100, 0, 1);
+        if (p > 0) {
+            const fairOdd = 1 / p;
+            if (bttsFairOdd) bttsFairOdd.textContent = fairOdd.toFixed(2);
 
-            if (houseOdd > 0) {
-                const evValue = (probability / 100 * houseOdd) - 1;
-                const edgePercentage = evValue * 100;
+            if (houseOdd > 1) {
+                const evPct = ((p * houseOdd) - 1) * 100;
+                const edgePct = ((houseOdd / fairOdd) - 1) * 100;
 
-                bttsEdgeValue.textContent = (edgePercentage > 0 ? "+" : "") + edgePercentage.toFixed(2) + "%";
-                bttsEdgeValue.style.color = edgePercentage > 0 ? "var(--accent-color)" : "#ef4444";
-
-                bttsEvValue.textContent = (edgePercentage > 0 ? "+" : "") + edgePercentage.toFixed(2) + "%";
-                bttsEvValue.style.color = edgePercentage > 0 ? "var(--accent-color)" : "#ef4444";
-
-                const monetaryEV = evValue * bankroll;
-
-                // Staking Logic
-                let stakeUnit = 0;
-                if (edgePercentage >= 0) {
-                    if (edgePercentage < 3) stakeUnit = 0;
-                    else if (edgePercentage < 6) stakeUnit = 1;
-                    else if (edgePercentage < 9) stakeUnit = 2;
-                    else if (edgePercentage < 12) stakeUnit = 3;
-                    else if (edgePercentage < 15) stakeUnit = 4;
-                    else if (edgePercentage <= 20) stakeUnit = 5;
-                    else stakeUnit = 0; // Precaución
+                if (bttsEdgeValue) {
+                    bttsEdgeValue.textContent = formatSigned(edgePct, 2) + "%";
+                    bttsEdgeValue.style.color = edgePct > 0 ? "var(--accent-color)" : "#ef4444";
+                }
+                if (bttsEvValue) {
+                    bttsEvValue.textContent = formatSigned(evPct, 2) + "%";
+                    bttsEvValue.style.color = evPct > 0 ? "var(--accent-color)" : "#ef4444";
                 }
 
-                const stakeAmount = Math.floor(bankroll * (stakeUnit / 100));
+                const f = kellyFraction(p, houseOdd, 0.25);
+                const stakeMoney = Math.floor(bankroll * f);
+                const stakePct = f * 100;
 
                 if (bttsKellyCard) bttsKellyCard.style.display = 'flex';
-
-                if (edgePercentage < 0) {
-                    bttsKellyStake.textContent = "Stake 0 (No Bet)";
-                    bttsKellyStake.style.color = "#ef4444";
-                } else if (edgePercentage > 20) {
-                    bttsKellyStake.textContent = "Edge > 20% (Revisar)";
-                    bttsKellyStake.style.color = "#ef4444";
-                } else if (stakeUnit === 0) {
-                    bttsKellyStake.textContent = "Stake 0 (Low Edge)";
-                    bttsKellyStake.style.color = "#ef4444";
-                } else {
-                    bttsKellyStake.textContent = `Stake ${stakeUnit}/5 (${currency}${stakeAmount})`;
-                    bttsKellyStake.style.color = "var(--accent-color)";
+                if (bttsKellyStake) {
+                    if (stakePct <= 0) {
+                        bttsKellyStake.textContent = "0% (No Bet)";
+                        bttsKellyStake.style.color = "#ef4444";
+                    } else {
+                        bttsKellyStake.textContent = `${stakePct.toFixed(2)}% (${currency}${stakeMoney})`;
+                        bttsKellyStake.style.color = "var(--accent-color)";
+                    }
                 }
             } else {
-                bttsEdgeValue.textContent = "0.00";
-                bttsEvValue.textContent = "0.00";
+                if (bttsEdgeValue) bttsEdgeValue.textContent = "0.00%";
+                if (bttsEvValue) bttsEvValue.textContent = "0.00%";
                 if (bttsKellyCard) bttsKellyCard.style.display = 'none';
             }
         } else {
-            bttsFairOdd.textContent = "-.--";
-            bttsEdgeValue.textContent = "0.00";
-            bttsEvValue.textContent = "0.00";
+            if (bttsFairOdd) bttsFairOdd.textContent = "-.--";
+            if (bttsEdgeValue) bttsEdgeValue.textContent = "0.00%";
+            if (bttsEvValue) bttsEvValue.textContent = "0.00%";
             if (bttsKellyCard) bttsKellyCard.style.display = 'none';
         }
     };
 
     // --- Probability Calculator Logic ---
     const calculate = () => {
-        const probA = parseFloat(inputA.value) || 0;
-        const probB = parseFloat(inputB.value) || 0;
-        const houseOdd = parseFloat(houseOddInput.value) || 0;
-        const bankroll = parseFloat(bankrollInput.value) || 0;
+        const probA = clamp(toNumber(inputA.value), 0, 100);
+        const probB = clamp(toNumber(inputB.value), 0, 100);
+        const houseOdd = toNumber(houseOddInput.value, 0);
+        const bankroll = Math.max(0, toNumber(bankrollInput.value, 0));
         const currencySymbol = getCurrencySymbol(currencySelect);
 
-        // Adjusted probability: Simple average of inputs
-        const p_adj = ((probA + probB) / 2) / 100;
-        displayAverage.textContent = (p_adj * 100).toFixed(1) + '%';
+        // Average probability
+        const p = clamp(((probA + probB) / 2) / 100, 0, 1);
+        displayAverage.textContent = (p * 100).toFixed(1) + '%';
 
-        // NEW: Always calculate and show Fair Odd if we have a probability
-        const fairOdd = p_adj > 0 ? (1 / p_adj) : 0;
+        // Fair odd
+        const fairOdd = p > 0 ? (1 / p) : 0;
         singleOddDisplay.textContent = fairOdd > 0 ? fairOdd.toFixed(2) : '-.--';
 
-        if (houseOdd > 0) {
+        if (houseOdd > 1) {
             summaryHouseOdd.textContent = houseOdd.toFixed(2);
 
-            const p_base = 1 / houseOdd;
-            displayHouseProb.textContent = (p_base * 100).toFixed(1) + '%';
+            const p_house = 1 / houseOdd;
+            displayHouseProb.textContent = (p_house * 100).toFixed(1) + '%';
 
-            const evValue = (p_adj * houseOdd) - 1;
-            const evPercentage = evValue * 100;
+            // EV and Edge (different things)
+            const evPct = ((p * houseOdd) - 1) * 100;
+            const edgePct = fairOdd > 0 ? ((houseOdd / fairOdd) - 1) * 100 : 0;
 
             edgeContainer.style.display = 'block';
             edgeDivider.style.display = 'block';
-            edgeValueDisplay.textContent = evPercentage.toFixed(2);
-            edgeValueDisplay.parentElement.style.color = evPercentage > 0 ? "var(--accent-color)" : "#ef4444";
+            edgeValueDisplay.textContent = formatSigned(edgePct, 2);
+            edgeValueDisplay.parentElement.style.color = edgePct > 0 ? "var(--accent-color)" : "#ef4444";
 
             evContainer.style.display = 'block';
             evDivider.style.display = 'block';
-            evValueDisplay.textContent = evPercentage.toFixed(2);
-            evValueDisplay.parentElement.style.color = evPercentage > 0 ? "var(--accent-color)" : "#ef4444";
+            evValueDisplay.textContent = formatSigned(evPct, 2);
+            evValueDisplay.parentElement.style.color = evPct > 0 ? "var(--accent-color)" : "#ef4444";
 
-            // Staking Logic
-            let stakeUnit = 0;
-            if (evPercentage >= 0) {
-                if (evPercentage < 3) stakeUnit = 0;
-                else if (evPercentage < 6) stakeUnit = 1;
-                else if (evPercentage < 9) stakeUnit = 2;
-                else if (evPercentage < 12) stakeUnit = 3;
-                else if (evPercentage < 15) stakeUnit = 4;
-                else if (evPercentage <= 20) stakeUnit = 5;
-            }
+            // Kelly 1/4
+            const f = kellyFraction(p, houseOdd, 0.25);
+            const stakePct = f * 100;
+            const stakeAmount = Math.floor(bankroll * f);
 
-            const stakeAmount = Math.floor(bankroll * (stakeUnit / 100));
             kellyCard.style.display = 'flex';
-
-            if (evPercentage < 0) {
-                kellyStakeDisplay.textContent = "Stake 0 (No Bet)";
-                kellyStakeDisplay.parentElement.style.color = "#ef4444";
-            } else if (evPercentage > 20) {
-                kellyStakeDisplay.textContent = "Precaución: Edge > 20%";
-                kellyStakeDisplay.parentElement.style.color = "#ef4444";
-            } else if (stakeUnit === 0) {
-                kellyStakeDisplay.textContent = "Stake 0 (Low Edge)";
+            if (stakePct <= 0) {
+                kellyStakeDisplay.textContent = "0% (No Bet)";
                 kellyStakeDisplay.parentElement.style.color = "#ef4444";
             } else {
-                kellyStakeDisplay.textContent = `Stake ${stakeUnit}/5 (${currencySymbol}${stakeAmount})`;
+                kellyStakeDisplay.textContent = `${stakePct.toFixed(2)}% (${currencySymbol}${stakeAmount})`;
                 kellyStakeDisplay.parentElement.style.color = "var(--accent-color)";
             }
         } else {
             summaryHouseOdd.textContent = '-.--';
             displayHouseProb.textContent = '0.0%';
-            // singleOddDisplay.textContent = '-.--'; // Do not clear Fair Odd here
             edgeContainer.style.display = 'none';
             evContainer.style.display = 'none';
             kellyCard.style.display = 'none';
@@ -371,6 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const type = e.target.classList.contains('manual-in-scored') ? 'scored' : 'conceded';
                 teamData[idx][type] = e.target.value;
                 updateManualStats();
+                saveState();
             });
 
             input.addEventListener('keydown', (e) => {
@@ -442,15 +447,107 @@ document.addEventListener('DOMContentLoaded', () => {
             bttsVisitorAvgConceded.value = avgC.toFixed(1);
         }
         bttsSample.value = played > 0 ? played : 10;
-        calculateBtts();
+        saveState();
+        debouncedCalculateBtts();
     };
 
-    // --- Navigation ---
+    
+    // --- Persistencia (localStorage) ---
+    const STORAGE_KEY = "betcalc_state_v1";
+
+    const saveState = () => {
+        try {
+            const state = {
+                currency: currencySelect ? currencySelect.value : "CLP",
+                bankroll: bankrollInput ? bankrollInput.value : "1000",
+                lastView: (calculatorView && calculatorView.style.display !== 'none') ? "calculator"
+                    : (bttsManualView && bttsManualView.style.display !== 'none') ? "manual"
+                    : (bttsView && bttsView.style.display !== 'none') ? "btts"
+                    : "menu",
+                bttsMode: bttsMode ? bttsMode.value : "hybrid",
+                manualData
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (_) { /* silencio, como tus bugs */ }
+    };
+
+    const loadState = () => {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return;
+            const state = JSON.parse(raw);
+
+            if (currencySelect && state.currency) currencySelect.value = state.currency;
+            if (bankrollInput && state.bankroll) bankrollInput.value = state.bankroll;
+
+            if (bttsMode && state.bttsMode) bttsMode.value = state.bttsMode;
+
+            // Restore manual data safely
+            if (state.manualData && state.manualData.Local && state.manualData.Visitor) {
+                manualData.Local = state.manualData.Local.map(m => ({ scored: m.scored ?? "", conceded: m.conceded ?? "" })).slice(0, 20);
+                manualData.Visitor = state.manualData.Visitor.map(m => ({ scored: m.scored ?? "", conceded: m.conceded ?? "" })).slice(0, 20);
+                // Ensure length 20
+                while (manualData.Local.length < 20) manualData.Local.push({ scored: "", conceded: "" });
+                while (manualData.Visitor.length < 20) manualData.Visitor.push({ scored: "", conceded: "" });
+            }
+
+            // Apply stats to inputs (without opening manual view)
+            const syncFromManual = () => {
+                const calcStats = (arr) => {
+                    let played = 0, scoredGames = 0, concededGames = 0, totalScored = 0, totalConceded = 0;
+                    arr.forEach(match => {
+                        if (match.scored !== "" || match.conceded !== "") {
+                            played++;
+                            const s = parseInt(match.scored) || 0;
+                            const c = parseInt(match.conceded) || 0;
+                            if (s > 0) scoredGames++;
+                            if (c > 0) concededGames++;
+                            totalScored += s;
+                            totalConceded += c;
+                        }
+                    });
+                    return {
+                        played,
+                        sPercent: played ? (scoredGames / played) * 100 : 0,
+                        cPercent: played ? (concededGames / played) * 100 : 0,
+                        avgS: played ? (totalScored / played) : 0,
+                        avgC: played ? (totalConceded / played) : 0
+                    };
+                };
+
+                const local = calcStats(manualData.Local);
+                const visitor = calcStats(manualData.Visitor);
+
+                if (bttsLocalScored) bttsLocalScored.value = local.sPercent.toFixed(0);
+                if (bttsLocalConceded) bttsLocalConceded.value = local.cPercent.toFixed(0);
+                if (bttsLocalAvgScored) bttsLocalAvgScored.value = local.avgS.toFixed(1);
+                if (bttsLocalAvgConceded) bttsLocalAvgConceded.value = local.avgC.toFixed(1);
+
+                if (bttsVisitorScored) bttsVisitorScored.value = visitor.sPercent.toFixed(0);
+                if (bttsVisitorConceded) bttsVisitorConceded.value = visitor.cPercent.toFixed(0);
+                if (bttsVisitorAvgScored) bttsVisitorAvgScored.value = visitor.avgS.toFixed(1);
+                if (bttsVisitorAvgConceded) bttsVisitorAvgConceded.value = visitor.avgC.toFixed(1);
+
+                const defaultSample = Math.max(1, Math.min(20, local.played || visitor.played || 10));
+                if (bttsSample) bttsSample.value = defaultSample;
+            };
+
+            syncFromManual();
+
+            // Restore view
+            if (state.lastView === "calculator") showView(calculatorView);
+            else if (state.lastView === "btts") showView(bttsView);
+            else showView(mainMenu);
+
+        } catch (_) { /* no-op */ }
+    };
+// --- Navigation ---
     const showView = (view) => {
         [mainMenu, calculatorView, bttsView, bttsManualView].forEach(v => {
             if (v) v.style.display = 'none';
         });
         if (view) view.style.display = 'block';
+        saveState();
     };
 
     const showManualEntry = (team) => {
@@ -462,8 +559,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Event Listeners ---
+    const debouncedCalculate = debounce(calculate, 150);
+    const debouncedCalculateBtts = debounce(calculateBtts, 150);
+
     if (btnProbability) btnProbability.addEventListener('click', () => showView(calculatorView));
-    if (btnBtts) btnBtts.addEventListener('click', () => { showView(bttsView); calculateBtts(); });
+    if (btnBtts) btnBtts.addEventListener('click', () => { showView(bttsView); debouncedCalculateBtts(); });
     if (btnBack) btnBack.addEventListener('click', () => showView(mainMenu));
     if (btnBackBtts) btnBackBtts.addEventListener('click', () => showView(mainMenu));
     if (btnBackManual) btnBackManual.addEventListener('click', () => showView(bttsView));
@@ -489,6 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 manualData[teamKey] = Array.from({ length: 20 }, () => ({ scored: "", conceded: "" }));
                 generateMatchRows();
                 updateManualStats();
+                saveState();
                 clearStage = 0;
                 btnClearManual.textContent = "Borrar Todo";
                 btnClearManual.classList.remove('confirming');
@@ -498,22 +599,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Calculator Listeners
     [inputA, inputB, houseOddInput].forEach(el => {
-        if (el) el.addEventListener('input', calculate);
+        if (el) el.addEventListener('input', debouncedCalculate);
     });
 
     // BTTS Listeners
-    [bttsLocalScored, bttsLocalConceded, bttsVisitorScored, bttsVisitorConceded, bttsSample, bttsHouseOdd].forEach(el => {
-        if (el) el.addEventListener('input', calculateBtts);
+    [bttsLocalScored, bttsLocalConceded, bttsVisitorScored, bttsVisitorConceded, bttsSample, bttsHouseOdd, bttsMode].forEach(el => {
+        if (el) el.addEventListener('input', debouncedCalculateBtts);
     });
 
     // Global updates
     if (currencySelect) currencySelect.addEventListener('change', () => {
         if (calculatorView.style.display !== 'none') calculate();
-        if (bttsView.style.display !== 'none') calculateBtts();
+        if (bttsView.style.display !== 'none') debouncedCalculateBtts();
+        saveState();
     });
     if (bankrollInput) bankrollInput.addEventListener('input', () => {
         if (calculatorView.style.display !== 'none') calculate();
-        if (bttsView.style.display !== 'none') calculateBtts();
+        if (bttsView.style.display !== 'none') debouncedCalculateBtts();
+        saveState();
     });
 
     // Modal Helpers
@@ -546,7 +649,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.target === infoModal) closeModal();
     };
 
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeModal();
+    });
+
+    window.addEventListener('beforeunload', saveState);
+
     // Initial State
-    calculate();
-    calculateBtts();
+    loadState();
+    debouncedCalculate();
+    debouncedCalculateBtts();
 });

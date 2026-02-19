@@ -20,10 +20,10 @@
                 <div class="setting-item">
                     <label>Moneda</label>
                     <select id="global-currency">
-                        <option value="$">CLP ($)</option>
-                        <option value="$">USD ($)</option>
-                        <option value="€">EUR (€)</option>
-                        <option value="£">GBP (£)</option>
+                        <option value="CLP">CLP ($)</option>
+                        <option value="USD">USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="GBP">GBP (£)</option>
                     </select>
                 </div>
                 <div class="setting-item">
@@ -38,13 +38,13 @@
             </header>
 
             <div class="menu-grid">
-                <button class="menu-card" id="btn-probability">
+                <button class="menu-card" id="btn-probability" type="button">
                     <div class="icon">📊</div>
                     <h2>Calculadora de Probabilidades</h2>
                     <p>Calcula cuotas justas, edge y EV</p>
                 </button>
 
-                <button class="menu-card" id="btn-btts">
+                <button class="menu-card" id="btn-btts" type="button">
                     <div class="icon">⚽</div>
                     <h2>Calculadora de BTTS y Over / Under</h2>
                     <p>Ambos Marcan y Total de Goles (SÍ/NO)</p>
@@ -55,7 +55,7 @@
         <!-- Probability Calculator View -->
         <main id="calculator-view" style="display: none;">
             <header>
-                <button id="btn-back" class="back-button">← Atrás</button>
+                <button id="btn-back" class="back-button" type="button">← Atrás</button>
                 <h1>Calculadora de Probabilidades</h1>
                 <p class="subtitle">Calcula totales, promedios y cuotas justas al instante.</p>
             </header>
@@ -156,7 +156,7 @@
         <!-- BTTS Calculator View -->
         <main id="btts-view" style="display: none;">
             <header>
-                <button id="btn-back-btts" class="back-button">← Atrás</button>
+                <button id="btn-back-btts" class="back-button" type="button">← Atrás</button>
                 <h1>Calculadora de BTTS y Over / Under</h1>
                 <p class="subtitle">Ambos Equipos Anotan (Sí/No) y Total de Goles</p>
             </header>
@@ -166,7 +166,7 @@
                 <!-- Local Row Stacked -->
                 <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 24px;">
                     <div style="display: flex; flex-direction: column; padding-top: 18px;">
-                        <button class="manual-btn" id="btn-manual-local"
+                        <button class="manual-btn" id="btn-manual-local" type="button"
                             style="height: 64px; min-width: 70px;">Ingreso</button>
                     </div>
 
@@ -238,7 +238,7 @@
                 <!-- Visitor Row Stacked -->
                 <div style="display: flex; align-items: flex-start; gap: 12px;">
                     <div style="display: flex; flex-direction: column; padding-top: 18px;">
-                        <button class="manual-btn" id="btn-manual-visitor"
+                        <button class="manual-btn" id="btn-manual-visitor" type="button"
                             style="height: 64px; min-width: 70px;">Ingreso</button>
                     </div>
 
@@ -316,6 +316,14 @@
                         <div class="setting-item">
                             <label>Muestra (Partidos)</label>
                             <input type="number" id="btts-sample" placeholder="10" value="10">
+                        </div>
+                        <div class="setting-item">
+                            <label>Modo</label>
+                            <select id="btts-mode">
+                                <option value="hybrid">Híbrido (recomendado)</option>
+                                <option value="model">Solo Modelo</option>
+                                <option value="empirical">Solo Histórico</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -396,8 +404,8 @@
             <header>
                 <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
                     <div style="display: flex; gap: 12px; align-items: center;">
-                        <button id="btn-back-manual" class="back-button">← Atrás</button>
-                        <button id="btn-clear-manual" class="clear-btn">Borrar Todo</button>
+                        <button id="btn-back-manual" class="back-button" type="button">← Atrás</button>
+                        <button id="btn-clear-manual" class="clear-btn" type="button">Borrar Todo</button>
                     </div>
                     <div style="text-align: right;">
                         <h1 id="manual-entry-title" style="margin: 0; font-size: 20px;">Ingreso Manual</h1>
