@@ -79,7 +79,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const ouUnderContainer = document.getElementById('ou-under-container');
     const bttsMarketLabel = document.getElementById('btts-market-label');
 
-    let currentBttsMarket = "btts"; // "btts" | "ou"
+    let currentBttsMarket = "btts";
+
+    const applyBttsMarketUI = () => {
+        const isBtts = currentBttsMarket === "btts";
+        if (bttsPanel) bttsPanel.style.display = isBtts ? "block" : "none";
+        if (ouPanel) ouPanel.style.display = isBtts ? "none" : "block";
+
+        if (btnBttsMode) {
+            btnBttsMode.classList.toggle("active", isBtts);
+            btnBttsMode.classList.toggle("winner", false); // winner is set inside calculateBtts
+            btnBttsMode.setAttribute("aria-selected", isBtts ? "true" : "false");
+        }
+        if (btnOuMode) {
+            btnOuMode.classList.toggle("active", !isBtts);
+            btnOuMode.classList.toggle("winner", false);
+            btnOuMode.setAttribute("aria-selected", !isBtts ? "true" : "false");
+        }
+
+        // Label pill in EV/Edge section
+        if (bttsMarketLabel) bttsMarketLabel.textContent = isBtts ? "BTTS" : "O/U";
+    };
+ // "btts" | "ou"
 
     const bttsModelContainer = document.getElementById('btts-model-container');
     const bttsFinalDisplay = document.getElementById('btts-final-display');
@@ -148,8 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- BTTS Logic ---
     const calculateBtts = () => {
-        // Ensure UI panels match selected market
-        applyBttsMarketUI();
         const localScored = clamp(toNumber(bttsLocalScored.value), 0, 100);
         const localConceded = clamp(toNumber(bttsLocalConceded.value), 0, 100);
         const visitorScored = clamp(toNumber(bttsVisitorScored.value), 0, 100);
@@ -531,7 +550,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         bttsSample.value = played > 0 ? played : 10;
         saveState();
-        runBttsCalc();
+        debouncedCalculateBtts();
     };
 
     
@@ -579,7 +598,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Apply stats to inputs (without opening manual view)
-            const syncFromManual = () => {
+            const syncFromManualToInputs = () => {
                 const calcStats = (arr) => {
                     let played = 0, scoredGames = 0, concededGames = 0, totalScored = 0, totalConceded = 0;
                     arr.forEach(match => {
@@ -600,24 +619,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         avgS: played ? (totalScored / played) : 0,
                         avgC: played ? (totalConceded / played) : 0
                     };
-
-    const applyBttsMarketUI = () => {
-        const isBtts = currentBttsMarket === "btts";
-        if (bttsPanel) bttsPanel.style.display = isBtts ? "block" : "none";
-        if (ouPanel) ouPanel.style.display = isBtts ? "none" : "block";
-
-        if (btnBttsMode) {
-            btnBttsMode.classList.toggle("active", isBtts);
-            btnBttsMode.setAttribute("aria-selected", isBtts ? "true" : "false");
-        }
-        if (btnOuMode) {
-            btnOuMode.classList.toggle("active", !isBtts);
-            btnOuMode.setAttribute("aria-selected", !isBtts ? "true" : "false");
-        }
-        if (bttsMarketLabel) bttsMarketLabel.textContent = isBtts ? "BTTS" : "O/U";
-    };
-
-
                 };
 
                 const local = calcStats(manualData.Local);
@@ -633,14 +634,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (bttsVisitorAvgScored) bttsVisitorAvgScored.value = visitor.avgS.toFixed(1);
                 if (bttsVisitorAvgConceded) bttsVisitorAvgConceded.value = visitor.avgC.toFixed(1);
 
-                const defaultSample = Math.max(1, Math.min(20, local.played || visitor.played || 10));
+                const defaultSample = clamp(Math.max(local.played, visitor.played, 10), 1, 20);
                 if (bttsSample) bttsSample.value = defaultSample;
             };
 
-            syncFromManual();
+            syncFromManualToInputs();
+            applyBttsMarketUI();
+            debouncedCalculateBtts();
 
             // Restore view
             if (state.lastView === "calculator") showView(calculatorView);
+            else if (state.lastView === "manual") showView(bttsManualView);
             else if (state.lastView === "btts") showView(bttsView);
             else showView(mainMenu);
 
@@ -665,12 +669,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Event Listeners ---
     const debouncedCalculate = debounce(calculate, 150);
-        const runBttsCalc = () => { try { calculateBtts(); } catch(e) { console.error(e); } };
-
-const debouncedCalculateBtts = debounce(calculateBtts, 150);
+    const debouncedCalculateBtts = debounce(calculateBtts, 150);
 
     if (btnProbability) btnProbability.addEventListener('click', () => showView(calculatorView));
-    if (btnBtts) btnBtts.addEventListener('click', () => { showView(bttsView); runBttsCalc(); });
+    if (btnBtts) btnBtts.addEventListener('click', () => { showView(bttsView); debouncedCalculateBtts(); });
     if (btnBack) btnBack.addEventListener('click', () => showView(mainMenu));
     if (btnBackBtts) btnBackBtts.addEventListener('click', () => showView(mainMenu));
     if (btnBackManual) btnBackManual.addEventListener('click', () => showView(bttsView));
@@ -683,7 +685,7 @@ const debouncedCalculateBtts = debounce(calculateBtts, 150);
             currentBttsMarket = "btts";
             applyBttsMarketUI();
             saveState();
-            runBttsCalc();
+            debouncedCalculateBtts();
         });
     }
     if (btnOuMode) {
@@ -691,13 +693,13 @@ const debouncedCalculateBtts = debounce(calculateBtts, 150);
             currentBttsMarket = "ou";
             applyBttsMarketUI();
             saveState();
-            runBttsCalc();
+            debouncedCalculateBtts();
         });
     }
     if (ouLineSelect) {
         ouLineSelect.addEventListener('change', () => {
             saveState();
-            runBttsCalc();
+            debouncedCalculateBtts();
         });
     }
 
@@ -738,20 +740,16 @@ const debouncedCalculateBtts = debounce(calculateBtts, 150);
     [bttsLocalScored, bttsLocalConceded, bttsVisitorScored, bttsVisitorConceded, bttsSample, bttsHouseOdd, bttsMode].forEach(el => {
         if (el) el.addEventListener('input', debouncedCalculateBtts);
     });
-    // BTTS select changes
-    if (bttsMode) bttsMode.addEventListener('change', () => { saveState(); runBttsCalc(); });
-    if (ouLineSelect) ouLineSelect.addEventListener('change', () => { saveState(); runBttsCalc(); });
-
 
     // Global updates
     if (currencySelect) currencySelect.addEventListener('change', () => {
         if (calculatorView.style.display !== 'none') calculate();
-        if (bttsView.style.display !== 'none') runBttsCalc();
+        if (bttsView.style.display !== 'none') debouncedCalculateBtts();
         saveState();
     });
     if (bankrollInput) bankrollInput.addEventListener('input', () => {
         if (calculatorView.style.display !== 'none') calculate();
-        if (bttsView.style.display !== 'none') runBttsCalc();
+        if (bttsView.style.display !== 'none') debouncedCalculateBtts();
         saveState();
     });
 
@@ -796,5 +794,5 @@ const debouncedCalculateBtts = debounce(calculateBtts, 150);
     applyBttsMarketUI();
 
     debouncedCalculate();
-    runBttsCalc();
+    debouncedCalculateBtts();
 });

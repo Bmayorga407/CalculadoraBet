@@ -989,11 +989,7 @@ select:focus-visible {
 }
 
 .toggle-btn.winner{
-    background: var(--accent-color);
-    color: var(--text-primary);
-    border-color: rgba(16, 185, 129, 0.75);
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
-    transform: translateY(-1px);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.22);
 }
 
 .badge-market{
@@ -1064,17 +1060,4 @@ button:focus-visible, input:focus-visible, select:focus-visible{
         animation: none !important;
         scroll-behavior: auto !important;
     }
-}
-
-
-.toggle-btn.active:not(.winner){
-    background: rgba(16, 185, 129, 0.10);
-    border-color: rgba(16, 185, 129, 0.28);
-    color: var(--text-primary);
-}
-
-
-.btts-panel{
-    width: 100%;
-    margin-top: 8px;
 }
