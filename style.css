@@ -211,30 +211,30 @@ h1 {
     letter-spacing: -0.5px;
 }
 
-/* Results Cards */
+/* Results Grid */
 .results-grid {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
 .result-card {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 18px 20px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: center;
+    margin-bottom: 0;
     display: flex;
     flex-direction: column;
+    justify-content: center;
     align-items: center;
-    transition: all 0.3s ease;
+    padding: 16px;
+    /* Reduced padding on result cards */
 }
 
 .result-card h2 {
     font-size: 9px;
     color: var(--text-secondary);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -243,7 +243,6 @@ h1 {
     justify-content: center;
     width: 100%;
     max-width: 100%;
-    font-weight: 600;
 }
 
 .value-display {
@@ -267,22 +266,22 @@ h1 {
     width: 100%;
 }
 
+/* Probability Row */
 .probability-row {
     display: flex;
-    align-items: stretch;
+    justify-content: space-around;
+    align-items: center;
     width: 100%;
-    gap: 0;
 }
 
 .prob-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     flex: 1;
     min-width: 0;
     overflow: hidden;
-    padding: 4px 6px;
+    padding: 0 2px;
 }
 
 .team-inputs-grid {
@@ -358,42 +357,35 @@ h1 {
     border-left: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
+/* Comparison Container - 4 Columns */
 .comparison-container {
     display: flex;
-    align-items: stretch;
+    justify-content: space-around;
+    /* Distribute space */
+    align-items: center;
     width: 100%;
-    gap: 0;
 }
 
 .comp-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
     flex: 1;
-    padding: 4px 6px;
 }
 
 .divider-vertical {
     width: 1px;
+    min-height: 50px;
     align-self: stretch;
-    background: rgba(255, 255, 255, 0.08);
-    flex-shrink: 0;
-    min-height: 40px;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 .prob-stack {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 16px;
     flex: 1;
-    align-items: center;
     justify-content: center;
-}
-
-.prob-stack .prob-item {
-    padding: 0;
-    width: 100%;
 }
 
 .badge-warning {
@@ -414,17 +406,19 @@ h1 {
     width: 100%;
     min-width: 60px;
     background-color: #252525;
-    border: 1.5px solid rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    padding: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    /* Smaller radius */
+    padding: 6px;
+    /* Smaller padding */
     color: var(--text-primary);
-    font-size: 20px;
+    font-size: 18px;
+    /* Smaller font */
     font-weight: 700;
     text-align: center;
     font-family: var(--font-family);
     outline: none;
     transition: all 0.2s ease;
-    letter-spacing: -0.5px;
 }
 
 .house-input-wrapper input:focus {
@@ -456,24 +450,22 @@ input[type=number] {
 /* Advanced Settings */
 .advanced-settings {
     display: flex;
-    gap: 12px;
-    align-items: center;
+    gap: 16px;
 }
 
 .setting-item {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
 }
 
 .setting-item label {
-    font-size: 9px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    text-align: center;
+    letter-spacing: 0.5px;
 }
 
 /* Manual Summary Styles */
@@ -940,66 +932,4 @@ input[type=number] {
     color: white;
     font-family: inherit;
     font-weight: 600;
-}
-
-/* Market Toggle Buttons */
-.market-toggle-group {
-    display: flex;
-    gap: 4px;
-    background: rgba(255, 255, 255, 0.04);
-    padding: 3px;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.07);
-}
-
-.market-toggle {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 11px;
-    font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 7px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: var(--font-family);
-    letter-spacing: 0.3px;
-    white-space: nowrap;
-}
-
-.market-toggle:hover {
-    color: var(--text-primary);
-    background: rgba(255, 255, 255, 0.06);
-}
-
-.market-toggle.active {
-    background: var(--accent-color);
-    color: #000;
-    font-weight: 700;
-}
-
-/* Under 2.5 red text */
-.text-red {
-    color: #ef4444;
-}
-
-/* Recommended market highlight */
-.market-toggle.recommended {
-    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.6), 0 0 14px rgba(56, 189, 248, 0.3);
-    color: #38bdf8;
-    position: relative;
-}
-
-.market-toggle.recommended::after {
-    content: '★';
-    position: absolute;
-    top: -5px;
-    right: -4px;
-    font-size: 8px;
-    color: #38bdf8;
-    line-height: 1;
-}
-
-.market-toggle.active.recommended {
-    box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.7), 0 0 14px rgba(56, 189, 248, 0.3);
 }
