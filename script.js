@@ -531,7 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         bttsSample.value = played > 0 ? played : 10;
         saveState();
-        debouncedCalculateBtts();
+        runBttsCalc();
     };
 
     
@@ -665,10 +665,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Event Listeners ---
     const debouncedCalculate = debounce(calculate, 150);
-    const debouncedCalculateBtts = debounce(calculateBtts, 150);
+        const runBttsCalc = () => { try { calculateBtts(); } catch(e) { console.error(e); } };
+
+const debouncedCalculateBtts = debounce(calculateBtts, 150);
 
     if (btnProbability) btnProbability.addEventListener('click', () => showView(calculatorView));
-    if (btnBtts) btnBtts.addEventListener('click', () => { showView(bttsView); debouncedCalculateBtts(); });
+    if (btnBtts) btnBtts.addEventListener('click', () => { showView(bttsView); runBttsCalc(); });
     if (btnBack) btnBack.addEventListener('click', () => showView(mainMenu));
     if (btnBackBtts) btnBackBtts.addEventListener('click', () => showView(mainMenu));
     if (btnBackManual) btnBackManual.addEventListener('click', () => showView(bttsView));
@@ -681,7 +683,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentBttsMarket = "btts";
             applyBttsMarketUI();
             saveState();
-            debouncedCalculateBtts();
+            runBttsCalc();
         });
     }
     if (btnOuMode) {
@@ -689,13 +691,13 @@ document.addEventListener('DOMContentLoaded', () => {
             currentBttsMarket = "ou";
             applyBttsMarketUI();
             saveState();
-            debouncedCalculateBtts();
+            runBttsCalc();
         });
     }
     if (ouLineSelect) {
         ouLineSelect.addEventListener('change', () => {
             saveState();
-            debouncedCalculateBtts();
+            runBttsCalc();
         });
     }
 
@@ -736,16 +738,20 @@ document.addEventListener('DOMContentLoaded', () => {
     [bttsLocalScored, bttsLocalConceded, bttsVisitorScored, bttsVisitorConceded, bttsSample, bttsHouseOdd, bttsMode].forEach(el => {
         if (el) el.addEventListener('input', debouncedCalculateBtts);
     });
+    // BTTS select changes
+    if (bttsMode) bttsMode.addEventListener('change', () => { saveState(); runBttsCalc(); });
+    if (ouLineSelect) ouLineSelect.addEventListener('change', () => { saveState(); runBttsCalc(); });
+
 
     // Global updates
     if (currencySelect) currencySelect.addEventListener('change', () => {
         if (calculatorView.style.display !== 'none') calculate();
-        if (bttsView.style.display !== 'none') debouncedCalculateBtts();
+        if (bttsView.style.display !== 'none') runBttsCalc();
         saveState();
     });
     if (bankrollInput) bankrollInput.addEventListener('input', () => {
         if (calculatorView.style.display !== 'none') calculate();
-        if (bttsView.style.display !== 'none') debouncedCalculateBtts();
+        if (bttsView.style.display !== 'none') runBttsCalc();
         saveState();
     });
 
@@ -790,5 +796,5 @@ document.addEventListener('DOMContentLoaded', () => {
     applyBttsMarketUI();
 
     debouncedCalculate();
-    debouncedCalculateBtts();
+    runBttsCalc();
 });
