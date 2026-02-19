@@ -1,0 +1,935 @@
+:root {
+    --bg-color: #121212;
+    --card-bg: #1e1e1e;
+    --input-bg: #2d2d2d;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --accent-color: #10b981;
+    /* Emerald Green */
+    --accent-hover: #059669;
+    --border-radius: 16px;
+    --font-family: 'Inter', sans-serif;
+
+    /* Status Colors */
+    --color-success: #10b981;
+    /* Green */
+    --color-danger: #ef4444;
+    /* Red */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 520px;
+    padding: 20px;
+    position: relative;
+}
+
+/* Global Header - Subtle background tone */
+.global-header {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 24px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 12px 24px;
+    border-radius: 100px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    transition: all 0.3s ease;
+}
+
+.global-header:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.global-header .setting-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.global-header label {
+    font-size: 9px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 1px;
+    opacity: 0.6;
+}
+
+.global-header input,
+.global-header select {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 4px 0;
+    font-size: 14px;
+    font-weight: 400;
+    width: auto;
+    min-width: 60px;
+    text-align: left;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.global-header input {
+    width: 80px;
+}
+
+.global-header input:focus,
+.global-header select:focus,
+.global-header input:hover,
+.global-header select:hover {
+    color: var(--accent-color);
+    outline: none;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+h1 {
+    font-weight: 700;
+    font-size: 24px;
+    margin-bottom: 8px;
+    background: linear-gradient(to right, #ffffff, #a0a0a0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    margin-bottom: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Input Styles */
+.input-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    /* Reduced gap */
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Compact Input Groups for Stacked Layout */
+.input-group.compact {
+    margin-bottom: 0;
+}
+
+.input-group.compact label {
+    font-size: 11px;
+    margin-bottom: 4px;
+}
+
+.input-group.compact .input-wrapper {
+    height: 36px;
+}
+
+.input-group.compact input {
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
+.input-group.compact .unit {
+    font-size: 11px;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper input {
+    width: 100%;
+    background-color: var(--input-bg);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 12px;
+    /* Reduced padding */
+    padding-right: 36px;
+    color: var(--text-primary);
+    font-size: 16px;
+    /* Reduced font size */
+    font-family: var(--font-family);
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.input-wrapper input:focus {
+    border-color: var(--accent-color);
+    background-color: #252525;
+}
+
+.input-wrapper .unit {
+    position: absolute;
+    right: 12px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: -0.5px;
+}
+
+/* Results Grid */
+.results-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.result-card {
+    text-align: center;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    /* Reduced padding on result cards */
+}
+
+.result-card h2 {
+    font-size: 9px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 100%;
+}
+
+.value-display {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent-color);
+    transition: color 0.3s ease;
+}
+
+.value-display.small {
+    font-size: 16px;
+}
+
+.value-display .unit {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-left: 1px;
+}
+
+.full-width {
+    width: 100%;
+}
+
+/* Probability Row */
+.probability-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+}
+
+.prob-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    padding: 0 2px;
+}
+
+.team-inputs-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 0.8fr 0.8fr;
+    gap: 10px;
+    flex: 1;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.team-prob-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    padding-left: 6px;
+}
+
+.team-prob-col label {
+    font-size: 8px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 14px;
+    margin-bottom: 4px;
+}
+
+.team-prob-box {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 8px;
+    padding: 6px 4px;
+    /* More compact padding */
+    width: 60px;
+    /* Tighter width */
+    text-align: center;
+    font-size: 13px;
+    /* Slightly smaller value */
+    font-weight: 700;
+    color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tall-box {
+    height: 60px;
+    /* (28px input + 10px label) * 2 + 4px gap - 10px current label = 60px approx */
+}
+
+.team-prob-box .unit {
+    font-size: 10px;
+    margin-left: 1px;
+    opacity: 0.8;
+}
+
+/* xG Specific Styling */
+.xg-box {
+    background: rgba(59, 130, 246, 0.1) !important;
+    /* Blue tint for xG */
+    border: 1px solid rgba(59, 130, 246, 0.2) !important;
+    color: #60a5fa !important;
+}
+
+.xg-col {
+    border-left: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Comparison Container - 4 Columns */
+.comparison-container {
+    display: flex;
+    justify-content: space-around;
+    /* Distribute space */
+    align-items: center;
+    width: 100%;
+}
+
+.comp-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.divider-vertical {
+    width: 1px;
+    min-height: 50px;
+    align-self: stretch;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.prob-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+    justify-content: center;
+}
+
+.badge-warning {
+    background-color: #ef4444;
+    color: white;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    margin-left: 6px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+/* House Input specific styles */
+.house-input-wrapper input {
+    width: 100%;
+    min-width: 60px;
+    background-color: #252525;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    /* Smaller radius */
+    padding: 6px;
+    /* Smaller padding */
+    color: var(--text-primary);
+    font-size: 18px;
+    /* Smaller font */
+    font-weight: 700;
+    text-align: center;
+    font-family: var(--font-family);
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.house-input-wrapper input:focus {
+    border-color: var(--accent-color);
+    background-color: #2d2d2d;
+}
+
+/* Color Status Classes */
+.text-green {
+    color: var(--color-success) !important;
+}
+
+.text-red {
+    color: var(--color-danger) !important;
+}
+
+/* Chrome, Safari, Edge, Opera - Hide arrows from number input */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* Advanced Settings */
+.advanced-settings {
+    display: flex;
+    gap: 16px;
+}
+
+.setting-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.setting-item label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Manual Summary Styles */
+.stats-summary-card {
+    margin-bottom: 24px;
+}
+
+.manual-summary {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.manual-summary .summary-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.manual-summary .label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.manual-summary .value {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* Match Rows Styles */
+.match-rows-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+/* Custom Scrollbar for Match Rows */
+.match-rows-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.match-rows-container::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.match-rows-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.match-row {
+    background-color: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    padding: 10px 16px;
+    display: grid;
+    grid-template-columns: 40px 1fr 1fr;
+    align-items: center;
+    gap: 12px;
+}
+
+.match-row .match-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.match-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.match-inputs label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.match-inputs input {
+    background-color: var(--input-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: var(--text-primary);
+    width: 100%;
+    padding: 6px 8px;
+    font-size: 14px;
+}
+
+.match-inputs input:focus {
+    border-color: var(--accent-color);
+    outline: none;
+}
+
+.match-inputs .mini-input {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.match-inputs.stacked {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.match-inputs .mini-input label {
+    font-size: 8px;
+    /* Reduced label size */
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.match-inputs .mini-input input,
+.match-inputs .mini-input input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 6px;
+    /* Consistent padding */
+    color: var(--text-primary);
+    font-size: 13px;
+    /* Consistent size */
+    font-weight: 600;
+    text-align: center;
+    height: 28px;
+    /* Fixed height for consistent stacking */
+}
+
+.match-inputs .mini-input .input-wrapper input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 4px 6px;
+    /* Return to compact padding */
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    height: 28px;
+    box-shadow: none;
+}
+
+/* Specific override for input-wrapper inside mini-input */
+.match-inputs .mini-input .input-wrapper {
+    width: 100%;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    background: transparent;
+}
+
+.match-inputs .mini-input .input-wrapper input {
+    padding-right: 18px;
+    /* Space for % */
+}
+
+.match-inputs .mini-input .input-wrapper .unit {
+    position: absolute;
+    right: 4px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    pointer-events: none;
+    letter-spacing: -0.5px;
+}
+
+/* Manual Entry Button */
+.manual-btn {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 10px 12px;
+    height: 42px;
+    /* Matches input height */
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.manual-btn:hover {
+    background-color: rgba(52, 211, 153, 0.1);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+}
+
+/* Clear Button Styles */
+.clear-btn {
+    background-color: rgba(239, 68, 68, 0.05);
+    /* Soft Red */
+    border: 1px solid rgba(239, 68, 68, 0.1);
+    border-radius: var(--border-radius);
+    color: #fca5a5;
+    /* Light Red */
+    cursor: pointer;
+    font-size: 13px;
+    padding: 8px 12px;
+    transition: all 0.2s ease;
+}
+
+.clear-btn:hover {
+    background-color: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.clear-btn.confirming {
+    background-color: #7f1d1d;
+    /* Dark Red */
+    border-color: #ef4444;
+    color: #ffffff;
+    font-weight: 700;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+}
+
+.setting-item input {
+    background-color: var(--input-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-size: 16px;
+    padding: 10px;
+    outline: none;
+    text-align: center;
+    width: 100%;
+}
+
+.setting-item input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.1);
+}
+
+.setting-item select {
+    background-color: var(--input-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    font-size: 16px;
+    padding: 10px;
+    outline: none;
+    width: 100%;
+    /* Remove default appearance */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    /* Custom Arrow */
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23a0a0a0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 32px;
+    cursor: pointer;
+}
+
+.setting-item select:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.1);
+}
+
+/* Main Menu Grid */
+.menu-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#kelly-card {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(145deg, #1e1e1e, #1a1a1a);
+    margin-top: 4px;
+}
+
+#kelly-card .value-display {
+    color: #4ade80;
+    /* Explicitly Green or maybe Gold #fbbf24 */
+}
+
+
+.menu-card {
+    background-color: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    /* Reset default button styles */
+    appearance: none;
+    -webkit-appearance: none;
+    color: inherit;
+    font-family: inherit;
+    width: 100%;
+}
+
+.menu-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    border-color: var(--accent-color);
+}
+
+.menu-card .icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+}
+
+.menu-card h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.menu-card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Back Button */
+.back-button {
+    background: none;
+    border: none;
+    color: var(--accent-color);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 0;
+    margin-bottom: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.2s ease;
+}
+
+.back-button:hover {
+    color: var(--accent-hover);
+}
+
+/* Info Icon Button Reset & Styling */
+.info-icon {
+    background: rgba(113, 113, 122, 0.1) !important;
+    border: none !important;
+    color: #71717a !important;
+    cursor: pointer !important;
+    font-size: 9px !important;
+    padding: 2px 5px !important;
+    border-radius: 4px !important;
+    margin-left: 5px !important;
+    transition: all 0.2s !important;
+    pointer-events: auto !important;
+    z-index: 100 !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 14px !important;
+    width: 14px !important;
+    flex-shrink: 0;
+}
+
+.info-icon:hover {
+    color: var(--accent-color) !important;
+    background: rgba(167, 139, 250, 0.1) !important;
+}
+
+/* Sophisticated Modal Styling */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: rgba(18, 18, 18, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 28px;
+    width: 90%;
+    max-width: 300px;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    animation: modalPop 0.2s ease-out;
+}
+
+@keyframes modalPop {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #71717a;
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: white;
+}
+
+.modal-body h3 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--accent-color);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 12px;
+    margin-top: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.modal-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    font-size: 13px;
+    align-items: center;
+}
+
+.modal-item .label {
+    color: #a1a1aa;
+    font-weight: 500;
+}
+
+.modal-item .value {
+    color: white;
+    font-family: inherit;
+    font-weight: 600;
+}
