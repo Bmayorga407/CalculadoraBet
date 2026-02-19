@@ -331,6 +331,13 @@
                 <!-- Probabilities Display -->
                 <div class="card result-card full-width">
                     <div class="probability-row">
+                        <div class="btts-mode-toggle" role="tablist" aria-label="Mercado">
+                            <button id="btn-btts-mode" class="toggle-btn active" type="button" role="tab" aria-selected="true">BTTS</button>
+                            <button id="btn-ou-mode" class="toggle-btn" type="button" role="tab" aria-selected="false">Over/Under</button>
+                        </div>
+
+                        <div id="btts-panel-btts" class="btts-panel">
+
                         <div class="prob-stack">
                             <div class="prob-item" id="btts-model-container">
                                 <div class="label-line"><h2>BTTS Modelo</h2><span id="btts-sample-warning" class="badge-warning" style="display:none;">Muestra baja</span></div>
@@ -361,13 +368,44 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                        </div>
+
+                        <div id="btts-panel-ou" class="btts-panel" style="display:none;">
+                            <div class="ou-controls">
+                                <div class="mini-input">
+                                    <label>Línea O/U</label>
+                                    <select id="ou-line" aria-label="Línea Over Under">
+                                        <option value="0.5">0.5</option><option value="1.0">1.0</option><option value="1.5">1.5</option><option value="2.0">2.0</option><option value="2.5" selected>2.5</option><option value="3.0">3.0</option><option value="3.5">3.5</option><option value="4.0">4.0</option><option value="4.5">4.5</option><option value="5.0">5.0</option><option value="5.5">5.5</option><option value="6.0">6.0</option>
+                                    </select>
+                                </div>
+                                <div class="ou-hint" id="ou-pick-hint">Pick sugerido: <span id="ou-pick-label">Over 2.5</span></div>
+                            </div>
+
+                            <div class="prob-stack">
+                                <div class="prob-item" id="ou-over-container">
+                                    <h2 id="ou-over-title">Over</h2>
+                                    <div class="value-display">
+                                        <span id="ou-over-prob" class="text-green">0</span><span class="unit">%</span>
+                                    </div>
+                                    <div class="subline">Cuota justa: <span id="ou-over-fair">-.--</span></div>
+                                </div>
+
+                                <div class="prob-item" id="ou-under-container">
+                                    <h2 id="ou-under-title">Under</h2>
+                                    <div class="value-display">
+                                        <span id="ou-under-prob" class="text-green">0</span><span class="unit">%</span>
+                                    </div>
+                                    <div class="subline">Cuota justa: <span id="ou-under-fair">-.--</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 <!-- Comparison & Odds -->
                 <div class="card result-card full-width">
                     <div class="comparison-container">
                         <div class="comp-item">
-                            <h2>Cuota Casa</h2>
+                            <h2>Cuota Casa <span id="btts-market-label" class="badge-market">BTTS</span></h2>
                             <div class="house-input-wrapper">
                                 <input type="number" id="btts-house-odd" placeholder="-" step="0.01">
                             </div>

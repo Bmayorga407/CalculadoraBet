@@ -61,6 +61,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const bttsKellyStake = document.getElementById('btts-kelly-stake');
     const bttsKellyCard = document.getElementById('btts-kelly-card');
 
+    // BTTS / O-U Toggle Elements
+    const btnBttsMode = document.getElementById('btn-btts-mode');
+    const btnOuMode = document.getElementById('btn-ou-mode');
+    const bttsPanel = document.getElementById('btts-panel-btts');
+    const ouPanel = document.getElementById('btts-panel-ou');
+    const ouLineSelect = document.getElementById('ou-line');
+    const ouOverProbEl = document.getElementById('ou-over-prob');
+    const ouUnderProbEl = document.getElementById('ou-under-prob');
+    const ouOverFairEl = document.getElementById('ou-over-fair');
+    const ouUnderFairEl = document.getElementById('ou-under-fair');
+    const ouOverTitle = document.getElementById('ou-over-title');
+    const ouUnderTitle = document.getElementById('ou-under-title');
+    const ouPickHint = document.getElementById('ou-pick-hint');
+    const ouPickLabel = document.getElementById('ou-pick-label');
+    const ouOverContainer = document.getElementById('ou-over-container');
+    const ouUnderContainer = document.getElementById('ou-under-container');
+    const bttsMarketLabel = document.getElementById('btts-market-label');
+
+    let currentBttsMarket = "btts"; // "btts" | "ou"
+
     const bttsModelContainer = document.getElementById('btts-model-container');
     const bttsFinalDisplay = document.getElementById('btts-final-display');
     const bttsSampleWarning = document.getElementById('btts-sample-warning');
@@ -110,6 +130,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!Number.isFinite(n)) return "0.00";
         const sign = n > 0 ? "+" : "";
         return sign + n.toFixed(decimals);
+    };
+
+    const poissonCdf = (k, lambda) => {
+        // P(X <= k) for Poisson(lambda)
+        if (!Number.isFinite(lambda) || lambda < 0) return 0;
+        if (!Number.isFinite(k) || k < 0) return 0;
+        let sum = 0;
+        let term = Math.exp(-lambda); // i=0
+        sum += term;
+        for (let i = 1; i <= k; i++) {
+            term *= lambda / i;
+            sum += term;
+        }
+        return clamp(sum, 0, 1);
     };
 
 // --- BTTS Logic ---
@@ -223,26 +257,70 @@ document.addEventListener('DOMContentLoaded', () => {
         const btnInfoGoals = document.getElementById('info-goals-combined');
         if (btnInfoGoals) btnInfoGoals.onclick = () => showDetail(goalsData);
 
-        // Fair odd + EV/Edge + Kelly 1/4
-        const p = clamp(probabilityFinal / 100, 0, 1);
-        if (p > 0) {
-            const fairOdd = 1 / p;
-            if (bttsFairOdd) bttsFairOdd.textContent = fairOdd.toFixed(2);
 
+        // --- Over/Under probabilities from total goals ---
+        const ouLine = clamp(toNumber(ouLineSelect ? ouLineSelect.value : 2.5, 2.5), 0.5, 6.0);
+        const kLine = Math.floor(ouLine); // for x.5 lines: Under x.5 = P(Total <= x)
+        const underOU = poissonCdf(kLine, combinedAvg);
+        const overOU = clamp(1 - underOU, 0, 1);
+
+        const overPct = overOU * 100;
+        const underPct = underOU * 100;
+
+        if (ouOverTitle) ouOverTitle.textContent = `Over ${ouLine.toFixed(1)}`;
+        if (ouUnderTitle) ouUnderTitle.textContent = `Under ${ouLine.toFixed(1)}`;
+
+        if (ouOverProbEl) ouOverProbEl.textContent = overPct.toFixed(1);
+        if (ouUnderProbEl) ouUnderProbEl.textContent = underPct.toFixed(1);
+
+        if (ouOverFairEl) ouOverFairEl.textContent = overOU > 0 ? (1 / overOU).toFixed(2) : "-.--";
+        if (ouUnderFairEl) ouUnderFairEl.textContent = underOU > 0 ? (1 / underOU).toFixed(2) : "-.--";
+
+        // Highlight the higher-probability side in O/U
+        const ouPick = (overPct >= underPct) ? "over" : "under";
+        if (ouOverContainer) ouOverContainer.classList.toggle("winner-card", ouPick === "over");
+        if (ouUnderContainer) ouUnderContainer.classList.toggle("winner-card", ouPick === "under");
+
+        if (ouPickLabel) ouPickLabel.textContent = ouPick === "over" ? `Over ${ouLine.toFixed(1)}` : `Under ${ouLine.toFixed(1)}`;
+
+        // --- BTTS fair odd (always shown in BTTS panel) ---
+        const pBtts = clamp(probabilityFinal / 100, 0, 1);
+        const fairOddBtts = pBtts > 0 ? (1 / pBtts) : 0;
+        if (bttsFairOdd) bttsFairOdd.textContent = pBtts > 0 ? fairOddBtts.toFixed(2) : "-.--";
+
+        // --- Choose active market for EV/Edge/Kelly ---
+        const pSelected = (currentBttsMarket === "ou")
+            ? (ouPick === "over" ? overOU : underOU)
+            : pBtts;
+
+        const fairOddSelected = pSelected > 0 ? (1 / pSelected) : 0;
+
+        // Market label (for the house odd card)
+        if (bttsMarketLabel) {
+            if (currentBttsMarket === "ou") bttsMarketLabel.textContent = `O/U ${ouLine.toFixed(1)} (${ouPick === "over" ? "Over" : "Under"})`;
+            else bttsMarketLabel.textContent = "BTTS Sí";
+        }
+
+        // Highlight which MODE has higher probability (BTTS vs O/U pick)
+        const ouPickPct = (ouPick === "over" ? overPct : underPct);
+        const bttsPct = pBtts * 100;
+        const modeWinner = (ouPickPct > bttsPct) ? "ou" : "btts";
+        if (btnBttsMode) btnBttsMode.classList.toggle("winner", modeWinner === "btts");
+        if (btnOuMode) btnOuMode.classList.toggle("winner", modeWinner === "ou");
+
+        // --- EV/Edge + Kelly 1/4 for the ACTIVE market ---
+        if (fairOddSelected > 0 && bttsEdgeValue && bttsEvValue) {
             if (houseOdd > 1) {
-                const evPct = ((p * houseOdd) - 1) * 100;
-                const edgePct = ((houseOdd / fairOdd) - 1) * 100;
+                const evPct = ((pSelected * houseOdd) - 1) * 100;
+                const edgePct = ((houseOdd / fairOddSelected) - 1) * 100;
 
-                if (bttsEdgeValue) {
-                    bttsEdgeValue.textContent = formatSigned(edgePct, 2) + "%";
-                    bttsEdgeValue.style.color = edgePct > 0 ? "var(--accent-color)" : "#ef4444";
-                }
-                if (bttsEvValue) {
-                    bttsEvValue.textContent = formatSigned(evPct, 2) + "%";
-                    bttsEvValue.style.color = evPct > 0 ? "var(--accent-color)" : "#ef4444";
-                }
+                bttsEdgeValue.textContent = formatSigned(edgePct, 2) + "%";
+                bttsEdgeValue.style.color = edgePct > 0 ? "var(--accent-color)" : "#ef4444";
 
-                const f = kellyFraction(p, houseOdd, 0.25);
+                bttsEvValue.textContent = formatSigned(evPct, 2) + "%";
+                bttsEvValue.style.color = evPct > 0 ? "var(--accent-color)" : "#ef4444";
+
+                const f = kellyFraction(pSelected, houseOdd, 0.25);
                 const stakeMoney = Math.floor(bankroll * f);
                 const stakePct = f * 100;
 
@@ -257,17 +335,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             } else {
-                if (bttsEdgeValue) bttsEdgeValue.textContent = "0.00%";
-                if (bttsEvValue) bttsEvValue.textContent = "0.00%";
+                bttsEdgeValue.textContent = "0.00%";
+                bttsEvValue.textContent = "0.00%";
                 if (bttsKellyCard) bttsKellyCard.style.display = 'none';
             }
         } else {
-            if (bttsFairOdd) bttsFairOdd.textContent = "-.--";
             if (bttsEdgeValue) bttsEdgeValue.textContent = "0.00%";
             if (bttsEvValue) bttsEvValue.textContent = "0.00%";
             if (bttsKellyCard) bttsKellyCard.style.display = 'none';
         }
+
+        // Save relevant state (market + line)
+        saveState();
     };
+
 
     // --- Probability Calculator Logic ---
     const calculate = () => {
@@ -465,6 +546,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     : (bttsView && bttsView.style.display !== 'none') ? "btts"
                     : "menu",
                 bttsMode: bttsMode ? bttsMode.value : "hybrid",
+                bttsMarket: currentBttsMarket,
+                ouLine: ouLineSelect ? ouLineSelect.value : "2.5",
                 manualData
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -481,6 +564,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (bankrollInput && state.bankroll) bankrollInput.value = state.bankroll;
 
             if (bttsMode && state.bttsMode) bttsMode.value = state.bttsMode;
+            if (state.bttsMarket) currentBttsMarket = state.bttsMarket;
+            if (ouLineSelect && state.ouLine) ouLineSelect.value = state.ouLine;
 
             // Restore manual data safely
             if (state.manualData && state.manualData.Local && state.manualData.Visitor) {
@@ -513,6 +598,24 @@ document.addEventListener('DOMContentLoaded', () => {
                         avgS: played ? (totalScored / played) : 0,
                         avgC: played ? (totalConceded / played) : 0
                     };
+
+    const applyBttsMarketUI = () => {
+        const isBtts = currentBttsMarket === "btts";
+        if (bttsPanel) bttsPanel.style.display = isBtts ? "block" : "none";
+        if (ouPanel) ouPanel.style.display = isBtts ? "none" : "block";
+
+        if (btnBttsMode) {
+            btnBttsMode.classList.toggle("active", isBtts);
+            btnBttsMode.setAttribute("aria-selected", isBtts ? "true" : "false");
+        }
+        if (btnOuMode) {
+            btnOuMode.classList.toggle("active", !isBtts);
+            btnOuMode.setAttribute("aria-selected", !isBtts ? "true" : "false");
+        }
+        if (bttsMarketLabel) bttsMarketLabel.textContent = isBtts ? "BTTS" : "O/U";
+    };
+
+
                 };
 
                 const local = calcStats(manualData.Local);
@@ -569,6 +672,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnBackManual) btnBackManual.addEventListener('click', () => showView(bttsView));
     if (btnManualLocal) btnManualLocal.addEventListener('click', () => showManualEntry('Equipo Local'));
     if (btnManualVisitor) btnManualVisitor.addEventListener('click', () => showManualEntry('Equipo Visitante'));
+
+    // BTTS / O-U mode toggles
+    if (btnBttsMode) {
+        btnBttsMode.addEventListener('click', () => {
+            currentBttsMarket = "btts";
+            applyBttsMarketUI();
+            saveState();
+            debouncedCalculateBtts();
+        });
+    }
+    if (btnOuMode) {
+        btnOuMode.addEventListener('click', () => {
+            currentBttsMarket = "ou";
+            applyBttsMarketUI();
+            saveState();
+            debouncedCalculateBtts();
+        });
+    }
+    if (ouLineSelect) {
+        ouLineSelect.addEventListener('change', () => {
+            saveState();
+            debouncedCalculateBtts();
+        });
+    }
+
 
     // Clear Manual Rows with Confirmation
     if (btnClearManual) {
@@ -657,6 +785,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial State
     loadState();
+    applyBttsMarketUI();
+
     debouncedCalculate();
     debouncedCalculateBtts();
 });
