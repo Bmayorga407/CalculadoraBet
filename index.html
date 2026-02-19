@@ -121,7 +121,7 @@
                         </div>
                         <div class="divider-vertical"></div>
                         <div class="comp-item">
-                            <h2>Cuota Justa</h2>
+                            <h2><span id="market-fair-label">Cuota Justa</span></h2>
                             <div class="value-display">
                                 <span id="single-odd">-.--</span>
                             </div>
@@ -159,6 +159,10 @@
                 <button id="btn-back-btts" class="back-button">← Atrás</button>
                 <h1>Calculadora de BTTS y Over / Under</h1>
                 <p class="subtitle">Ambos Equipos Anotan (Sí/No) y Total de Goles</p>
+                <div class="segmented" id="market-toggle" role="tablist" aria-label="Modo de cálculo">
+                    <button class="segmented-btn active" id="market-btts" type="button" role="tab" aria-selected="true">BTTS</button>
+                    <button class="segmented-btn" id="market-over25" type="button" role="tab" aria-selected="false">Over 2.5</button>
+                </div>
             </header>
 
             <!-- Stats Input Section -->
@@ -312,169 +316,83 @@
             <!-- Advanced & Settings Section -->
             <section class="results-grid">
                 <div class="card result-card full-width">
-                    <div class="advanced-settings" style="align-items: flex-end;">
+                    <div class="advanced-settings">
                         <div class="setting-item">
                             <label>Muestra (Partidos)</label>
                             <input type="number" id="btts-sample" placeholder="10" value="10">
                         </div>
-                        <div class="setting-item" style="flex: none;">
-                            <label style="text-align:center;">Mercado</label>
-                            <div class="market-toggle-group">
-                                <button type="button" id="btn-market-btts" class="market-toggle active">BTTS</button>
-                                <button type="button" id="btn-market-ou" class="market-toggle">Over/Under</button>
+                    </div>
+                </div>
+
+                <!-- Probabilities Display -->
+                <div class="card result-card full-width">
+                    <div class="probability-row">
+                        <div class="prob-stack">
+                            <div class="prob-item" id="btts-model-container">
+                                <h2><span id="market-model-label">BTTS Modelo</span> <span id="btts-sample-warning" class="badge-warning" style="display: none;">Muestra baja</span></h2>
+                                        style="display: none;">Muestra baja</span></h2>
+                                <div class="value-display" id="btts-model-display">
+                                    <span id="btts-model-prob" class="text-green">0</span><span class="unit">%</span>
+                                </div>
+                            </div>
+                            <div class="prob-item" id="btts-final-container">
+                                <h2><span id="market-final-label">BTTS Final</span></h2>
+                                <div class="value-display" id="btts-final-display">
+                                    <span id="btts-avg-prob" class="text-green">0</span><span class="unit">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="divider-vertical"></div>
+                        <div class="prob-item">
+                            <h2><span id="market-goals-label">Prom. Goles</span> <button type="button" class="info-icon" id="info-goals-combined">ⓘ</button></h2>
+                            </h2>
+                            <div class="value-display">
+                                <span id="btts-combined-avg">0.00</span>
+                            </div>
+                        </div>
+                        <div class="divider-vertical"></div>
+                        <div class="prob-item">
+                            <h2>Cuota Justa</h2>
+                            <div class="value-display">
+                                <span id="btts-fair-odd">-.--</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- ===== BTTS RESULTS PANEL ===== -->
-                <div id="btts-results-panel">
-                    <div class="card result-card full-width">
-                        <div class="probability-row">
-                            <div class="prob-stack">
-                                <div class="prob-item" id="btts-model-container">
-                                    <h2>BTTS Modelo <span id="btts-sample-warning" class="badge-warning"
-                                            style="display: none;">Muestra baja</span></h2>
-                                    <div class="value-display" id="btts-model-display">
-                                        <span id="btts-model-prob" class="text-green">0</span><span
-                                            class="unit">%</span>
-                                    </div>
-                                </div>
-                                <div class="prob-item" id="btts-final-container">
-                                    <h2>BTTS Final</h2>
-                                    <div class="value-display" id="btts-final-display">
-                                        <span id="btts-avg-prob" class="text-green">0</span><span class="unit">%</span>
-                                    </div>
-                                </div>
+                <!-- Comparison & Odds -->
+                <div class="card result-card full-width">
+                    <div class="comparison-container">
+                        <div class="comp-item">
+                            <h2>Cuota Casa</h2>
+                            <div class="house-input-wrapper">
+                                <input type="number" id="btts-house-odd" placeholder="-" step="0.01">
                             </div>
-                            <div class="divider-vertical"></div>
-                            <div class="prob-item">
-                                <h2>Prom. Goles <button type="button" class="info-icon"
-                                        id="info-goals-combined">ⓘ</button>
-                                </h2>
-                                <div class="value-display">
-                                    <span id="btts-combined-avg">0.00</span>
-                                </div>
+                        </div>
+                        <div class="divider-vertical"></div>
+                        <div class="comp-item">
+                            <h2>Edge</h2>
+                            <div class="value-display">
+                                <span id="btts-edge-value">0.00</span><span class="unit">%</span>
                             </div>
-                            <div class="divider-vertical"></div>
-                            <div class="prob-item">
-                                <h2>Cuota Justa</h2>
-                                <div class="value-display">
-                                    <span id="btts-fair-odd">-.--</span>
-                                </div>
+                        </div>
+                        <div class="divider-vertical"></div>
+                        <div class="comp-item">
+                            <h2>EV</h2>
+                            <div class="value-display">
+                                <span id="btts-ev-value">0.00</span><span class="unit">%</span>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Comparison & Odds -->
-                    <div class="card result-card full-width">
-                        <div class="comparison-container">
-                            <div class="comp-item">
-                                <h2>Cuota Casa</h2>
-                                <div class="house-input-wrapper">
-                                    <input type="number" id="btts-house-odd" placeholder="-" step="0.01">
-                                </div>
-                            </div>
-                            <div class="divider-vertical"></div>
-                            <div class="comp-item">
-                                <h2>Edge</h2>
-                                <div class="value-display">
-                                    <span id="btts-edge-value">0.00</span><span class="unit">%</span>
-                                </div>
-                            </div>
-                            <div class="divider-vertical"></div>
-                            <div class="comp-item">
-                                <h2>EV</h2>
-                                <div class="value-display">
-                                    <span id="btts-ev-value">0.00</span><span class="unit">%</span>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Stake Recommendation -->
+                <div class="card result-card full-width" id="btts-kelly-card" style="display: none;">
+                    <h2 id="btts-stake-label">Stake Recomendado</h2>
+                    <div class="value-display">
+                        <span id="btts-kelly-stake">0.00</span>
                     </div>
-
-                    <!-- Stake Recommendation (BTTS) -->
-                    <div class="card result-card full-width" id="btts-kelly-card" style="display: none;">
-                        <h2 id="btts-stake-label">Stake Recomendado</h2>
-                        <div class="value-display">
-                            <span id="btts-kelly-stake">0.00</span>
-                        </div>
-                    </div>
-
-                </div> <!-- /#btts-results-panel -->
-
-                <!-- ===== OVER/UNDER 2.5 RESULTS PANEL ===== -->
-                <div id="ou-results-panel" style="display:none;">
-
-                    <!-- O/U Probabilities -->
-                    <div class="card result-card full-width">
-                        <div class="probability-row">
-                            <div class="prob-item">
-                                <h2>Over 2.5 <span id="ou-sample-warning" class="badge-warning"
-                                        style="display:none;">Muestra baja</span></h2>
-                                <div class="value-display">
-                                    <span id="ou-over-prob" class="text-green">0</span><span class="unit">%</span>
-                                </div>
-                            </div>
-                            <div class="divider-vertical"></div>
-                            <div class="prob-item">
-                                <h2>Under 2.5</h2>
-                                <div class="value-display">
-                                    <span id="ou-under-prob" class="text-red">0</span><span class="unit">%</span>
-                                </div>
-                            </div>
-                            <div class="divider-vertical"></div>
-                            <div class="prob-item">
-                                <h2>C. Justa Over</h2>
-                                <div class="value-display">
-                                    <span id="ou-fair-over">-.--</span>
-                                </div>
-                            </div>
-                            <div class="divider-vertical"></div>
-                            <div class="prob-item">
-                                <h2>C. Justa Under</h2>
-                                <div class="value-display">
-                                    <span id="ou-fair-under">-.--</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- O/U Edge / EV -->
-                    <div class="card result-card full-width">
-                        <div class="comparison-container">
-                            <div class="comp-item">
-                                <h2>Cuota Casa Over</h2>
-                                <div class="house-input-wrapper">
-                                    <input type="number" id="ou-house-odd-over" placeholder="-" step="0.01">
-                                </div>
-                            </div>
-                            <div class="divider-vertical"></div>
-                            <div class="comp-item">
-                                <h2>Edge Over</h2>
-                                <div class="value-display">
-                                    <span id="ou-edge-over">0.00</span><span class="unit">%</span>
-                                </div>
-                            </div>
-                            <div class="divider-vertical"></div>
-                            <div class="comp-item">
-                                <h2>EV Over</h2>
-                                <div class="value-display">
-                                    <span id="ou-ev-over">0.00</span><span class="unit">%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- O/U Stake -->
-                    <div class="card result-card full-width" id="ou-kelly-card" style="display:none;">
-                        <h2>Stake Recomendado (Over)</h2>
-                        <div class="value-display">
-                            <span id="ou-kelly-stake">0.00</span>
-                        </div>
-                    </div>
-
-                </div> <!-- /#ou-results-panel -->
-
+                </div>
             </section>
         </main>
 
