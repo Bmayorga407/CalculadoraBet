@@ -1026,18 +1026,21 @@ select:focus-visible {
 
 .ou-controls select {
     width: 100px;
-    height: 36px;
+    height: 32px;
+    /* Slimmer height */
     background-color: var(--input-bg);
-    border: 2px solid transparent;
-    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
     color: var(--text-primary);
-    padding: 0 28px 0 10px;
-    font-size: 14px;
+    padding: 0 24px 0 8px;
+    /* Compact padding */
+    font-size: 13px;
+    /* Smaller font */
     font-weight: 600;
     transition: all 0.2s ease;
     appearance: none;
     cursor: pointer;
-    background-image: url('data:image/svg+xml;utf8,<svg fill="%23a0a0a0" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23a0a0a0" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
     background-repeat: no-repeat;
     background-position: right 4px center;
 }
@@ -1071,20 +1074,20 @@ select:focus-visible {
     border-radius: 12px;
 }
 
-.btts-panel {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
+#btts-panel-btts {
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: 16px;
+    width: 100%;
+    gap: 8px;
 }
 
 .stat-col {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    flex: 1;
     align-items: center;
+    justify-content: center;
 }
 
 /* Focus visibility */
