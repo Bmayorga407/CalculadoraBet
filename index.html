@@ -338,36 +338,43 @@
                     </div>
 
                     <div class="probability-row">
-                        <div id="btts-panel-btts" class="btts-grid">
-                            <div class="prob-item" id="btts-model-container">
-                                <div class="label-line">
-                                    <h2>BTTS Modelo</h2><span id="btts-sample-warning" class="badge-warning"
-                                        style="display:none;">Muestra baja</span>
+                        <div id="btts-panel-btts" class="btts-panel">
+                            <div class="stat-col">
+                                <div class="prob-item" id="btts-model-container">
+                                    <div class="label-line">
+                                        <h2>BTTS Modelo</h2><span id="btts-sample-warning" class="badge-warning"
+                                            style="display:none;">Muestra baja</span>
+                                    </div>
+                                    <div class="value-display" id="btts-model-display">
+                                        <span id="btts-model-prob" class="text-green">0</span><span
+                                            class="unit">%</span>
+                                    </div>
                                 </div>
-                                <div class="value-display" id="btts-model-display">
-                                    <span id="btts-model-prob" class="text-green">0</span><span class="unit">%</span>
+
+                                <div class="prob-item" id="btts-final-container">
+                                    <h2>BTTS Final</h2>
+                                    <div class="value-display" id="btts-final-display">
+                                        <span id="btts-avg-prob" class="text-green">0</span><span class="unit">%</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="prob-item" id="btts-final-container">
-                                <h2>BTTS Final</h2>
-                                <div class="value-display" id="btts-final-display">
-                                    <span id="btts-avg-prob" class="text-green">0</span><span class="unit">%</span>
-                                </div>
-                            </div>
+                            <div class="divider-vertical"></div>
 
-                            <div class="prob-item">
-                                <h2>Prom. Goles <button type="button" class="info-icon"
-                                        id="info-goals-combined">ⓘ</button></h2>
-                                <div class="value-display">
-                                    <span id="btts-combined-avg">0.00</span>
+                            <div class="stat-col">
+                                <div class="prob-item">
+                                    <h2>Prom. Goles <button type="button" class="info-icon"
+                                            id="info-goals-combined">ⓘ</button></h2>
+                                    <div class="value-display">
+                                        <span id="btts-combined-avg">0.00</span>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="prob-item">
-                                <h2>Cuota Justa</h2>
-                                <div class="value-display">
-                                    <span id="btts-fair-odd">-.--</span>
+                                <div class="prob-item">
+                                    <h2>Cuota Justa</h2>
+                                    <div class="value-display">
+                                        <span id="btts-fair-odd">-.--</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

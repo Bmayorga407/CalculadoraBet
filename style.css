@@ -1026,20 +1026,20 @@ select:focus-visible {
 
 .ou-controls select {
     width: 100px;
-    height: 48px;
+    height: 36px;
     background-color: var(--input-bg);
     border: 2px solid transparent;
-    border-radius: 12px;
+    border-radius: 10px;
     color: var(--text-primary);
-    padding: 0 32px 0 12px;
-    font-size: 16px;
+    padding: 0 28px 0 10px;
+    font-size: 14px;
     font-weight: 600;
     transition: all 0.2s ease;
     appearance: none;
     cursor: pointer;
-    background-image: url('data:image/svg+xml;utf8,<svg fill="%23a0a0a0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23a0a0a0" height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
     background-repeat: no-repeat;
-    background-position: right 8px center;
+    background-position: right 4px center;
 }
 
 .ou-controls select:focus {
@@ -1071,17 +1071,19 @@ select:focus-visible {
     border-radius: 12px;
 }
 
-.btts-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    width: 100%;
-}
-
 .btts-panel {
     display: flex;
     width: 100%;
-    justify-content: space-around;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.stat-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
     align-items: center;
 }
 
