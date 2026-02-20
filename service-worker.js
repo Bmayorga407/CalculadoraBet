@@ -1,8 +1,9 @@
-const CACHE_NAME = 'betcalc-v1';
+const CACHE_NAME = 'betcalc-v2';
 const ASSETS = [
     './',
     './index.html',
     './style.css',
+    './enhancements.css',
     './script.js',
     './manifest.json',
     './icon-512.png'

@@ -18,6 +18,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="enhancements.css">
 </head>
 
 <body>
@@ -26,19 +27,7 @@
         <main id="main-menu">
             <!-- Global Bankroll Settings (Now inside menu) -->
             <div class="global-header">
-                <div class="header-main-row">
-                    <h1>Calculadora Bet</h1>
-                    <div class="header-actions">
-                        <button id="btn-show-history" class="icon-btn" title="Historial">🕒</button>
-                        <div class="pro-toggle-wrapper">
-                            <span>Modo Pro</span>
-                            <label class="switch">
-                                <input type="checkbox" id="pro-mode-toggle">
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
+                <h1>Calculadora Bet</h1>
                 <div class="setting-item">
                     <label>Moneda</label>
                     <select id="global-currency">
@@ -77,7 +66,19 @@
         <!-- Probability Calculator View -->
         <main id="calculator-view" style="display: none;">
             <header>
-                <button id="btn-back" class="back-button" type="button">← Atrás</button>
+                <div class="calc-header-row">
+                    <button id="btn-back" class="back-button" type="button">← Atrás</button>
+                    <div class="header-actions">
+                        <button id="btn-show-history" class="icon-btn" title="Historial">🕒</button>
+                        <div class="pro-toggle-wrapper">
+                            <span>Pro</span>
+                            <label class="switch">
+                                <input type="checkbox" id="pro-mode-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
                 <h1>Calculadora de Probabilidades</h1>
                 <p class="subtitle">Calcula totales, promedios y cuotas justas al instante.</p>
             </header>
@@ -134,30 +135,32 @@
 
                 <!-- Comparison: House Odd vs Fair Odd vs Edge vs EV -->
                 <div class="card result-card full-width">
+                    <!-- Value Badge (full-width, above comparison) -->
+                    <div class="value-badge-container" id="prob-value-badge-container"
+                        style="display: none; margin-bottom: 16px;">
+                        <div id="prob-value-badge" class="value-badge"></div>
+                        <p id="prob-value-explanation" class="value-explanation"></p>
+                    </div>
+
+                    <!-- Pro Mode: Sensitivity Analysis (full-width) -->
+                    <div id="pro-sensitivity-prob" class="pro-section" style="display: none; margin-bottom: 16px;">
+                        <h3>Análisis de Sensibilidad</h3>
+                        <div class="sensitivity-grid">
+                            <div class="sensitivity-card">
+                                <span class="sens-label">-5% Prob</span>
+                                <span id="sens-prob-down" class="sens-value">--</span>
+                            </div>
+                            <div class="sensitivity-card">
+                                <span class="sens-label">+5% Prob</span>
+                                <span id="sens-prob-up" class="sens-value">--</span>
+                            </div>
+                        </div>
+                        <p id="sens-prob-reading" class="sens-reading"></p>
+                    </div>
+
+                    <!-- Comparison Grid -->
                     <div class="comparison-container">
                         <div class="comp-item">
-                            <div class="value-badge-container" id="prob-value-badge-container"
-                                style="display: none; margin-bottom: 12px;">
-                                <div id="prob-value-badge" class="value-badge"></div>
-                                <p id="prob-value-explanation" class="value-explanation"></p>
-                            </div>
-
-                            <div id="pro-sensitivity-prob" class="pro-section"
-                                style="display: none; margin-bottom: 16px;">
-                                <h3>Análisis de Sensibilidad</h3>
-                                <div class="sensitivity-grid">
-                                    <div class="sensitivity-card">
-                                        <span class="sens-label">-5% Prob</span>
-                                        <span id="sens-prob-down" class="sens-value">--</span>
-                                    </div>
-                                    <div class="sensitivity-card">
-                                        <span class="sens-label">+5% Prob</span>
-                                        <span id="sens-prob-up" class="sens-value">--</span>
-                                    </div>
-                                </div>
-                                <p id="sens-prob-reading" class="sens-reading"></p>
-                            </div>
-
                             <h2>Cuota de Casa</h2>
                             <div class="value-display">
                                 <span id="summary-house-odd">-.--</span>
