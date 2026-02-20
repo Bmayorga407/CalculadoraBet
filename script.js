@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const applyBttsMarketUI = () => {
         const isBtts = currentBttsMarket === "btts";
         if (bttsPanel) bttsPanel.style.display = isBtts ? "grid" : "none";
-        if (ouPanel) ouPanel.style.display = isBtts ? "none" : "flex";
+        if (ouPanel) ouPanel.style.display = isBtts ? "none" : "grid";
 
         if (btnBttsMode) {
             btnBttsMode.classList.toggle("active", isBtts);
