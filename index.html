@@ -25,40 +25,48 @@
     <div class="app-container">
         <!-- Main Menu View -->
         <main id="main-menu">
-            <!-- Global Bankroll Settings (Now inside menu) -->
+            <!-- Brand Bar -->
             <div class="global-header">
-                <h1>Calculadora Bet</h1>
-                <div class="setting-item">
-                    <label>Moneda</label>
-                    <select id="global-currency">
-                        <option value="CLP">CLP ($)</option>
-                        <option value="USD">USD ($)</option>
-                        <option value="EUR">EUR (€)</option>
-                        <option value="GBP">GBP (£)</option>
-                    </select>
-                </div>
-                <div class="setting-item">
-                    <label>Bankroll</label>
-                    <input type="number" id="global-bankroll" placeholder="1000" value="1000">
+                <div class="brand">Calculadora Bet</div>
+                <div class="header-controls">
+                    <div class="control-pill">
+                        <label>Moneda</label>
+                        <select id="global-currency">
+                            <option value="CLP">CLP ($)</option>
+                            <option value="USD">USD ($)</option>
+                            <option value="EUR">EUR (€)</option>
+                            <option value="GBP">GBP (£)</option>
+                        </select>
+                    </div>
+                    <div class="control-pill">
+                        <label>Bankroll</label>
+                        <input type="text" id="global-bankroll" inputmode="numeric" placeholder="1.000" value="1.000">
+                    </div>
+                    <button type="button" id="btn-reset-bankroll" class="reset-btn"
+                        title="Resetear bankroll a 1.000">↺</button>
                 </div>
             </div>
 
-            <header>
-                <h1>Selecciona tu Calculadora</h1>
-                <p class="subtitle">Herramientas de análisis deportivo</p>
-            </header>
+            <div class="menu-header">
+                <h1 class="menu-title">Selecciona tu Calculadora</h1>
+                <p class="menu-subtitle">Herramientas de análisis deportivo</p>
+            </div>
 
             <div class="menu-grid">
                 <button class="menu-card" id="btn-probability" type="button">
-                    <div class="icon">📊</div>
-                    <h2>Calculadora de Probabilidades</h2>
-                    <p>Calcula cuotas justas, edge y EV</p>
+                    <div class="card-icon">📊</div>
+                    <div class="card-content">
+                        <h2>Calculadora de Probabilidades</h2>
+                        <p>Calcula cuotas justas, edge y EV</p>
+                    </div>
                 </button>
 
                 <button class="menu-card" id="btn-btts" type="button">
-                    <div class="icon">⚽</div>
-                    <h2>Calculadora de BTTS y Over / Under</h2>
-                    <p>Ambos Marcan y Total de Goles (SÍ/NO)</p>
+                    <div class="card-icon">⚽</div>
+                    <div class="card-content">
+                        <h2>Calculadora de BTTS y Over / Under</h2>
+                        <p>Ambos Marcan y Total de Goles (SÍ/NO)</p>
+                    </div>
                 </button>
             </div>
         </main>
@@ -142,6 +150,12 @@
                         <p id="prob-value-explanation" class="value-explanation"></p>
                     </div>
 
+                    <!-- Confidence Indicator (Pro Mode) -->
+                    <div id="confidence-indicator" class="confidence-indicator" style="display: none;">
+                        <span id="confidence-dot" class="confidence-dot"></span>
+                        <span id="confidence-text" class="confidence-text"></span>
+                    </div>
+
                     <!-- Pro Mode: Sensitivity Analysis (full-width) -->
                     <div id="pro-sensitivity-prob" class="pro-section" style="display: none; margin-bottom: 16px;">
                         <h3>Análisis de Sensibilidad</h3>
@@ -156,6 +170,7 @@
                             </div>
                         </div>
                         <p id="sens-prob-reading" class="sens-reading"></p>
+                        <p id="prob-range-summary" class="range-summary" style="display: none;"></p>
                     </div>
 
                     <!-- Comparison Grid -->

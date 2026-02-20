@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const summaryHouseOdd = document.getElementById('summary-house-odd');
     const currencySelect = document.getElementById('global-currency');
     const bankrollInput = document.getElementById('global-bankroll');
+    const bankrollResetBtn = document.getElementById('btn-reset-bankroll');
     const kellyCard = document.getElementById('kelly-card');
     const kellyStakeDisplay = document.getElementById('kelly-stake');
 
@@ -154,6 +155,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return map[code] || '$';
     };
 
+    // Bankroll formatting helpers
+    const parseBankroll = (str) => {
+        if (!str) return 0;
+        const cleaned = String(str).replace(/\./g, '').replace(/,/g, '');
+        const n = Number(cleaned);
+        return Number.isFinite(n) ? n : 0;
+    };
+
+    const formatBankroll = (num) => {
+        if (!Number.isFinite(num) || num < 0) num = 0;
+        return Math.round(num).toLocaleString('es-CL');
+    };
 
     const clamp = (num, min, max) => Math.min(max, Math.max(min, num));
 
@@ -221,9 +234,17 @@ document.addEventListener('DOMContentLoaded', () => {
         list.forEach(item => {
             const div = document.createElement('div');
             div.className = 'history-item';
+            // Colored value badge for history
+            let hBadgeClass = 'badge-none';
+            let hBadgeText = '❌ Sin valor';
+            if (item.ev > 5) { hBadgeClass = 'badge-positive'; hBadgeText = '✅ Valor'; }
+            else if (item.ev > 0) { hBadgeClass = 'badge-low'; hBadgeText = '⚠️ Bajo'; }
             div.innerHTML = `
                 <div class="history-item-header">
-                    <span class="history-item-title">${item.market} - ${item.timestamp}</span>
+                    <div class="history-title-row">
+                        <span class="history-item-title">${item.market} - ${item.timestamp}</span>
+                        <span class="history-value-tag ${hBadgeClass}">${hBadgeText}</span>
+                    </div>
                     <button class="history-fav-btn ${item.favorite ? 'active' : ''}" onclick="window.toggleFav(${item.id})">
                         ${item.favorite ? '⭐' : '☆'}
                     </button>
@@ -303,6 +324,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const updateProSensitivity = (probPct, houseOdd, downEl, upEl, readingEl, sectionEl) => {
         if (!proModeActive) {
             if (sectionEl) sectionEl.style.display = 'none';
+            // Also hide confidence indicator
+            const confEl = document.getElementById('confidence-indicator');
+            if (confEl) confEl.style.display = 'none';
             return;
         }
         if (sectionEl) sectionEl.style.display = 'block';
@@ -329,6 +353,35 @@ document.addEventListener('DOMContentLoaded', () => {
             else if (evUp < 0) msg = "Sigue sin tener valor incluso si tu probabilidad sube 5%.";
             else if (evDown < 0 && evUp > 0) msg = "Se vuelve negativo si tu probabilidad baja 5%. Sensibilidad alta.";
             readingEl.textContent = msg;
+        }
+
+        // Probability range summary
+        const rangeEl = document.getElementById('prob-range-summary');
+        if (rangeEl) {
+            const pDownPct = (pDown * 100).toFixed(1);
+            const pUpPct = (pUp * 100).toFixed(1);
+            rangeEl.textContent = `Prob ${pDownPct}%–${pUpPct}% → EV ${formatSigned(evDown, 1)}% a ${formatSigned(evUp, 1)}%`;
+            rangeEl.style.display = 'block';
+        }
+
+        // Confidence indicator
+        const confEl = document.getElementById('confidence-indicator');
+        const confDot = document.getElementById('confidence-dot');
+        const confText = document.getElementById('confidence-text');
+        if (confEl && confDot && confText) {
+            confEl.style.display = 'flex';
+            const evNow = (p * houseOdd - 1) * 100;
+            let level, color;
+            if (evNow > 5 && evDown > 0) {
+                level = 'Alta'; color = 'var(--accent-color)';
+            } else if (evNow > 0) {
+                level = 'Media'; color = '#f59e0b';
+            } else {
+                level = 'Baja'; color = '#ef4444';
+            }
+            confDot.style.background = color;
+            confText.textContent = `Confianza: ${level}`;
+            confText.style.color = color;
         }
     };
 
@@ -363,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sampleSizeRaw = Math.round(toNumber(bttsSample.value, 10));
         const sampleSize = clamp(sampleSizeRaw, 1, 20);
 
-        const bankroll = Math.max(0, toNumber(bankrollInput.value, 1000));
+        const bankroll = Math.max(0, parseBankroll(bankrollInput.value));
         const currency = getCurrencySymbol(currencySelect);
         const mode = (bttsMode && bttsMode.value) ? bttsMode.value : "hybrid";
 
@@ -565,7 +618,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const probA = clamp(toNumber(inputA.value), 0, 100);
         const probB = clamp(toNumber(inputB.value), 0, 100);
         const houseOdd = toNumber(houseOddInput.value, 0);
-        const bankroll = Math.max(0, toNumber(bankrollInput.value, 0));
+        const bankroll = Math.max(0, parseBankroll(bankrollInput.value));
         const currencySymbol = getCurrencySymbol(currencySelect);
 
         // Average probability
@@ -754,7 +807,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const state = {
                 currency: currencySelect ? currencySelect.value : "CLP",
-                bankroll: bankrollInput ? bankrollInput.value : "1000",
+                bankroll: bankrollInput ? parseBankroll(bankrollInput.value) : 1000,
                 lastView: (calculatorView && calculatorView.style.display !== 'none') ? "calculator"
                     : (bttsManualView && bttsManualView.style.display !== 'none') ? "manual"
                         : (bttsView && bttsView.style.display !== 'none') ? "btts"
@@ -775,7 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const state = JSON.parse(raw);
 
             if (currencySelect && state.currency) currencySelect.value = state.currency;
-            if (bankrollInput && state.bankroll) bankrollInput.value = state.bankroll;
+            if (bankrollInput && state.bankroll != null) bankrollInput.value = formatBankroll(Number(state.bankroll) || 1000);
 
             if (bttsMode && state.bttsMode) bttsMode.value = state.bttsMode;
             if (state.bttsMarket) currentBttsMarket = state.bttsMarket;
@@ -977,11 +1030,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (bttsView.style.display !== 'none') debouncedCalculateBtts();
         saveState();
     });
-    if (bankrollInput) bankrollInput.addEventListener('input', () => {
-        if (calculatorView.style.display !== 'none') calculate();
-        if (bttsView.style.display !== 'none') debouncedCalculateBtts();
-        saveState();
-    });
+    if (bankrollInput) {
+        bankrollInput.addEventListener('input', () => {
+            if (calculatorView.style.display !== 'none') calculate();
+            if (bttsView.style.display !== 'none') debouncedCalculateBtts();
+            saveState();
+        });
+        bankrollInput.addEventListener('blur', () => {
+            const raw = parseBankroll(bankrollInput.value);
+            bankrollInput.value = formatBankroll(raw || 1000);
+        });
+    }
+    if (bankrollResetBtn) {
+        bankrollResetBtn.addEventListener('click', () => {
+            if (bankrollInput) bankrollInput.value = formatBankroll(1000);
+            if (calculatorView.style.display !== 'none') calculate();
+            if (bttsView.style.display !== 'none') debouncedCalculateBtts();
+            saveState();
+        });
+    }
 
     // Modal Helpers
     const showDetail = (data) => {

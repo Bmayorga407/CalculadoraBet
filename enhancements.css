@@ -338,3 +338,69 @@ input:checked+.slider:before {
         transform: translateY(0);
     }
 }
+
+/* =============================================
+   Confidence Indicator
+   ============================================= */
+.confidence-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 12px;
+    width: 100%;
+    animation: fadeInBadge 0.3s ease;
+}
+
+.confidence-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.confidence-text {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+/* =============================================
+   Probability Range Summary
+   ============================================= */
+.range-summary {
+    margin-top: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.4;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* =============================================
+   History Value Tags
+   ============================================= */
+.history-title-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.history-value-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    width: fit-content;
+}
+
+/* Ensure confidence indicator takes full width in result card */
+.result-card>.confidence-indicator {
+    width: 100%;
+}
