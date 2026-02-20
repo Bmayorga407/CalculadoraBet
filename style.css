@@ -1075,11 +1075,23 @@ select:focus-visible {
 }
 
 #btts-panel-btts {
-    display: grid !important;
+    display: none;
+    /* JS toggles this */
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     width: 100%;
     gap: 8px;
+}
+
+#btts-panel-ou {
+    display: none;
+    /* JS toggles this */
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
 .stat-col {

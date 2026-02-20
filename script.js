@@ -83,8 +83,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const applyBttsMarketUI = () => {
         const isBtts = currentBttsMarket === "btts";
-        if (bttsPanel) bttsPanel.style.display = isBtts ? "block" : "none";
-        if (ouPanel) ouPanel.style.display = isBtts ? "none" : "block";
+        if (bttsPanel) bttsPanel.style.display = isBtts ? "grid" : "none";
+        if (ouPanel) ouPanel.style.display = isBtts ? "none" : "flex";
 
         if (btnBttsMode) {
             btnBttsMode.classList.toggle("active", isBtts);
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Label pill in EV/Edge section
         if (bttsMarketLabel) bttsMarketLabel.textContent = isBtts ? "BTTS" : "O/U";
     };
- // "btts" | "ou"
+    // "btts" | "ou"
 
     const bttsModelContainer = document.getElementById('btts-model-container');
     const bttsFinalDisplay = document.getElementById('btts-final-display');
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return map[code] || '$';
     };
 
-    
+
     const clamp = (num, min, max) => Math.min(max, Math.max(min, num));
 
     const toNumber = (value, fallback = 0) => {
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return clamp(sum, 0, 1);
     };
 
-// --- BTTS Logic ---
+    // --- BTTS Logic ---
     const calculateBtts = () => {
         const localScored = clamp(toNumber(bttsLocalScored.value), 0, 100);
         const localConceded = clamp(toNumber(bttsLocalConceded.value), 0, 100);
@@ -553,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
         debouncedCalculateBtts();
     };
 
-    
+
     // --- Persistencia (localStorage) ---
     const STORAGE_KEY = "betcalc_state_v1";
 
@@ -564,8 +564,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 bankroll: bankrollInput ? bankrollInput.value : "1000",
                 lastView: (calculatorView && calculatorView.style.display !== 'none') ? "calculator"
                     : (bttsManualView && bttsManualView.style.display !== 'none') ? "manual"
-                    : (bttsView && bttsView.style.display !== 'none') ? "btts"
-                    : "menu",
+                        : (bttsView && bttsView.style.display !== 'none') ? "btts"
+                            : "menu",
                 bttsMode: bttsMode ? bttsMode.value : "hybrid",
                 bttsMarket: currentBttsMarket,
                 ouLine: ouLineSelect ? ouLineSelect.value : "2.5",
@@ -650,7 +650,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (_) { /* no-op */ }
     };
-// --- Navigation ---
+    // --- Navigation ---
     const showView = (view) => {
         [mainMenu, calculatorView, bttsView, bttsManualView].forEach(v => {
             if (v) v.style.display = 'none';
