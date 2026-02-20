@@ -1017,11 +1017,10 @@ select:focus-visible {
 
 .ou-controls {
     display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: center;
     gap: 12px;
-    margin-bottom: 14px;
-    flex-wrap: wrap;
+    margin-bottom: 20px;
 }
 
 .ou-controls select {
