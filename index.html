@@ -3,8 +3,17 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Probabilidades</title>
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Calculadora de Probabilidades | Pro</title>
+
+    <!-- PWA Settings -->
+    <meta name="theme-color" content="#0a0a0a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-512.png">
+    <link rel="manifest" href="manifest.json">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,6 +26,19 @@
         <main id="main-menu">
             <!-- Global Bankroll Settings (Now inside menu) -->
             <div class="global-header">
+                <div class="header-main-row">
+                    <h1>Calculadora Bet</h1>
+                    <div class="header-actions">
+                        <button id="btn-show-history" class="icon-btn" title="Historial">🕒</button>
+                        <div class="pro-toggle-wrapper">
+                            <span>Modo Pro</span>
+                            <label class="switch">
+                                <input type="checkbox" id="pro-mode-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
                 <div class="setting-item">
                     <label>Moneda</label>
                     <select id="global-currency">
@@ -114,6 +136,28 @@
                 <div class="card result-card full-width">
                     <div class="comparison-container">
                         <div class="comp-item">
+                            <div class="value-badge-container" id="prob-value-badge-container"
+                                style="display: none; margin-bottom: 12px;">
+                                <div id="prob-value-badge" class="value-badge"></div>
+                                <p id="prob-value-explanation" class="value-explanation"></p>
+                            </div>
+
+                            <div id="pro-sensitivity-prob" class="pro-section"
+                                style="display: none; margin-bottom: 16px;">
+                                <h3>Análisis de Sensibilidad</h3>
+                                <div class="sensitivity-grid">
+                                    <div class="sensitivity-card">
+                                        <span class="sens-label">-5% Prob</span>
+                                        <span id="sens-prob-down" class="sens-value">--</span>
+                                    </div>
+                                    <div class="sensitivity-card">
+                                        <span class="sens-label">+5% Prob</span>
+                                        <span id="sens-prob-up" class="sens-value">--</span>
+                                    </div>
+                                </div>
+                                <p id="sens-prob-reading" class="sens-reading"></p>
+                            </div>
+
                             <h2>Cuota de Casa</h2>
                             <div class="value-display">
                                 <span id="summary-house-odd">-.--</span>
@@ -424,6 +468,26 @@
                 <!-- Comparison & Odds -->
                 <div class="card result-card full-width">
                     <div class="comparison-container">
+                        <div class="value-badge-container" id="btts-value-badge-container" style="display: none;">
+                            <div id="btts-value-badge" class="value-badge"></div>
+                            <p id="btts-value-explanation" class="value-explanation"></p>
+                        </div>
+
+                        <div id="pro-sensitivity-btts" class="pro-section" style="display: none;">
+                            <h3>Análisis de Sensibilidad</h3>
+                            <div class="sensitivity-grid">
+                                <div class="sensitivity-card">
+                                    <span class="sens-label">-5% Prob</span>
+                                    <span id="sens-btts-down" class="sens-value">--</span>
+                                </div>
+                                <div class="sensitivity-card">
+                                    <span class="sens-label">+5% Prob</span>
+                                    <span id="sens-btts-up" class="sens-value">--</span>
+                                </div>
+                            </div>
+                            <p id="sens-btts-reading" class="sens-reading"></p>
+                        </div>
+
                         <div class="comp-item">
                             <h2>Cuota Casa <span id="btts-market-label" class="badge-market">BTTS</span></h2>
                             <div class="house-input-wrapper">
@@ -508,6 +572,33 @@
             <div id="modal-body"></div>
         </div>
     </div>
+
+    <!-- History & Favorites Modal -->
+    <div id="history-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content history-modal-content">
+            <div class="modal-header">
+                <h2 style="margin: 0; font-size: 18px;">Historial y Favoritos</h2>
+                <button class="modal-close" id="history-close-btn">×</button>
+            </div>
+            <div class="history-tabs">
+                <button class="tab-btn active" data-tab="recent">Recientes</button>
+                <button class="tab-btn" data-tab="favs">Favoritos ⭐</button>
+            </div>
+            <div id="history-list-container" class="history-list">
+                <!-- Items injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('SW Registered'))
+                    .catch(err => console.log('SW Failed', err));
+            });
+        }
+    </script>
 </body>
 
 </html>

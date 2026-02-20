@@ -79,7 +79,37 @@ document.addEventListener('DOMContentLoaded', () => {
     const ouUnderContainer = document.getElementById('ou-under-container');
     const bttsMarketLabel = document.getElementById('btts-market-label');
 
-    let currentBttsMarket = "btts";
+    // New Enhancement Elements
+    const proModeToggle = document.getElementById('pro-mode-toggle');
+    const btnShowHistory = document.getElementById('btn-show-history');
+    const historyModal = document.getElementById('history-modal');
+    const historyCloseBtn = document.getElementById('history-close-btn');
+    const historyListContainer = document.getElementById('history-list-container');
+    const historyTabBtns = document.querySelectorAll('.history-tabs .tab-btn');
+
+    // Value Badges (Prob Calc)
+    const probBadgeContainer = document.getElementById('prob-value-badge-container');
+    const probBadge = document.getElementById('prob-value-badge');
+    const probExplanation = document.getElementById('prob-value-explanation');
+
+    // Value Badges (BTTS Calc)
+    const bttsBadgeContainer = document.getElementById('btts-value-badge-container');
+    const bttsBadge = document.getElementById('btts-value-badge');
+    const bttsExplanation = document.getElementById('btts-value-explanation');
+
+    // Pro Mode Sections
+    const proSectionProb = document.getElementById('pro-sensitivity-prob');
+    const proSectionBtts = document.getElementById('pro-sensitivity-btts');
+
+    // Sensitivity Elements
+    const sensProbDown = document.getElementById('sens-prob-down');
+    const sensProbUp = document.getElementById('sens-prob-up');
+    const sensProbReading = document.getElementById('sens-prob-reading');
+
+    const sensBttsDown = document.getElementById('sens-btts-down');
+    const sensBttsUp = document.getElementById('sens-btts-up');
+    const sensBttsReading = document.getElementById('sens-btts-reading');
+
 
     const applyBttsMarketUI = () => {
         const isBtts = currentBttsMarket === "btts";
@@ -102,12 +132,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     // "btts" | "ou"
 
-    const bttsModelContainer = document.getElementById('btts-model-container');
-    const bttsFinalDisplay = document.getElementById('btts-final-display');
-    const bttsSampleWarning = document.getElementById('btts-sample-warning');
     const infoModal = document.getElementById('info-modal');
     const modalBody = document.getElementById('modal-body');
     const modalCloseBtn = document.getElementById('modal-close-btn');
+
+    // State
+    let currentBttsMarket = "btts";
+    let proModeActive = false;
+    let history = JSON.parse(localStorage.getItem('bet_history') || '[]');
+    let favorites = JSON.parse(localStorage.getItem('bet_favs') || '[]');
+    let activeTab = 'recent';
 
     // Constants
     const DECIMAL_PLACES_PROB = 1;
@@ -145,6 +179,157 @@ document.addEventListener('DOMContentLoaded', () => {
         const full = (b * p - q) / b;
         const scaled = full * fraction;
         return clamp(scaled, 0, 1);
+    };
+
+    const saveToHistory = (data) => {
+        const id = Date.now();
+        const newItem = { id, ...data, timestamp: new Date().toLocaleString(), favorite: false };
+        history.unshift(newItem);
+        if (history.length > 10) history.pop();
+        localStorage.setItem('bet_history', JSON.stringify(history));
+    };
+
+    const toggleFavorite = (id) => {
+        const hItem = history.find(i => i.id === id);
+        const fIndex = favorites.findIndex(i => i.id === id);
+
+        if (fIndex > -1) {
+            favorites.splice(fIndex, 1);
+            if (hItem) hItem.favorite = false;
+        } else {
+            const item = hItem || favorites.find(i => i.id === id);
+            if (item) {
+                const favItem = { ...item, favorite: true };
+                favorites.unshift(favItem);
+                if (hItem) hItem.favorite = true;
+            }
+        }
+        localStorage.setItem('bet_favs', JSON.stringify(favorites));
+        localStorage.setItem('bet_history', JSON.stringify(history));
+        renderHistory();
+    };
+
+    const renderHistory = () => {
+        const list = activeTab === 'recent' ? history : favorites;
+        historyListContainer.innerHTML = '';
+
+        if (list.length === 0) {
+            historyListContainer.innerHTML = `<p style="text-align:center; padding: 20px; color: var(--text-secondary);">No hay registros aún.</p>`;
+            return;
+        }
+
+        list.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            div.innerHTML = `
+                <div class="history-item-header">
+                    <span class="history-item-title">${item.market} - ${item.timestamp}</span>
+                    <button class="history-fav-btn ${item.favorite ? 'active' : ''}" onclick="window.toggleFav(${item.id})">
+                        ${item.favorite ? '⭐' : '☆'}
+                    </button>
+                </div>
+                <div class="history-item-body">
+                    <div class="history-stat"><span class="label">Prob</span><span class="value">${item.prob.toFixed(1)}%</span></div>
+                    <div class="history-stat"><span class="label">Cuota</span><span class="value">${item.odd.toFixed(2)}</span></div>
+                    <div class="history-stat"><span class="label">EV</span><span class="value" style="color: ${item.ev > 0 ? 'var(--accent-color)' : '#ef4444'}">${item.ev.toFixed(2)}%</span></div>
+                </div>
+                <button class="history-load-btn" onclick="window.loadItem(${item.id})">Usar de nuevo</button>
+            `;
+            historyListContainer.appendChild(div);
+        });
+    };
+
+    // Expose these to global for onclick
+    window.toggleFav = toggleFavorite;
+    window.loadItem = (id) => {
+        const list = activeTab === 'recent' ? history : favorites;
+        const item = list.find(i => i.id === id);
+        if (!item) return;
+
+        if (item.type === 'prob') {
+            inputA.value = item.valA || 0;
+            inputB.value = item.valB || 0;
+            houseOddInput.value = item.odd;
+            btnProbability.click();
+            debouncedCalculate();
+        } else {
+            // btts/ou
+            currentBttsMarket = item.marketType || 'btts';
+            bttsLocalScored.value = item.lS || 0;
+            bttsLocalConceded.value = item.lC || 0;
+            bttsVisitorScored.value = item.vS || 0;
+            bttsVisitorConceded.value = item.vC || 0;
+            bttsHouseOdd.value = item.odd;
+            btnBtts.click();
+            applyBttsMarketUI();
+            debouncedCalculateBtts();
+        }
+        historyModal.style.display = 'none';
+    };
+
+    const updateValueTag = (evPct, probPct, houseOdd, badgeObj, explanationObj, containerObj) => {
+        if (!houseOdd || houseOdd <= 1 || probPct <= 0) {
+            if (containerObj) containerObj.style.display = 'none';
+            return;
+        }
+
+        if (containerObj) containerObj.style.display = 'flex';
+
+        let status = "";
+        let badgeClass = "";
+        let explanation = "";
+
+        if (evPct > 5) {
+            status = "✅ Valor positivo";
+            badgeClass = "badge-positive";
+            explanation = `Con tu probabilidad estimada (${probPct.toFixed(1)}%) y esa cuota, el valor esperado es ${evPct.toFixed(2)}%. La cuota tiene un margen amplio a tu favor.`;
+        } else if (evPct > 0) {
+            status = "⚠️ Margen bajo";
+            badgeClass = "badge-low";
+            explanation = `Hay un ligero valor (${evPct.toFixed(2)}%), pero el margen es estrecho. Procede con precaución.`;
+        } else {
+            status = "❌ Sin valor";
+            badgeClass = "badge-none";
+            explanation = `El valor es negativo (${evPct.toFixed(2)}%). Según tus cálculos, la cuota ofrecida es más baja de lo que debería ser.`;
+        }
+
+        if (badgeObj) {
+            badgeObj.textContent = status;
+            badgeObj.className = "value-badge " + badgeClass;
+        }
+        if (explanationObj) explanationObj.textContent = explanation;
+    };
+
+    const updateProSensitivity = (probPct, houseOdd, downEl, upEl, readingEl, sectionEl) => {
+        if (!proModeActive) {
+            if (sectionEl) sectionEl.style.display = 'none';
+            return;
+        }
+        if (sectionEl) sectionEl.style.display = 'block';
+
+        const p = probPct / 100;
+        const pDown = clamp(p - 0.05, 0.01, 0.99);
+        const pUp = clamp(p + 0.05, 0.01, 0.99);
+
+        const evDown = (pDown * houseOdd - 1) * 100;
+        const evUp = (pUp * houseOdd - 1) * 100;
+
+        if (downEl) {
+            downEl.textContent = formatSigned(evDown, 2) + "%";
+            downEl.style.color = evDown > 0 ? "var(--accent-color)" : "#ef4444";
+        }
+        if (upEl) {
+            upEl.textContent = formatSigned(evUp, 2) + "%";
+            upEl.style.color = evUp > 0 ? "var(--accent-color)" : "#ef4444";
+        }
+
+        if (readingEl) {
+            let msg = "";
+            if (evDown > 0) msg = "Sigue teniendo valor incluso si tu probabilidad baja 5%.";
+            else if (evUp < 0) msg = "Sigue sin tener valor incluso si tu probabilidad sube 5%.";
+            else if (evDown < 0 && evUp > 0) msg = "Se vuelve negativo si tu probabilidad baja 5%. Sensibilidad alta.";
+            readingEl.textContent = msg;
+        }
     };
 
     const formatSigned = (n, decimals = 2) => {
@@ -357,8 +542,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 bttsEdgeValue.textContent = "0.00%";
-                bttsEvValue.textContent = "0.00%";
-                if (bttsKellyCard) bttsKellyCard.style.display = 'none';
+                bttsEvValue.textContent = formatSigned(evPct, 2);
+                bttsEvValue.parentElement.style.color = evPct > 0 ? "var(--accent-color)" : "#ef4444";
+
+                // Value Badge & Pro Sensitivity
+                updateValueTag(evPct, probabilityFinal, houseOdd, bttsBadge, bttsExplanation, bttsBadgeContainer);
+                updateProSensitivity(probabilityFinal, houseOdd, sensBttsDown, sensBttsUp, sensBttsReading, proSectionBtts);
             }
         } else {
             if (bttsEdgeValue) bttsEdgeValue.textContent = "0.00%";
@@ -406,6 +595,10 @@ document.addEventListener('DOMContentLoaded', () => {
             evDivider.style.display = 'block';
             evValueDisplay.textContent = formatSigned(evPct, 2);
             evValueDisplay.parentElement.style.color = evPct > 0 ? "var(--accent-color)" : "#ef4444";
+
+            // Value Badge & Pro Sensitivity
+            updateValueTag(evPct, p * 100, houseOdd, probBadge, probExplanation, probBadgeContainer);
+            updateProSensitivity(p * 100, houseOdd, sensProbDown, sensProbUp, sensProbReading, proSectionProb);
 
             // Kelly 1/4
             const f = kellyFraction(p, houseOdd, 0.25);
@@ -668,8 +861,39 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- Event Listeners ---
-    const debouncedCalculate = debounce(calculate, 150);
-    const debouncedCalculateBtts = debounce(calculateBtts, 150);
+    const debouncedCalculate = debounce(() => {
+        calculate();
+        // Auto-save significant calculations
+        const p = clamp(((toNumber(inputA.value) + toNumber(inputB.value)) / 2) / 100, 0, 1);
+        const odd = toNumber(houseOddInput.value, 0);
+        if (odd > 1 && p > 0) {
+            const ev = ((p * odd) - 1) * 100;
+            saveToHistory({
+                type: 'prob', market: 'Probabilidades', prob: p * 100, odd, ev,
+                valA: inputA.value, valB: inputB.value
+            });
+        }
+    }, 2000); // 2s delay for auto-save
+
+    const debouncedCalculateBtts = debounce(() => {
+        calculateBtts();
+        // Auto-save significant calculations
+        const odd = toNumber(bttsHouseOdd.value, 0);
+        const valFinal = parseFloat(bttsAvgProb.textContent) || 0;
+        if (odd > 1 && valFinal > 0) {
+            const ev = ((valFinal / 100) * odd - 1) * 100;
+            saveToHistory({
+                type: 'btts', market: currentBttsMarket.toUpperCase(), marketType: currentBttsMarket,
+                prob: valFinal, odd, ev,
+                lS: bttsLocalScored.value, lC: bttsLocalConceded.value,
+                vS: bttsVisitorScored.value, vC: bttsVisitorConceded.value
+            });
+        }
+    }, 2000); // 2s delay for auto-save
+
+    // Initial simple debounced for live updates (no save)
+    const liveUpdateProb = debounce(calculate, 150);
+    const liveUpdateBtts = debounce(calculateBtts, 150);
 
     if (btnProbability) btnProbability.addEventListener('click', () => showView(calculatorView));
     if (btnBtts) btnBtts.addEventListener('click', () => { showView(bttsView); debouncedCalculateBtts(); });
@@ -733,12 +957,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Calculator Listeners
     [inputA, inputB, houseOddInput].forEach(el => {
-        if (el) el.addEventListener('input', debouncedCalculate);
+        if (el) el.addEventListener('input', () => {
+            liveUpdateProb();
+            debouncedCalculate(); // This one saves
+        });
     });
 
     // BTTS Listeners
     [bttsLocalScored, bttsLocalConceded, bttsVisitorScored, bttsVisitorConceded, bttsSample, bttsHouseOdd, bttsMode].forEach(el => {
-        if (el) el.addEventListener('input', debouncedCalculateBtts);
+        if (el) el.addEventListener('input', () => {
+            liveUpdateBtts();
+            debouncedCalculateBtts(); // This one saves
+        });
     });
 
     // Global updates
@@ -788,6 +1018,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.addEventListener('beforeunload', saveState);
+
+    // Enhancement Listeners
+    if (proModeToggle) {
+        proModeToggle.addEventListener('change', (e) => {
+            proModeActive = e.target.checked;
+            calculate();
+            calculateBtts();
+        });
+    }
+
+    if (btnShowHistory) {
+        btnShowHistory.addEventListener('click', () => {
+            renderHistory();
+            if (historyModal) historyModal.style.display = 'flex';
+        });
+    }
+
+    if (historyCloseBtn) historyCloseBtn.onclick = () => {
+        if (historyModal) historyModal.style.display = 'none';
+    };
+
+    historyTabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            historyTabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeTab = btn.dataset.tab;
+            renderHistory();
+        });
+    });
 
     // Initial State
     loadState();
