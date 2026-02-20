@@ -330,44 +330,48 @@
 
                 <!-- Probabilities Display -->
                 <div class="card result-card full-width">
-                    <div class="probability-row">
-                        <div class="btts-mode-toggle" role="tablist" aria-label="Mercado">
-                            <button id="btn-btts-mode" class="toggle-btn active" type="button" role="tab" aria-selected="true">BTTS</button>
-                            <button id="btn-ou-mode" class="toggle-btn" type="button" role="tab" aria-selected="false">Over/Under</button>
-                        </div>
-
-                        <div id="btts-panel-btts" class="btts-panel">
-
-                        <div class="prob-stack">
-                            <div class="prob-item" id="btts-model-container">
-                                <div class="label-line"><h2>BTTS Modelo</h2><span id="btts-sample-warning" class="badge-warning" style="display:none;">Muestra baja</span></div>
-                                <div class="value-display" id="btts-model-display">
-                                    <span id="btts-model-prob" class="text-green">0</span><span class="unit">%</span>
-                                </div>
-                            </div>
-                            <div class="prob-item" id="btts-final-container">
-                                <h2>BTTS Final</h2>
-                                <div class="value-display" id="btts-final-display">
-                                    <span id="btts-avg-prob" class="text-green">0</span><span class="unit">%</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="divider-vertical"></div>
-                        <div class="prob-item">
-                            <h2>Prom. Goles <button type="button" class="info-icon" id="info-goals-combined">ⓘ</button>
-                            </h2>
-                            <div class="value-display">
-                                <span id="btts-combined-avg">0.00</span>
-                            </div>
-                        </div>
-                        <div class="divider-vertical"></div>
-                        <div class="prob-item">
-                            <h2>Cuota Justa</h2>
-                            <div class="value-display">
-                                <span id="btts-fair-odd">-.--</span>
-                            </div>
-                        </div>
+                    <div class="btts-mode-toggle" role="tablist" aria-label="Mercado">
+                        <button id="btn-btts-mode" class="toggle-btn active" type="button" role="tab"
+                            aria-selected="true">BTTS</button>
+                        <button id="btn-ou-mode" class="toggle-btn" type="button" role="tab"
+                            aria-selected="false">Over/Under</button>
                     </div>
+
+                    <div class="probability-row">
+                        <div id="btts-panel-btts" class="btts-panel">
+                            <div class="prob-stack">
+                                <div class="prob-item" id="btts-model-container">
+                                    <div class="label-line">
+                                        <h2>BTTS Modelo</h2><span id="btts-sample-warning" class="badge-warning"
+                                            style="display:none;">Muestra baja</span>
+                                    </div>
+                                    <div class="value-display" id="btts-model-display">
+                                        <span id="btts-model-prob" class="text-green">0</span><span
+                                            class="unit">%</span>
+                                    </div>
+                                </div>
+                                <div class="prob-item" id="btts-final-container">
+                                    <h2>BTTS Final</h2>
+                                    <div class="value-display" id="btts-final-display">
+                                        <span id="btts-avg-prob" class="text-green">0</span><span class="unit">%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="divider-vertical"></div>
+                            <div class="prob-item">
+                                <h2>Prom. Goles <button type="button" class="info-icon"
+                                        id="info-goals-combined">ⓘ</button></h2>
+                                <div class="value-display">
+                                    <span id="btts-combined-avg">0.00</span>
+                                </div>
+                            </div>
+                            <div class="divider-vertical"></div>
+                            <div class="prob-item">
+                                <h2>Cuota Justa</h2>
+                                <div class="value-display">
+                                    <span id="btts-fair-odd">-.--</span>
+                                </div>
+                            </div>
                         </div>
 
                         <div id="btts-panel-ou" class="btts-panel" style="display:none;">
@@ -375,10 +379,22 @@
                                 <div class="mini-input">
                                     <label>Línea O/U</label>
                                     <select id="ou-line" aria-label="Línea Over Under">
-                                        <option value="0.5">0.5</option><option value="1.0">1.0</option><option value="1.5">1.5</option><option value="2.0">2.0</option><option value="2.5" selected>2.5</option><option value="3.0">3.0</option><option value="3.5">3.5</option><option value="4.0">4.0</option><option value="4.5">4.5</option><option value="5.0">5.0</option><option value="5.5">5.5</option><option value="6.0">6.0</option>
+                                        <option value="0.5">0.5</option>
+                                        <option value="1.0">1.0</option>
+                                        <option value="1.5">1.5</option>
+                                        <option value="2.0">2.0</option>
+                                        <option value="2.5" selected>2.5</option>
+                                        <option value="3.0">3.0</option>
+                                        <option value="3.5">3.5</option>
+                                        <option value="4.0">4.0</option>
+                                        <option value="4.5">4.5</option>
+                                        <option value="5.0">5.0</option>
+                                        <option value="5.5">5.5</option>
+                                        <option value="6.0">6.0</option>
                                     </select>
                                 </div>
-                                <div class="ou-hint" id="ou-pick-hint">Pick sugerido: <span id="ou-pick-label">Over 2.5</span></div>
+                                <div class="ou-hint" id="ou-pick-hint">Pick sugerido: <span id="ou-pick-label">Over
+                                        2.5</span></div>
                             </div>
 
                             <div class="prob-stack">
@@ -400,6 +416,7 @@
                             </div>
                         </div>
                     </div>
+                </div>
 
                 <!-- Comparison & Odds -->
                 <div class="card result-card full-width">
