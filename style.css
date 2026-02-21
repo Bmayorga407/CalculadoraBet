@@ -441,8 +441,11 @@ h1 {
     border-radius: 4px;
     text-transform: uppercase;
     margin-left: 6px;
-    vertical-align: middle;
-    display: inline-block;
+    position: absolute;
+    left: 100%;
+    white-space: nowrap;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 /* House Input specific styles */
@@ -953,6 +956,11 @@ input[type=number] {
     height: 14px !important;
     width: 14px !important;
     flex-shrink: 0;
+    position: absolute !important;
+    left: 100%;
+    margin-left: 6px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
 }
 
 .info-icon:hover {
@@ -1046,12 +1054,11 @@ input[type=number] {
     font-weight: 600;
 }
 
-/* Label + badge row (prevents HTML artifacts in headings) */
 .label-line {
     display: flex;
     align-items: center;
-    gap: 10px;
-    justify-content: flex-start;
+    justify-content: center;
+    position: relative;
 }
 
 .label-line h2 {
@@ -1227,6 +1234,8 @@ select:focus-visible {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    width: max-content;
 }
 
 .stat-col .prob-item .value-display {

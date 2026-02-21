@@ -604,10 +604,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (houseOdd > 1) {
                 const evPct = ((pSelected * houseOdd) - 1) * 100;
                 const displayedFairOdd = parseFloat(fairOddSelected.toFixed(2));
-                const edgePct = displayedFairOdd > 0 ? ((houseOdd / displayedFairOdd) - 1) * 100 : 0;
+                const edgePct = displayedFairOdd > 0 ? (houseOdd - displayedFairOdd) : 0;
 
-                bttsEdgeValue.textContent = formatSigned(edgePct, 2) + "%";
-                bttsEdgeValue.style.color = edgePct > 0 ? "var(--accent-color)" : "#ef4444";
+                bttsEdgeValue.textContent = formatSigned(edgePct, 2);
+                bttsEdgeValue.style.color = edgePct > 0 ? "var(--accent-color)" : (edgePct < 0 ? "#ef4444" : "var(--text-primary)");
 
                 bttsEvValue.textContent = formatSigned(evPct, 2) + "%";
                 bttsEvValue.style.color = evPct > 0 ? "var(--accent-color)" : "#ef4444";
@@ -673,12 +673,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // EV and Edge (different things)
             const evPct = ((p * houseOdd) - 1) * 100;
             const displayedFairOdd = parseFloat(fairOdd.toFixed(2));
-            const edgePct = displayedFairOdd > 0 ? ((houseOdd / displayedFairOdd) - 1) * 100 : 0;
+            const edgePct = displayedFairOdd > 0 ? (houseOdd - displayedFairOdd) : 0;
 
             edgeContainer.style.display = 'block';
             edgeDivider.style.display = 'block';
             edgeValueDisplay.textContent = formatSigned(edgePct, 2);
-            edgeValueDisplay.parentElement.style.color = edgePct > 0 ? "var(--accent-color)" : "#ef4444";
+            edgeValueDisplay.parentElement.style.color = edgePct > 0 ? "var(--accent-color)" : (edgePct < 0 ? "#ef4444" : "var(--text-primary)");
 
             evContainer.style.display = 'block';
             evDivider.style.display = 'block';
