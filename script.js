@@ -117,31 +117,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sensitivity Elements
     const sensProbDown = document.getElementById('sens-prob-down');
     const sensProbUp = document.getElementById('sens-prob-up');
-    const sensProbReading = document.getElementById('sens-prob-reading');
+    const sensOddDown = document.getElementById('sens-odd-down');
+    const sensOddUp = document.getElementById('sens-odd-up');
+    const sensProbReading = null; // Replaced by more specific grid nodes
 
     const sensBttsDown = document.getElementById('sens-btts-down');
     const sensBttsUp = document.getElementById('sens-btts-up');
-    const sensBttsReading = document.getElementById('sens-btts-reading');
+    const sensOddBttsDown = document.getElementById('sens-odd-btts-down');
+    const sensOddBttsUp = document.getElementById('sens-odd-btts-up');
+    const sensBttsReading = null;
 
 
     const applyBttsMarketUI = () => {
         const isBtts = currentBttsMarket === "btts";
-        if (bttsPanel) bttsPanel.style.display = isBtts ? "grid" : "none";
-        if (ouPanel) ouPanel.style.display = isBtts ? "none" : "grid";
+        if (bttsPanel) bttsPanel.style.display = isBtts ? "block" : "none";
+        if (ouPanel) ouPanel.style.display = isBtts ? "none" : "block";
 
-        // Support both old toggle-btn and new seg-option classes
         if (btnBttsMode) {
             btnBttsMode.classList.toggle("active", isBtts);
-            btnBttsMode.classList.toggle("winner", false);
-            btnBttsMode.setAttribute("aria-selected", isBtts ? "true" : "false");
         }
         if (btnOuMode) {
             btnOuMode.classList.toggle("active", !isBtts);
-            btnOuMode.classList.toggle("winner", false);
-            btnOuMode.setAttribute("aria-selected", !isBtts ? "true" : "false");
         }
 
-        // Label pill in EV/Edge section
         if (bttsMarketLabel) bttsMarketLabel.textContent = isBtts ? "BTTS" : "O/U";
     };
 
@@ -171,8 +169,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // State
     let currentBttsMarket = "btts";
-    let proModeProb = false;
-    let proModeBtts = false;
+    let proModeProb = true;
+    let proModeBtts = true;
     let history = JSON.parse(localStorage.getItem('bet_history') || '[]');
     let favorites = JSON.parse(localStorage.getItem('bet_favs') || '[]');
     let activeTab = 'recent';
@@ -386,6 +384,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const badgeEl = document.getElementById(`${prefix}-robustness-badge`);
         const marginEl = document.getElementById(`${prefix}-error-margin`);
         const stakeUnitsEl = document.getElementById(`${prefix}-stake-units`);
+        const stakeMoneyEl = document.getElementById(`${prefix}-stake-money-ref`);
+        const stakeCardEl = document.getElementById(`${prefix}-stake-card`);
         const kellyBaseEl = document.getElementById(`${prefix}-kelly-base`);
         const kellyConsEl = document.getElementById(`${prefix}-kelly-cons`);
         const verdictCard = document.getElementById(`${prefix}-verdict-card`);
@@ -394,8 +394,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const verdictReason = document.getElementById(`${prefix}-verdict-reason`);
         const evSingle = document.getElementById(`${prefix}-ev-money-single`);
         const evHundred = document.getElementById(`${prefix}-ev-money-hundred`);
-        const sensOddDownEl = document.getElementById(`sens-odd-${prefix === 'btts' ? 'btts-' : ''}down`);
-        const sensOddUpEl = document.getElementById(`sens-odd-${prefix === 'btts' ? 'btts-' : ''}up`);
+        const sensOddPrefix = prefix === 'btts' ? 'sens-odd-btts-' : 'sens-odd-';
+        const sensOddDownEl = document.getElementById(`${sensOddPrefix}down`);
+        const sensOddUpEl = document.getElementById(`${sensOddPrefix}up`);
 
         // Get global currency and bankroll
         const currSelect = document.getElementById('global-currency');
@@ -449,16 +450,14 @@ document.addEventListener('DOMContentLoaded', () => {
             stakeUnitsEl.style.color = units > 0 ? "var(--accent-color)" : "#ef4444";
         }
 
-        // Money reference based on INTEGER UNITS (1u = 1% bankroll)
-        const moneyRefEl = document.getElementById(`${prefix}-stake-money-ref`);
-        if (moneyRefEl) {
+        if (stakeMoneyEl) {
             if (units > 0 && houseOdd > 1) {
                 // Calculation: bankroll * units%
                 const moneyStakeRefRaw = bankroll * (units / 100);
                 const moneyStakeRef = Math.round(moneyStakeRefRaw / 10) * 10;
-                moneyRefEl.textContent = `(≈ ${currBase}${moneyStakeRef})`;
+                stakeMoneyEl.textContent = `(≈ ${currBase}${moneyStakeRef})`;
             } else {
-                moneyRefEl.textContent = "";
+                stakeMoneyEl.textContent = "";
             }
         }
 
@@ -476,7 +475,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 evSingle.textContent = `${currBase}${moneyEv.toFixed(2)}`;
                 evHundred.textContent = `${currBase}${(moneyEv * 100).toFixed(2)}`;
                 evSingle.style.color = "var(--accent-color)";
-                evHundred.style.color = "var(--accent-color)";
             } else {
                 evSingle.textContent = `${currBase}0.00`;
                 evHundred.textContent = `${currBase}0.00`;
@@ -792,7 +790,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Average probability
         const p = clamp(((probA + probB) / 2) / 100, 0, 1);
-        displayAverage.textContent = (p * 100).toFixed(1) + '%';
+        if (displayAverage) displayAverage.textContent = (p * 100).toFixed(1);
 
         // Fair odd
         const fairOdd = p > 0 ? (1 / p) : 0;
@@ -805,26 +803,26 @@ document.addEventListener('DOMContentLoaded', () => {
             displayHouseProb.textContent = (p_house * 100).toFixed(1) + '%';
 
             // EV and Edge (different things)
-            const evPct = ((p * houseOdd) - 1) * 100;
+            // Edge & EV
+            const evPct = houseOdd > 0 ? (pAvg * houseOdd - 1) * 100 : 0;
             const displayedFairOdd = parseFloat(fairOdd.toFixed(2));
             const edgePct = displayedFairOdd > 0 ? (houseOdd - displayedFairOdd) : 0;
 
-            edgeContainer.style.display = 'block';
-            edgeDivider.style.display = 'block';
-            edgeValueDisplay.textContent = formatSigned(edgePct, 2);
-            edgeValueDisplay.parentElement.style.color = edgePct > 0 ? "var(--accent-color)" : (edgePct < 0 ? "#ef4444" : "var(--text-primary)");
-
-            evContainer.style.display = 'block';
-            evDivider.style.display = 'block';
-            evValueDisplay.textContent = formatSigned(evPct, 2);
-            evValueDisplay.parentElement.style.color = evPct > 0 ? "var(--accent-color)" : "#ef4444";
+            if (edgeValueDisplay) {
+                edgeValueDisplay.textContent = formatSigned(edgePct, 2);
+                edgeValueDisplay.style.color = edgePct > 0 ? "var(--accent-color)" : (edgePct < 0 ? "#ef4444" : "var(--text-primary)");
+            }
+            if (evValueDisplay) {
+                evValueDisplay.textContent = formatSigned(evPct, 2);
+                evValueDisplay.style.color = evPct > 0 ? "var(--accent-color)" : (evPct < 0 ? "#ef4444" : "var(--text-primary)");
+            }
 
             // Value Badge & Pro Sensitivity
-            updateValueTag(evPct, p * 100, houseOdd, probBadge, probExplanation, probBadgeContainer);
-            updateProSensitivity(p * 100, houseOdd, sensProbDown, sensProbUp, sensProbReading, proSectionProb, 'prob');
+            updateValueTag(evPct, pAvg * 100, houseOdd, probBadge, probExplanation, probBadgeContainer);
+            updateProSensitivity(pAvg * 100, houseOdd, sensProbDown, sensProbUp, sensProbReading, proSectionProb, 'prob');
 
             // Kelly 1/4
-            const f = kellyFraction(p, houseOdd, 0.25);
+            const f = kellyFraction(pAvg, houseOdd, 0.25); // Changed 'p' to 'pAvg'
             const stakePct = f * 100;
 
             // Units mapping (1u = 1% bankroll)
@@ -912,52 +910,38 @@ document.addEventListener('DOMContentLoaded', () => {
             const hasData = s !== "" || c !== "";
             const displayVal = hasData ? `${s === '' ? '?' : s}-${c === '' ? '?' : c}` : '';
 
-            const row = document.createElement('div');
-            row.className = 'match-row';
-            row.innerHTML = `
-                <div class="match-label">P${i + 1}</div>
-                <div class="score-field-wrapper">
-                    <input
-                        type="text"
-                        class="score-input"
-                        placeholder="2-1"
-                        value="${displayVal}"
-                        data-index="${i}"
-                        autocomplete="off"
-                        inputmode="numeric"
-                    >
-                    <span class="score-preview${hasData ? ' filled' : ''}" id="score-prev-${i}">
-                        ${hasData ? (isVisitor ? `${c}-${s}` : `${s}-${c}`) : ''}
-                    </span>
+            const li = document.createElement('li');
+            li.className = 'match-row-item';
+            li.setAttribute('data-index', i);
+            li.innerHTML = `
+                <div class="row-num">${i + 1}</div>
+                <div class="row-input-box">
+                    <label>Marcó</label>
+                    <input type="number" class="manual-scored" value="${s}" placeholder="0" min="0" step="1" data-index="${i}">
                 </div>
+                <div class="row-input-box">
+                    <label>Recibió</label>
+                    <input type="number" class="manual-conceded" value="${c}" placeholder="0" min="0" step="1" data-index="${i}">
+                </div>
+                <button class="btn-remove-row" type="button" onclick="window.removeRow(${i})" title="Eliminar fila">×</button>
             `;
-            matchRowsContainer.appendChild(row);
+            matchRowsContainer.appendChild(li);
         }
 
         // Attach events
-        matchRowsContainer.querySelectorAll('.score-input').forEach(input => {
+        matchRowsContainer.querySelectorAll('input').forEach(input => {
             const idx = parseInt(input.dataset.index);
-            const isVisitorTeam = currentManualTeam === 'Equipo Visitante';
+            const isVisitorTeam = currentManualTeam === 'Visitor';
             const teamKey = isVisitorTeam ? 'Visitor' : 'Local';
 
             input.addEventListener('input', () => {
-                const raw = input.value.trim();
-                const parsed = parseScore(raw);
-                input.classList.toggle('invalid', raw !== '' && !parsed);
+                const val = input.value.trim();
+                const num = val === '' ? '' : parseInt(val, 10);
 
-                if (parsed) {
-                    manualData[teamKey][idx].scored = parsed.scored;
-                    manualData[teamKey][idx].conceded = parsed.conceded;
-                    const prev = document.getElementById(`score-prev-${idx}`);
-                    if (prev) {
-                        prev.textContent = isVisitorTeam ? `${parsed.conceded}-${parsed.scored}` : `${parsed.scored}-${parsed.conceded}`;
-                        prev.className = 'score-preview filled';
-                    }
-                } else if (raw === '') {
-                    manualData[teamKey][idx].scored = '';
-                    manualData[teamKey][idx].conceded = '';
-                    const prev = document.getElementById(`score-prev-${idx}`);
-                    if (prev) { prev.textContent = ''; prev.className = 'score-preview'; }
+                if (input.classList.contains('manual-scored')) {
+                    manualData[teamKey][idx].scored = num;
+                } else {
+                    manualData[teamKey][idx].conceded = num;
                 }
                 updateManualStats();
                 saveState();
@@ -966,29 +950,22 @@ document.addEventListener('DOMContentLoaded', () => {
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
-                    const raw = input.value.trim();
-                    const parsed = parseScore(raw);
-                    if (parsed) {
-                        // Advance to next row
+                    // Move to next field or next row
+                    const isScored = input.classList.contains('manual-scored');
+                    if (isScored) {
+                        const concededInp = input.closest('.match-row-item').querySelector('.manual-conceded');
+                        if (concededInp) concededInp.focus();
+                    } else {
                         const nextIdx = idx + 1;
                         if (nextIdx < visibleRows) {
-                            const next = matchRowsContainer.querySelector(`.score-input[data-index="${nextIdx}"]`);
-                            if (next) { next.focus(); next.select(); }
+                            const nextScored = matchRowsContainer.querySelector(`.manual-scored[data-index="${nextIdx}"]`);
+                            if (nextScored) nextScored.focus();
                         } else if (visibleRows < MAX_MANUAL_ROWS) {
-                            // Auto-add a row
                             visibleRows++;
                             generateMatchRows(visibleRows - 1);
                             updateAddRowBtn();
                         }
                     }
-                } else if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    const next = matchRowsContainer.querySelector(`.score-input[data-index="${idx + 1}"]`);
-                    if (next) { next.focus(); next.select(); }
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    const prev = matchRowsContainer.querySelector(`.score-input[data-index="${idx - 1}"]`);
-                    if (prev) { prev.focus(); prev.select(); }
                 }
             });
         });
@@ -1003,7 +980,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const updateManualStats = () => {
-        const teamData = manualData[currentManualTeam === 'Equipo Local' ? 'Local' : 'Visitor'];
+        const isVisitor = currentManualTeam === 'Visitor';
+        const teamKey = isVisitor ? 'Visitor' : 'Local';
+        const teamData = manualData[teamKey];
         let played = 0, scoredGames = 0, concededGames = 0, totalScored = 0, totalConceded = 0;
 
         teamData.forEach(match => {
@@ -1059,8 +1038,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 bttsMode: bttsMode ? bttsMode.value : "hybrid",
                 bttsMarket: currentBttsMarket,
                 ouLine: ouLineSelect ? ouLineSelect.value : "2.5",
-                proModeProb,
-                proModeBtts,
+                // proModeProb, // Removed
+                // proModeBtts, // Removed
                 manualData
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -1080,14 +1059,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (state.bttsMarket) currentBttsMarket = state.bttsMarket;
             if (ouLineSelect && state.ouLine) ouLineSelect.value = state.ouLine;
 
-            if (state.proModeProb !== undefined) {
-                proModeProb = state.proModeProb;
-                if (proModeToggleProb) proModeToggleProb.checked = proModeProb;
-            }
-            if (state.proModeBtts !== undefined) {
-                proModeBtts = state.proModeBtts;
-                if (proModeToggleBtts) proModeToggleBtts.checked = proModeBtts;
-            }
+            // if (state.proModeProb !== undefined) proModeProb = true; // Removed
+            // if (state.proModeBtts !== undefined) proModeBtts = true; // Removed
 
             // Restore manual data safely
             if (state.manualData && state.manualData.Local && state.manualData.Visitor) {
@@ -1160,13 +1133,13 @@ document.addEventListener('DOMContentLoaded', () => {
         saveState();
     };
 
-    const showManualEntry = (team) => {
-        currentManualTeam = team;
+    const showManualEntry = (teamKey) => {
+        currentManualTeam = teamKey; // Expected: 'Local' or 'Visitor'
         showView(bttsManualView);
-        if (manualTeamName) manualTeamName.textContent = team;
-        // Restore visible rows: at least as many as have data, but minimum DEFAULT_ROWS
-        const teamKey = team === 'Equipo Local' ? 'Local' : 'Visitor';
-        const dataCount = manualData[teamKey].filter(m => m.scored !== '' || m.conceded !== '').length;
+        if (manualTeamName) manualTeamName.textContent = teamKey === 'Local' ? 'Equipo Local' : 'Equipo Visitante';
+
+        const teamData = manualData[teamKey];
+        const dataCount = teamData.filter(m => m.scored !== '' || m.conceded !== '').length;
         visibleRows = Math.max(dataCount, DEFAULT_ROWS);
         if (pasteArea) pasteArea.value = '';
         if (pasteFeedback) pasteFeedback.style.display = 'none';
@@ -1193,17 +1166,18 @@ document.addEventListener('DOMContentLoaded', () => {
         calculateBtts();
         // Auto-save significant calculations
         const odd = toNumber(bttsHouseOdd.value, 0);
-        const valFinal = parseFloat(bttsAvgProb.textContent) || 0;
+        const heroProbEl = document.getElementById('hero-prob');
+        const valFinal = heroProbEl ? parseFloat(heroProbEl.textContent) : 0;
+
         if (odd > 1 && valFinal > 0) {
-            const ev = ((valFinal / 100) * odd - 1) * 100;
             saveToHistory({
                 type: 'btts', market: currentBttsMarket.toUpperCase(), marketType: currentBttsMarket,
-                prob: valFinal, odd, ev,
+                prob: valFinal, odd, ev: ((valFinal / 100) * odd - 1) * 100,
                 lS: bttsLocalScored.value, lC: bttsLocalConceded.value,
                 vS: bttsVisitorScored.value, vC: bttsVisitorConceded.value
             });
         }
-    }, 2000); // 2s delay for auto-save
+    }, 2000);
 
     // Initial simple debounced for live updates (no save)
     const liveUpdateProb = debounce(calculate, 150);
@@ -1214,8 +1188,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnBack) btnBack.addEventListener('click', () => showView(mainMenu));
     if (btnBackBtts) btnBackBtts.addEventListener('click', () => showView(mainMenu));
     if (btnBackManual) btnBackManual.addEventListener('click', () => showView(bttsView));
-    if (btnManualLocal) btnManualLocal.addEventListener('click', () => showManualEntry('Equipo Local'));
-    if (btnManualVisitor) btnManualVisitor.addEventListener('click', () => showManualEntry('Equipo Visitante'));
+    if (btnManualLocal) btnManualLocal.addEventListener('click', () => showManualEntry('Local'));
+    if (btnManualVisitor) btnManualVisitor.addEventListener('click', () => showManualEntry('Visitor'));
 
     // BTTS / O-U mode toggles
     if (btnBttsMode) {
@@ -1300,8 +1274,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }, 3000);
             } else {
                 if (clearTimer) clearTimeout(clearTimer);
-                const teamKey = currentManualTeam === 'Equipo Local' ? 'Local' : 'Visitor';
-                manualData[teamKey] = Array.from({ length: MAX_MANUAL_ROWS }, () => ({ scored: "", conceded: "" }));
+                manualData[currentManualTeam] = Array.from({ length: MAX_MANUAL_ROWS }, () => ({ scored: "", conceded: "" }));
                 visibleRows = DEFAULT_ROWS;
                 if (pasteArea) pasteArea.value = '';
                 if (pasteFeedback) pasteFeedback.style.display = 'none';
@@ -1339,19 +1312,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const teamKey = currentManualTeam === 'Equipo Local' ? 'Local' : 'Visitor';
-            let truncated = false;
-
-            if (valid.length > MAX_MANUAL_ROWS) {
-                truncated = true;
-            }
-
             const toInsert = valid.slice(0, MAX_MANUAL_ROWS);
             // Reset and fill
-            manualData[teamKey] = Array.from({ length: MAX_MANUAL_ROWS }, () => ({ scored: "", conceded: "" }));
+            manualData[currentManualTeam] = Array.from({ length: MAX_MANUAL_ROWS }, () => ({ scored: "", conceded: "" }));
             toInsert.forEach((p, i) => {
-                manualData[teamKey][i].scored = p.scored;
-                manualData[teamKey][i].conceded = p.conceded;
+                manualData[currentManualTeam][i].scored = p.scored;
+                manualData[currentManualTeam][i].conceded = p.conceded;
             });
 
             // Expand visible rows to at least what was pasted
@@ -1446,20 +1412,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener('beforeunload', saveState);
 
-    // Enhancement Listeners
-    if (proModeToggleProb) {
-        proModeToggleProb.addEventListener('change', (e) => {
-            proModeProb = e.target.checked;
-            calculate();
-        });
-    }
-
-    if (proModeToggleBtts) {
-        proModeToggleBtts.addEventListener('change', (e) => {
-            proModeBtts = e.target.checked;
-            calculateBtts();
-        });
-    }
+    // Pro Mode Toggles Removed
 
     const btnShowHistoryBtts = document.getElementById('btn-show-history-btts');
 
