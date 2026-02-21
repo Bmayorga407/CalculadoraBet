@@ -185,6 +185,9 @@
                                     Esperado (1 Bet)</span>
                                 <span id="prob-ev-money-single"
                                     style="font-size: 16px; font-weight: 600; color: var(--accent-color);">--</span>
+                                <span
+                                    style="font-size: 8px; color: rgba(255,255,255,0.3); margin-top: 2px; text-align: center;">(con
+                                    Stake final)</span>
                             </div>
                             <div class="divider-vertical" style="height: 30px; min-height: 30px;"></div>
                             <div style="display: flex; flex-direction: column; align-items: center;">
@@ -193,6 +196,9 @@
                                     (100 Bets)</span>
                                 <span id="prob-ev-money-hundred"
                                     style="font-size: 16px; font-weight: 600; color: var(--accent-color);">--</span>
+                                <span
+                                    style="font-size: 8px; color: rgba(255,255,255,0.3); margin-top: 2px; text-align: center;">(con
+                                    Stake final)</span>
                             </div>
                         </div>
 
@@ -222,6 +228,8 @@
                                         style="font-size: 42px; font-weight: 700; color: var(--accent-color); line-height: 1;">0</span>
                                     <span
                                         style="font-size: 16px; color: var(--text-secondary); font-weight: 500;">u</span>
+                                    <span id="prob-stake-money-ref"
+                                        style="font-size: 12px; color: var(--text-secondary); margin-left: 4px; opacity: 0.8;"></span>
                                 </div>
                                 <div
                                     style="margin-top: 8px; font-size: 11px; color: rgba(255,255,255,0.4); display: flex; gap: 8px;">
@@ -295,8 +303,9 @@
                 </div>
 
                 <!-- Kelly Stake Recommendation -->
-                <div class="card result-card full-width" id="kelly-card" style="display: none;">
-                    <h2>Recomendación de Stake (Kelly 1/4)</h2>
+                <div class="card result-card full-width" id="kelly-card"
+                    style="display: none; border-color: rgba(255,255,255,0.05); opacity: 0.8;">
+                    <h2 style="font-size: 12px; opacity: 0.7;">Kelly 1/4 (Referencia Agresiva)</h2>
                     <div class="value-display">
                         <span id="kelly-stake">0u</span><span
                             style="font-size: 11px; color: var(--text-secondary); margin-left: 4px; display: none;"
@@ -620,6 +629,9 @@
                                         Esperado (1 Bet)</span>
                                     <span id="btts-ev-money-single"
                                         style="font-size: 16px; font-weight: 600; color: var(--accent-color);">--</span>
+                                    <span
+                                        style="font-size: 8px; color: rgba(255,255,255,0.3); margin-top: 2px; text-align: center;">(con
+                                        Stake final)</span>
                                 </div>
                                 <div class="divider-vertical" style="height: 30px; min-height: 30px;"></div>
                                 <div style="display: flex; flex-direction: column; align-items: center;">
@@ -628,6 +640,9 @@
                                         (100 Bets)</span>
                                     <span id="btts-ev-money-hundred"
                                         style="font-size: 16px; font-weight: 600; color: var(--accent-color);">--</span>
+                                    <span
+                                        style="font-size: 8px; color: rgba(255,255,255,0.3); margin-top: 2px; text-align: center;">(con
+                                        Stake final)</span>
                                 </div>
                             </div>
 
@@ -657,6 +672,8 @@
                                             style="font-size: 42px; font-weight: 700; color: var(--accent-color); line-height: 1;">0</span>
                                         <span
                                             style="font-size: 16px; color: var(--text-secondary); font-weight: 500;">u</span>
+                                        <span id="btts-stake-money-ref"
+                                            style="font-size: 12px; color: var(--text-secondary); margin-left: 4px; opacity: 0.8;"></span>
                                     </div>
                                     <div
                                         style="margin-top: 8px; font-size: 11px; color: rgba(255,255,255,0.4); display: flex; gap: 8px;">
@@ -724,8 +741,10 @@
                     </div>
 
                     <!-- Stake Recommendation -->
-                    <div class="card result-card full-width" id="btts-kelly-card" style="display: none;">
-                        <h2 id="btts-stake-label">Stake Recomendado</h2>
+                    <div class="card result-card full-width" id="btts-kelly-card"
+                        style="display: none; border-color: rgba(255,255,255,0.05); opacity: 0.8;">
+                        <h2 id="btts-stake-label" style="font-size: 12px; opacity: 0.7;">Kelly 1/4 (Referencia Agresiva)
+                        </h2>
                         <div class="value-display"><span id="btts-kelly-stake">0u</span></div>
                     </div>
 

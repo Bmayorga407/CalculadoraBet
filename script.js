@@ -442,6 +442,19 @@ document.addEventListener('DOMContentLoaded', () => {
             stakeUnitsEl.textContent = units;
             stakeUnitsEl.style.color = units > 0 ? "var(--accent-color)" : "#ef4444";
         }
+
+        // Money reference next to units
+        const moneyRefEl = document.getElementById(`${prefix}-stake-money-ref`);
+        if (moneyRefEl) {
+            if (units > 0 && houseOdd > 1) {
+                const moneyStakeRefRaw = bankroll * (pKellyCons / 100);
+                const moneyStakeRef = Math.round(moneyStakeRefRaw / 10) * 10;
+                moneyRefEl.textContent = `(≈ ${currBase}${moneyStakeRef})`;
+            } else {
+                moneyRefEl.textContent = "";
+            }
+        }
+
         if (kellyBaseEl) kellyBaseEl.textContent = `Base: ${pKellyBase.toFixed(1)}%`;
         if (kellyConsEl) kellyConsEl.textContent = `Cons: ${pKellyCons.toFixed(1)}%`;
 
@@ -731,11 +744,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (bttsKellyCard) bttsKellyCard.style.display = 'flex';
                 if (bttsKellyStake) {
                     if (units === 0) {
-                        bttsKellyStake.textContent = "0u (No Bet)";
-                        bttsKellyStake.style.color = "#ef4444";
+                        bttsKellyStake.textContent = "0.00% (Referencia)";
+                        bttsKellyStake.style.color = "var(--text-secondary)";
                     } else {
-                        bttsKellyStake.textContent = `${units}u (${currency}${stakeMoneyRounded})`;
-                        bttsKellyStake.style.color = "var(--accent-color)";
+                        // Kelly is reference, so we keep % but mark it
+                        bttsKellyStake.textContent = `${stakePct.toFixed(2)}% (Referencia)`;
+                        bttsKellyStake.style.color = "var(--text-secondary)";
                     }
                 }
             } else {
@@ -814,17 +828,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             kellyCard.style.display = 'flex';
             if (units === 0) {
-                kellyStakeDisplay.textContent = "0u (No Bet)";
-                kellyStakeDisplay.parentElement.style.color = "#ef4444";
+                kellyStakeDisplay.textContent = "0.00% (Referencia)";
+                kellyStakeDisplay.parentElement.style.color = "var(--text-secondary)";
             } else {
-                kellyStakeDisplay.textContent = `${units}u (${currencySymbol}${stakeAmountRounded})`;
-                kellyStakeDisplay.parentElement.style.color = "var(--accent-color)";
-                // Small percentage detail if needed (hidden by default in HTML)
+                kellyStakeDisplay.textContent = `${stakePct.toFixed(1)}% (Referencia)`;
+                kellyStakeDisplay.parentElement.style.color = "var(--text-secondary)";
+                // Small percentage detail hidden
                 const kellyPctEl = document.getElementById('kelly-pct');
-                if (kellyPctEl) {
-                    kellyPctEl.textContent = `(${stakePct.toFixed(1)}%)`;
-                    // kellyPctEl.style.display = 'inline'; // Uncomment to show % detail
-                }
+                if (kellyPctEl) kellyPctEl.style.display = 'none';
             }
         } else {
             summaryHouseOdd.textContent = '-.--';
