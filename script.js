@@ -48,6 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const bttsVisitorAvgScored = document.getElementById('btts-visitor-avg-scored');
     const bttsVisitorAvgConceded = document.getElementById('btts-visitor-avg-conceded');
 
+    const bttsLocalXg = document.getElementById('btts-local-xg');
+    const bttsVisitorXg = document.getElementById('btts-visitor-xg');
+
     const bttsSample = document.getElementById('btts-sample');
     const bttsHouseOdd = document.getElementById('btts-house-odd');
     const bttsMode = document.getElementById('btts-mode');
@@ -694,17 +697,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // --- Market Choice & Pro Analysis ---
         let pSelected = 0;
+        let pickLabel = "";
         if (currentBttsMarket === "ou") {
-            pSelected = (ouPick === "over" ? overPct : underPct);
+            const isOver = ouPick === "over";
+            pSelected = isOver ? overPct : underPct;
+            pickLabel = isOver ? `Over ${ouLine.toFixed(1)}` : `Under ${ouLine.toFixed(1)}`;
         } else {
             pSelected = probYes;
+            pickLabel = probYes >= 50 ? "BTTS Sí" : "BTTS No";
         }
 
-        if (heroProb) heroProb.textContent = pSelected.toFixed(1) + '%';
-        if (heroFair) {
-            const f = pSelected > 0 ? (100 / pSelected) : 0;
-            heroFair.textContent = f > 0 ? f.toFixed(2) : '-.--';
-        }
+        const fairOddSelected = pSelected > 0 ? (100 / pSelected) : 0;
+        updateHero(pickLabel, pSelected, fairOddSelected);
 
         // Reliability Penalty
         let penalty = 0.05;
