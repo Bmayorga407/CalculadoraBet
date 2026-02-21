@@ -1203,10 +1203,57 @@ select:focus-visible {
 .stat-col {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 28px;
+    align-items: stretch;
+    justify-content: space-between;
+    flex: 1;
+    height: 100%;
+}
+
+.stat-col .prob-item,
+.stat-col .ou-controls {
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex: 1;
+    height: 64px;
+    gap: 8px;
+}
+
+.stat-col .prob-item h2,
+.stat-col .prob-item .label-line {
+    margin: 0;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-col .prob-item .value-display {
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* Custom Scrollbar for Paste Area */
+.paste-area::-webkit-scrollbar {
+    width: 6px;
+}
+
+.paste-area::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 10px;
+}
+
+.paste-area::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.paste-area::-webkit-scrollbar-thumb:hover {
+    background: rgba(16, 185, 129, 0.3);
 }
 
 /* Focus visibility */

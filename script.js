@@ -603,7 +603,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fairOddSelected > 0 && bttsEdgeValue && bttsEvValue) {
             if (houseOdd > 1) {
                 const evPct = ((pSelected * houseOdd) - 1) * 100;
-                const edgePct = ((houseOdd / fairOddSelected) - 1) * 100;
+                const displayedFairOdd = parseFloat(fairOddSelected.toFixed(2));
+                const edgePct = displayedFairOdd > 0 ? ((houseOdd / displayedFairOdd) - 1) * 100 : 0;
 
                 bttsEdgeValue.textContent = formatSigned(edgePct, 2) + "%";
                 bttsEdgeValue.style.color = edgePct > 0 ? "var(--accent-color)" : "#ef4444";
@@ -671,7 +672,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // EV and Edge (different things)
             const evPct = ((p * houseOdd) - 1) * 100;
-            const edgePct = fairOdd > 0 ? ((houseOdd / fairOdd) - 1) * 100 : 0;
+            const displayedFairOdd = parseFloat(fairOdd.toFixed(2));
+            const edgePct = displayedFairOdd > 0 ? ((houseOdd / displayedFairOdd) - 1) * 100 : 0;
 
             edgeContainer.style.display = 'block';
             edgeDivider.style.display = 'block';
