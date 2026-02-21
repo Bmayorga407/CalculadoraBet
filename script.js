@@ -747,6 +747,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (bttsBadgeContainer) bttsBadgeContainer.style.display = 'none';
         }
 
+        // Reliability Penalty (Restored)
+        let penalty = 0.05;
+        if (sampleStrength === "low") penalty = 0.07;
+        else if (sampleStrength === "medium") penalty = 0.05;
+        else if (sampleStrength === "decent") penalty = 0.03;
+
         updateProSensitivity(pSelected, houseOdd, sensBttsDown, sensBttsUp, sensBttsReading, proSectionBtts, 'btts', penalty);
 
         // Kelly / Stake
