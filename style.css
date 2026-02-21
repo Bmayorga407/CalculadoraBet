@@ -502,6 +502,7 @@ h1 {
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
     -webkit-appearance: none;
+    appearance: none;
     margin: 0;
 }
 
@@ -968,6 +969,54 @@ input[type=number] {
     .header-controls {
         justify-content: center;
         flex-wrap: wrap;
+    }
+
+    /* Calculator Mobile Optimizations */
+    .probability-row {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .probability-row .divider-vertical {
+        width: 100%;
+        height: 1px;
+        min-height: 1px;
+    }
+
+    .comparison-container {
+        flex-wrap: wrap;
+        row-gap: 20px;
+    }
+
+    .comparison-container .comp-item {
+        flex: 1 1 40%;
+    }
+
+    .comparison-container .divider-vertical {
+        display: none;
+    }
+
+    .btts-layout-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .stat-col {
+        gap: 16px;
+        margin-top: 16px;
+    }
+
+    .btts-hero {
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+    }
+
+    .hero-prob-row {
+        width: 100%;
+        justify-content: space-around;
+        padding-top: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
     }
 }
 
