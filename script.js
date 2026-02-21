@@ -362,15 +362,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const p = probPct / 100;
         const pDown = clamp(p - 0.05, 0.01, 0.99);
         const pUp = clamp(p + 0.05, 0.01, 0.99);
+        const oddDown = Math.max(1.01, houseOdd - 0.05);
+        const oddUp = houseOdd + 0.05;
 
         const evNow = houseOdd > 0 ? (p * houseOdd - 1) * 100 : 0;
         const evDown = houseOdd > 0 ? (pDown * houseOdd - 1) * 100 : 0;
         const evUp = houseOdd > 0 ? (pUp * houseOdd - 1) * 100 : 0;
+        const evOddDown = oddDown > 1 ? (p * oddDown - 1) * 100 : 0;
+        const evOddUp = oddUp > 1 ? (p * oddUp - 1) * 100 : 0;
 
-        // UI Elements
+        // --- DOM Elements ---
         const badgeEl = document.getElementById(`${prefix}-robustness-badge`);
         const marginEl = document.getElementById(`${prefix}-error-margin`);
-        const stakeEl = document.getElementById(`${prefix}-cons-stake`);
+        const stakeUnitsEl = document.getElementById(`${prefix}-stake-units`);
+        const kellyBaseEl = document.getElementById(`${prefix}-kelly-base`);
+        const kellyConsEl = document.getElementById(`${prefix}-kelly-cons`);
+        const verdictCard = document.getElementById(`${prefix}-verdict-card`);
+        const verdictIcon = document.getElementById(`${prefix}-verdict-icon`);
+        const verdictTitle = document.getElementById(`${prefix}-verdict-title`);
+        const verdictReason = document.getElementById(`${prefix}-verdict-reason`);
+        const evSingle = document.getElementById(`${prefix}-ev-money-single`);
+        const evHundred = document.getElementById(`${prefix}-ev-money-hundred`);
+        const sensOddDownEl = document.getElementById(`sens-odd-${prefix === 'btts' ? 'btts-' : ''}down`);
+        const sensOddUpEl = document.getElementById(`sens-odd-${prefix === 'btts' ? 'btts-' : ''}up`);
+
+        // Get global currency and bankroll
+        const currSelect = document.getElementById('global-currency');
+        const currBase = getCurrencySymbol(currSelect);
+        const globalBankrollStr = (document.getElementById('global-bankroll')?.value || "1000").replace(/\./g, '').replace(/,/g, '.');
+        const bankroll = parseFloat(globalBankrollStr) || 1000;
 
         // 1. Robustness
         if (badgeEl) {
@@ -399,21 +419,72 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 3. Conservative Stake (Quarter Kelly using pDown)
-        if (stakeEl) {
-            if (houseOdd > 1 && evDown > 0) {
-                const b = houseOdd - 1;
-                const kelly = ((pDown * houseOdd) - 1) / b;
-                const quarterKelly = (kelly / 4) * 100;
-                stakeEl.textContent = `${quarterKelly.toFixed(2)}%`;
-                stakeEl.style.color = "var(--accent-color)";
+        // 3. Stakes & Units mapping
+        let units = 0;
+        let pKellyBase = 0;
+        let pKellyCons = 0;
+
+        if (houseOdd > 1) {
+            const b = houseOdd - 1;
+            pKellyBase = clamp((((p * houseOdd) - 1) / b / 4) * 100, 0, 100);
+            pKellyCons = clamp((((pDown * houseOdd) - 1) / b / 4) * 100, 0, 100);
+
+            // Redondeo basado en pKellyCons
+            if (pKellyCons <= 0) units = 0;
+            else if (pKellyCons <= 1.0) units = 1;
+            else if (pKellyCons <= 2.0) units = 2;
+            else if (pKellyCons <= 3.0) units = 3;
+            else if (pKellyCons <= 4.0) units = 4;
+            else units = 5;
+        }
+
+        if (stakeUnitsEl) {
+            stakeUnitsEl.textContent = units;
+            stakeUnitsEl.style.color = units > 0 ? "var(--accent-color)" : "#ef4444";
+        }
+        if (kellyBaseEl) kellyBaseEl.textContent = `Base: ${pKellyBase.toFixed(1)}%`;
+        if (kellyConsEl) kellyConsEl.textContent = `Cons: ${pKellyCons.toFixed(1)}%`;
+
+        // 4. EV Monetario y Proyección
+        if (evSingle && evHundred) {
+            if (units > 0 && houseOdd > 1) {
+                const moneyStake = bankroll * (pKellyCons / 100);
+                const moneyEv = moneyStake * (evNow / 100);
+
+                evSingle.textContent = `${currBase}${moneyEv.toFixed(2)}`;
+                evHundred.textContent = `${currBase}${(moneyEv * 100).toFixed(2)}`;
+                evSingle.style.color = "var(--accent-color)";
+                evHundred.style.color = "var(--accent-color)";
             } else {
-                stakeEl.textContent = "0% (No Bet)";
-                stakeEl.style.color = "#ef4444";
+                evSingle.textContent = `${currBase}0.00`;
+                evHundred.textContent = `${currBase}0.00`;
+                evSingle.style.color = "var(--text-secondary)";
+                evHundred.style.color = "var(--text-secondary)";
             }
         }
 
-        // 4. Sensitivity Visuals
+        // 5. Veredicto Final Actionable
+        if (verdictCard) {
+            verdictCard.className = "verdict-card"; // Reset
+            if (houseOdd <= 1 || units === 0 || evNow <= 0) {
+                verdictCard.classList.add("verdict-no-bet");
+                if (verdictIcon) verdictIcon.textContent = "❌";
+                if (verdictTitle) { verdictTitle.textContent = "No apostar"; verdictTitle.style.color = "#ef4444"; }
+                if (verdictReason) verdictReason.textContent = "Expectativa negativa o el riesgo conservador es inviable.";
+            } else if (evDown <= 0) {
+                verdictCard.classList.add("verdict-reduce");
+                if (verdictIcon) verdictIcon.textContent = "⚠️";
+                if (verdictTitle) { verdictTitle.textContent = "Apostar con stake reducido"; verdictTitle.style.color = "#f59e0b"; }
+                if (verdictReason) verdictReason.textContent = "Valor positivo pero frágil si tu cálculo de prob falla en un 5%.";
+            } else {
+                verdictCard.classList.add("verdict-bet");
+                if (verdictIcon) verdictIcon.textContent = "✅";
+                if (verdictTitle) { verdictTitle.textContent = "Apostar"; verdictTitle.style.color = "#4ade80"; }
+                if (verdictReason) verdictReason.textContent = "Cálculo robusto. El valor se mantiene en escenarios adversos.";
+            }
+        }
+
+        // 6. Sensitivity Visuals
         if (downEl) {
             downEl.textContent = formatSigned(evDown, 2) + "%";
             downEl.style.color = evDown > 0 ? "var(--accent-color)" : "#ef4444";
@@ -422,14 +493,15 @@ document.addEventListener('DOMContentLoaded', () => {
             upEl.textContent = formatSigned(evUp, 2) + "%";
             upEl.style.color = evUp > 0 ? "var(--accent-color)" : "#ef4444";
         }
-
-        if (readingEl) {
-            let msg = "";
-            if (evDown > 0) msg = "El valor resiste una caída del 5% en tu probabilidad.";
-            else if (evNow > 0 && evDown <= 0) msg = "Poco margen. Si tu prob cae 5% el valor es negativo.";
-            else msg = "No hay valor esperado con los cálculos actuales.";
-            readingEl.textContent = msg;
+        if (sensOddDownEl) {
+            sensOddDownEl.textContent = formatSigned(evOddDown, 2) + "%";
+            sensOddDownEl.style.color = evOddDown > 0 ? "var(--accent-color)" : "#ef4444";
         }
+        if (sensOddUpEl) {
+            sensOddUpEl.textContent = formatSigned(evOddUp, 2) + "%";
+            sensOddUpEl.style.color = evOddUp > 0 ? "var(--accent-color)" : "#ef4444";
+        }
+
     };
 
     const formatSigned = (n, decimals = 2) => {

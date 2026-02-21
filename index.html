@@ -158,14 +158,46 @@
                         <span id="confidence-text" class="confidence-text"></span>
                     </div>
 
-                    <!-- Pro Mode: Sensitivity Analysis (full-width) -->
+                    <!-- Pro Mode: Manager Risk Analysis (full-width) -->
                     <div id="pro-sensitivity-prob" class="pro-section" style="display: none; margin-bottom: 16px;">
-                        <div class="pro-header"
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <h3 style="margin-bottom: 0;">Análisis de Riesgo Pro</h3>
-                            <div id="prob-robustness-badge" class="robust-badge">--</div>
+
+                        <!-- A) Veredicto Final -->
+                        <div class="verdict-card" id="prob-verdict-card"
+                            style="margin-bottom: 16px; padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+                            <div
+                                style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); font-weight: 600;">
+                                Veredicto Final</div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span id="prob-verdict-icon" style="font-size: 24px;">⛔</span>
+                                <h2 id="prob-verdict-title"
+                                    style="margin: 0; font-size: 22px; color: var(--text-primary);">--</h2>
+                            </div>
+                            <p id="prob-verdict-reason"
+                                style="margin: 0; font-size: 13px; color: var(--text-secondary); text-align: center; max-width: 90%;">
+                            </p>
                         </div>
 
+                        <!-- C) EV Monetario -->
+                        <div class="ev-money-card" id="prob-ev-money-card"
+                            style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; margin-bottom: 16px; display: flex; justify-content: space-around; align-items: center;">
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <span style="font-size: 10px; color: var(--text-secondary); margin-bottom: 4px;">Val.
+                                    Esperado (1 Bet)</span>
+                                <span id="prob-ev-money-single"
+                                    style="font-size: 16px; font-weight: 600; color: var(--accent-color);">--</span>
+                            </div>
+                            <div class="divider-vertical" style="height: 30px; min-height: 30px;"></div>
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <span
+                                    style="font-size: 10px; color: var(--text-secondary); margin-bottom: 4px;">Proyección
+                                    (100 Bets)</span>
+                                <span id="prob-ev-money-hundred"
+                                    style="font-size: 16px; font-weight: 600; color: var(--accent-color);">--</span>
+                            </div>
+                        </div>
+
+                        <h3 style="margin-bottom: 12px; font-size: 13px; color: var(--text-secondary);">Desglose del
+                            Análisis</h3>
                         <div class="pro-metrics"
                             style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05);">
                             <div class="pro-metric-row">
@@ -173,25 +205,65 @@
                                 <span id="prob-error-margin" class="metric-value">--</span>
                             </div>
                             <div class="pro-metric-row">
-                                <span class="metric-label">Stake Conservador:</span>
-                                <span id="prob-cons-stake" class="metric-value">--</span>
+                                <span class="metric-label">Robustez Matemática:</span>
+                                <span id="prob-robustness-badge" class="robust-badge"
+                                    style="margin-left: auto;">--</span>
                             </div>
                         </div>
 
-                        <p id="prob-range-summary" class="range-summary"
-                            style="display: none; text-align: center; margin-bottom: 16px; color: var(--text-secondary);">
-                        </p>
-                        <div class="sensitivity-grid" style="grid-template-columns: 1fr 1fr; gap: 8px;">
-                            <div class="sensitivity-card" style="padding: 8px;">
-                                <span class="sens-label" style="font-size: 10px;">-5% Prob EV</span>
-                                <span id="sens-prob-down" class="sens-value" style="font-size: 14px;">--</span>
-                            </div>
-                            <div class="sensitivity-card" style="padding: 8px;">
-                                <span class="sens-label" style="font-size: 10px;">+5% Prob EV</span>
-                                <span id="sens-prob-up" class="sens-value" style="font-size: 14px;">--</span>
+                        <!-- B) B) Stake en Unidades -->
+                        <div class="card result-card full-width" id="prob-stake-card"
+                            style="margin-bottom: 16px; padding: 16px; background: linear-gradient(145deg, #1e1e1e, #1a1a1a); border: 1px solid rgba(255,255,255,0.08);">
+                            <h2 style="font-size: 11px; margin-bottom: 8px;">Stake Recomendado Final</h2>
+                            <div
+                                style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                <div style="display: flex; align-items: baseline; gap: 4px;">
+                                    <span id="prob-stake-units" class="stake-unit-huge"
+                                        style="font-size: 42px; font-weight: 700; color: var(--accent-color); line-height: 1;">0</span>
+                                    <span
+                                        style="font-size: 16px; color: var(--text-secondary); font-weight: 500;">u</span>
+                                </div>
+                                <div
+                                    style="margin-top: 8px; font-size: 11px; color: rgba(255,255,255,0.4); display: flex; gap: 8px;">
+                                    <span id="prob-kelly-base">Base: --</span>
+                                    <span>|</span>
+                                    <span id="prob-kelly-cons">Cons: --</span>
+                                </div>
                             </div>
                         </div>
-                        <p id="sens-prob-reading" class="sens-reading"></p>
+
+                        <!-- D) Sensibilidad Cruzada (Prob + Cuota) -->
+                        <div style="margin-bottom: 16px;">
+                            <h4
+                                style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase;">
+                                Sensibilidad del EV</h4>
+                            <div class="sensitivity-grid"
+                                style="grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                                <div class="sensitivity-card" style="padding: 10px;">
+                                    <span class="sens-label" style="font-size: 10px; margin-bottom: 4px;">Probabilidad
+                                        -5%</span>
+                                    <span id="sens-prob-down" class="sens-value" style="font-size: 14px;">--</span>
+                                </div>
+                                <div class="sensitivity-card" style="padding: 10px;">
+                                    <span class="sens-label" style="font-size: 10px; margin-bottom: 4px;">Probabilidad
+                                        +5%</span>
+                                    <span id="sens-prob-up" class="sens-value" style="font-size: 14px;">--</span>
+                                </div>
+                                <div class="sensitivity-card"
+                                    style="padding: 10px; background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.1);">
+                                    <span class="sens-label" style="font-size: 10px; margin-bottom: 4px;">Cuota
+                                        -0.05</span>
+                                    <span id="sens-odd-down" class="sens-value" style="font-size: 14px;">--</span>
+                                </div>
+                                <div class="sensitivity-card"
+                                    style="padding: 10px; background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.1);">
+                                    <span class="sens-label" style="font-size: 10px; margin-bottom: 4px;">Cuota
+                                        +0.05</span>
+                                    <span id="sens-odd-up" class="sens-value" style="font-size: 14px;">--</span>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- Comparison Grid -->
@@ -520,11 +592,45 @@
                             <p id="btts-value-explanation" class="value-explanation"></p>
                         </div>
                         <div id="pro-sensitivity-btts" class="pro-section" style="display: none; margin-bottom: 16px;">
-                            <div class="pro-header"
-                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <h3 style="margin-bottom: 0;">Análisis de Riesgo Pro</h3>
-                                <div id="btts-robustness-badge" class="robust-badge">--</div>
+
+                            <!-- A) Veredicto Final -->
+                            <div class="verdict-card" id="btts-verdict-card"
+                                style="margin-bottom: 16px; padding: 16px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+                                <div
+                                    style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); font-weight: 600;">
+                                    Veredicto Final</div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span id="btts-verdict-icon" style="font-size: 24px;">⛔</span>
+                                    <h2 id="btts-verdict-title"
+                                        style="margin: 0; font-size: 22px; color: var(--text-primary);">--</h2>
+                                </div>
+                                <p id="btts-verdict-reason"
+                                    style="margin: 0; font-size: 13px; color: var(--text-secondary); text-align: center; max-width: 90%;">
+                                </p>
                             </div>
+
+                            <!-- C) EV Monetario -->
+                            <div class="ev-money-card" id="btts-ev-money-card"
+                                style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; margin-bottom: 16px; display: flex; justify-content: space-around; align-items: center;">
+                                <div style="display: flex; flex-direction: column; align-items: center;">
+                                    <span
+                                        style="font-size: 10px; color: var(--text-secondary); margin-bottom: 4px;">Val.
+                                        Esperado (1 Bet)</span>
+                                    <span id="btts-ev-money-single"
+                                        style="font-size: 16px; font-weight: 600; color: var(--accent-color);">--</span>
+                                </div>
+                                <div class="divider-vertical" style="height: 30px; min-height: 30px;"></div>
+                                <div style="display: flex; flex-direction: column; align-items: center;">
+                                    <span
+                                        style="font-size: 10px; color: var(--text-secondary); margin-bottom: 4px;">Proyección
+                                        (100 Bets)</span>
+                                    <span id="btts-ev-money-hundred"
+                                        style="font-size: 16px; font-weight: 600; color: var(--accent-color);">--</span>
+                                </div>
+                            </div>
+
+                            <h3 style="margin-bottom: 12px; font-size: 13px; color: var(--text-secondary);">Desglose del
+                                Análisis</h3>
                             <div class="pro-metrics"
                                 style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05);">
                                 <div class="pro-metric-row">
@@ -532,19 +638,67 @@
                                     <span id="btts-error-margin" class="metric-value">--</span>
                                 </div>
                                 <div class="pro-metric-row">
-                                    <span class="metric-label">Stake Conservador:</span>
-                                    <span id="btts-cons-stake" class="metric-value">--</span>
+                                    <span class="metric-label">Robustez Matemática:</span>
+                                    <span id="btts-robustness-badge" class="robust-badge"
+                                        style="margin-left: auto;">--</span>
                                 </div>
                             </div>
-                            <div class="sensitivity-grid" style="grid-template-columns: 1fr 1fr; gap: 8px;">
-                                <div class="sensitivity-card" style="padding: 8px;"><span class="sens-label"
-                                        style="font-size: 10px;">-5% Prob EV</span><span id="sens-btts-down"
-                                        class="sens-value" style="font-size: 14px;">--</span></div>
-                                <div class="sensitivity-card" style="padding: 8px;"><span class="sens-label"
-                                        style="font-size: 10px;">+5% Prob EV</span><span id="sens-btts-up"
-                                        class="sens-value" style="font-size: 14px;">--</span></div>
+
+                            <!-- B) B) Stake en Unidades -->
+                            <div class="card result-card full-width" id="btts-stake-card"
+                                style="margin-bottom: 16px; padding: 16px; background: linear-gradient(145deg, #1e1e1e, #1a1a1a); border: 1px solid rgba(255,255,255,0.08);">
+                                <h2 style="font-size: 11px; margin-bottom: 8px;">Stake Recomendado Final</h2>
+                                <div
+                                    style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                    <div style="display: flex; align-items: baseline; gap: 4px;">
+                                        <span id="btts-stake-units" class="stake-unit-huge"
+                                            style="font-size: 42px; font-weight: 700; color: var(--accent-color); line-height: 1;">0</span>
+                                        <span
+                                            style="font-size: 16px; color: var(--text-secondary); font-weight: 500;">u</span>
+                                    </div>
+                                    <div
+                                        style="margin-top: 8px; font-size: 11px; color: rgba(255,255,255,0.4); display: flex; gap: 8px;">
+                                        <span id="btts-kelly-base">Base: --</span>
+                                        <span>|</span>
+                                        <span id="btts-kelly-cons">Cons: --</span>
+                                    </div>
+                                </div>
                             </div>
-                            <p id="sens-btts-reading" class="sens-reading"></p>
+
+                            <!-- D) Sensibilidad Cruzada (Prob + Cuota) -->
+                            <div style="margin-bottom: 16px;">
+                                <h4
+                                    style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase;">
+                                    Sensibilidad del EV</h4>
+                                <div class="sensitivity-grid"
+                                    style="grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                                    <div class="sensitivity-card" style="padding: 10px;">
+                                        <span class="sens-label"
+                                            style="font-size: 10px; margin-bottom: 4px;">Probabilidad -5%</span>
+                                        <span id="sens-btts-down" class="sens-value" style="font-size: 14px;">--</span>
+                                    </div>
+                                    <div class="sensitivity-card" style="padding: 10px;">
+                                        <span class="sens-label"
+                                            style="font-size: 10px; margin-bottom: 4px;">Probabilidad +5%</span>
+                                        <span id="sens-btts-up" class="sens-value" style="font-size: 14px;">--</span>
+                                    </div>
+                                    <div class="sensitivity-card"
+                                        style="padding: 10px; background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.1);">
+                                        <span class="sens-label" style="font-size: 10px; margin-bottom: 4px;">Cuota
+                                            -0.05</span>
+                                        <span id="sens-odd-btts-down" class="sens-value"
+                                            style="font-size: 14px;">--</span>
+                                    </div>
+                                    <div class="sensitivity-card"
+                                        style="padding: 10px; background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.1);">
+                                        <span class="sens-label" style="font-size: 10px; margin-bottom: 4px;">Cuota
+                                            +0.05</span>
+                                        <span id="sens-odd-btts-up" class="sens-value"
+                                            style="font-size: 14px;">--</span>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                         <div class="comparison-container">
                             <div class="comp-item">
