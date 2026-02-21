@@ -235,16 +235,19 @@
         <!-- BTTS Calculator View -->
         <main id="btts-view" style="display: none;">
             <header>
-                <div class="manual-header-row">
-                    <div class="manual-header-left">
+                <div class="calc-header-row" style="margin-bottom: 16px;">
+                    <div style="display: flex; gap: 8px;">
                         <button id="btn-back-btts" class="back-button" type="button">← Atrás</button>
-                        <button id="btn-clear-btts" class="clear-btn" type="button" style="margin-bottom: 8px;">Borrar
-                            Datos</button>
+                        <button id="btn-clear-btts" class="clear-btn" type="button"
+                            style="padding: 6px 12px; font-size: 11px;">Borrar</button>
                     </div>
-                    <div class="manual-header-right">
-                        <h1 style="font-size: 16px; margin-bottom: 4px;">Calculadora BTTS y O/U</h1>
-                        <p class="subtitle" style="font-size: 11px;">Ambos Anotan y Total Goles</p>
+                    <div class="header-actions">
+                        <button id="btn-show-history-btts" class="icon-btn" title="Historial">🕒</button>
                     </div>
+                </div>
+                <div class="manual-header-right" style="text-align: left; margin-bottom: 16px;">
+                    <h1 style="font-size: 20px; margin-bottom: 4px;">Calculadora BTTS y O/U</h1>
+                    <p class="subtitle" style="font-size: 12px;">Ambos Anotan y Total Goles</p>
                 </div>
             </header>
 

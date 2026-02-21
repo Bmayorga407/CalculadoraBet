@@ -245,8 +245,16 @@ document.addEventListener('DOMContentLoaded', () => {
         renderHistory();
     };
 
+    let activeHistoryType = 'prob'; // 'prob' or 'btts'
+
     const renderHistory = () => {
-        const list = activeTab === 'recent' ? history : favorites;
+        let list = activeTab === 'recent' ? history : favorites;
+
+        // Filter by the active calculator type
+        if (activeHistoryType) {
+            list = list.filter(item => item.type === activeHistoryType);
+        }
+
         historyListContainer.innerHTML = '';
 
         if (list.length === 0) {
@@ -1321,8 +1329,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const btnShowHistoryBtts = document.getElementById('btn-show-history-btts');
+
     if (btnShowHistory) {
         btnShowHistory.addEventListener('click', () => {
+            activeHistoryType = 'prob';
+            renderHistory();
+            if (historyModal) historyModal.style.display = 'flex';
+        });
+    }
+
+    if (btnShowHistoryBtts) {
+        btnShowHistoryBtts.addEventListener('click', () => {
+            activeHistoryType = 'btts';
             renderHistory();
             if (historyModal) historyModal.style.display = 'flex';
         });
