@@ -509,6 +509,7 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type=number] {
     -moz-appearance: textfield;
+    appearance: textfield;
 }
 
 /* Advanced Settings */
@@ -1074,16 +1075,24 @@ input[type=number] {
     }
 
     .comparison-container {
-        flex-wrap: wrap;
-        row-gap: 20px;
+        flex-direction: column;
+        gap: 12px;
+        padding: 12px;
     }
 
     .comparison-container .comp-item {
-        flex: 1 1 40%;
+        flex: 1;
+        width: 100%;
+        text-align: center;
     }
 
     .comparison-container .divider-vertical {
-        display: none;
+        width: 100%;
+        height: 1px;
+        min-height: 1px;
+        margin: 4px 0;
+        display: block;
+        /* Show as horizontal line in mobile */
     }
 
     .btts-layout-grid {
@@ -1097,9 +1106,25 @@ input[type=number] {
     }
 
     .btts-hero {
-        flex-direction: column;
-        gap: 12px;
-        padding: 16px;
+        padding: 24px 16px;
+        margin-bottom: 20px;
+    }
+
+    .hero-pick {
+        font-size: 20px;
+        margin-bottom: 16px;
+    }
+
+    .hero-value {
+        font-size: 32px;
+    }
+
+    .hero-stat .hero-label {
+        font-size: 9px;
+    }
+
+    .hero-divider {
+        height: 40px;
     }
 
     .hero-prob-row {
@@ -1428,7 +1453,29 @@ select:focus-visible {
     .divider-vertical {
         width: 100%;
         height: 1px;
+        min-height: 1px;
         margin: 4px 0;
+    }
+
+    /* Mobile specific grid for team inputs */
+    .team-inputs-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .team-prob-col {
+        border-left: none;
+        padding-left: 0;
+        width: 100%;
+    }
+
+    .team-prob-box {
+        width: 100%;
+        max-width: 80px;
+    }
+
+    .match-inputs.stacked {
+        gap: 12px;
     }
 }
 

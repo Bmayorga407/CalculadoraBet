@@ -724,10 +724,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const fairOddSelected = pSelected > 0 ? (100 / pSelected) : 0;
         updateHero(pickLabel, pSelected, fairOddSelected);
 
-        // Reliability Penalty
-        let penalty = 0.05;
-        if (sampleStrength === "low") penalty = 0.07;
-        else if (sampleStrength === "decent") penalty = 0.03;
+        // Edge and EV calculations
+        if (houseOdd > 1) {
+            const evPct = ((pSelected / 100) * houseOdd - 1) * 100;
+            const displayedFairOdd = parseFloat(fairOddSelected.toFixed(2));
+            const edgePct = displayedFairOdd > 0 ? (houseOdd - displayedFairOdd) : 0;
+
+            if (bttsEdgeValue) {
+                bttsEdgeValue.textContent = formatSigned(edgePct, 2);
+                bttsEdgeValue.parentElement.style.color = edgePct > 0 ? "var(--accent-color)" : (edgePct < 0 ? "#ef4444" : "var(--text-primary)");
+            }
+            if (bttsEvValue) {
+                bttsEvValue.textContent = formatSigned(evPct, 2);
+                bttsEvValue.parentElement.style.color = evPct > 0 ? "var(--accent-color)" : "#ef4444";
+            }
+
+            // Value Badge Analysis for BTTS
+            updateValueTag(evPct, pSelected, houseOdd, bttsBadge, bttsExplanation, bttsBadgeContainer);
+        } else {
+            if (bttsEdgeValue) bttsEdgeValue.textContent = "0.00";
+            if (bttsEvValue) bttsEvValue.textContent = "0.00";
+            if (bttsBadgeContainer) bttsBadgeContainer.style.display = 'none';
+        }
 
         updateProSensitivity(pSelected, houseOdd, sensBttsDown, sensBttsUp, sensBttsReading, proSectionBtts, 'btts', penalty);
 
