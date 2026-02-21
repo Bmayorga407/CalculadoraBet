@@ -326,15 +326,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (evPct > 5) {
             status = "✅ Valor positivo";
             badgeClass = "badge-positive";
-            explanation = `Con tu probabilidad estimada (${probPct.toFixed(1)}%) y esa cuota, el valor esperado es ${evPct.toFixed(2)}%. La cuota tiene un margen amplio a tu favor.`;
+            explanation = `La cuota tiene un buen margen a tu favor (EV: ${evPct.toFixed(2)}%).`;
         } else if (evPct > 0) {
             status = "⚠️ Margen bajo";
             badgeClass = "badge-low";
-            explanation = `Hay un ligero valor (${evPct.toFixed(2)}%), pero el margen es estrecho. Procede con precaución.`;
+            explanation = `Hay valor, pero el margen de error es estrecho (EV: ${evPct.toFixed(2)}%).`;
         } else {
             status = "❌ Sin valor";
             badgeClass = "badge-none";
-            explanation = `El valor es negativo (${evPct.toFixed(2)}%). Según tus cálculos, la cuota ofrecida es más baja de lo que debería ser.`;
+            explanation = `La cuota ofrecida no compensa el riesgo estimado (EV: ${evPct.toFixed(2)}%).`;
         }
 
         if (badgeObj) {

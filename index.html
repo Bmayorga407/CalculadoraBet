@@ -123,7 +123,9 @@
                         </div>
                         <div class="divider-vertical"></div>
                         <div class="prob-item">
-                            <h2>Probabilidad Casa</h2>
+                            <h2>Probabilidad Casa <span class="badge-market"
+                                    style="text-transform:none; font-weight:500; font-size:9px; opacity:0.75; letter-spacing:0; padding:2px 5px; margin-left: 4px;">Implícita</span>
+                            </h2>
                             <div class="value-display">
                                 <span id="house-prob">0</span><span class="unit">%</span>
                             </div>
@@ -159,6 +161,9 @@
                     <!-- Pro Mode: Sensitivity Analysis (full-width) -->
                     <div id="pro-sensitivity-prob" class="pro-section" style="display: none; margin-bottom: 16px;">
                         <h3>Análisis de Sensibilidad</h3>
+                        <p id="prob-range-summary" class="range-summary"
+                            style="display: none; text-align: center; margin-bottom: 16px; color: var(--text-secondary);">
+                        </p>
                         <div class="sensitivity-grid">
                             <div class="sensitivity-card">
                                 <span class="sens-label">-5% Prob</span>
@@ -170,23 +175,18 @@
                             </div>
                         </div>
                         <p id="sens-prob-reading" class="sens-reading"></p>
-                        <p id="prob-range-summary" class="range-summary" style="display: none;"></p>
                     </div>
 
                     <!-- Comparison Grid -->
-                    <div class="comparison-container">
+                    <div class="comparison-container" style="align-items: center;">
                         <div class="comp-item">
                             <h2>Cuota de Casa</h2>
-                            <div class="value-display">
+                            <div class="value-display" style="margin-bottom: 6px;">
                                 <span id="summary-house-odd">-.--</span>
                             </div>
-                        </div>
-                        <div class="divider-vertical"></div>
-                        <div class="comp-item">
-                            <h2>Cuota Justa</h2>
-                            <div class="value-display">
-                                <span id="single-odd">-.--</span>
-                            </div>
+                            <div class="ev-threshold"
+                                style="font-size: 11px; color: var(--text-secondary); font-weight: 500; font-family: var(--font-number);">
+                                Umbral EV=0: <span id="single-odd">-.--</span></div>
                         </div>
                         <div class="divider-vertical" id="edge-divider" style="display: none;"></div>
                         <div class="comp-item" id="edge-container" style="display: none;">
