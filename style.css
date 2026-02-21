@@ -1225,3 +1225,437 @@ select:focus-visible {
         scroll-behavior: auto !important;
     }
 }
+
+/* =============================================
+   BTTS Hero Block
+   ============================================= */
+.btts-hero {
+    background: rgba(16, 185, 129, 0.04);
+    border: 1px solid rgba(16, 185, 129, 0.14);
+    border-radius: var(--border-radius);
+    padding: 20px 24px 16px;
+    margin-bottom: 16px;
+    text-align: center;
+    animation: fadeInHero 0.4s ease;
+}
+
+@keyframes fadeInHero {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-pick {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+    margin-bottom: 14px;
+    background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0.7));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-prob-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+}
+
+.hero-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.hero-value {
+    font-size: 44px;
+    font-weight: 800;
+    color: var(--accent-color);
+    line-height: 1;
+    letter-spacing: -2px;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s ease;
+}
+
+.hero-label {
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+    margin-top: 6px;
+    opacity: 0.7;
+}
+
+.hero-divider {
+    width: 1px;
+    height: 56px;
+    background: rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+    margin: 0 8px;
+}
+
+/* =============================================
+   Segmented Control (Pill)
+   ============================================= */
+.segmented-control {
+    display: flex;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 100px;
+    padding: 4px;
+    gap: 4px;
+    margin-bottom: 20px;
+    width: fit-content;
+    align-self: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.seg-option {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-radius: 100px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-family);
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+    white-space: nowrap;
+}
+
+.seg-option:hover {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.seg-option.active {
+    background: rgba(16, 185, 129, 0.18);
+    color: var(--text-primary);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.seg-option.winner {
+    box-shadow: 0 0 0 1.5px rgba(16, 185, 129, 0.4), 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* =============================================
+   2-Column Layout (BTTS View)
+   ============================================= */
+.btts-layout-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.btts-col-controls,
+.btts-col-results {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.btts-col-controls .card,
+.btts-col-controls .result-card {
+    margin-bottom: 0;
+}
+
+/* Desktop: 2 columns */
+@media (min-width: 700px) {
+    .app-container {
+        max-width: 900px;
+    }
+
+    .btts-layout-grid {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .btts-col-controls {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .btts-col-results {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+/* =============================================
+   Team Row (refined input section)
+   ============================================= */
+.team-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.team-row-label {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-secondary);
+    opacity: 0.6;
+    padding-left: 2px;
+}
+
+.team-row-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.team-separator {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    margin: 8px 0;
+}
+
+/* Wider Manual-btn for new team-row layout */
+.team-row-body .manual-btn {
+    width: 100%;
+    height: 36px;
+    font-size: 12px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+/* =============================================
+   Manual Entry: Header Row
+   ============================================= */
+.manual-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.manual-header-left {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.manual-header-right {
+    text-align: right;
+}
+
+.manual-header-right h1 {
+    margin: 0;
+    font-size: 20px;
+}
+
+.manual-header-right .subtitle {
+    margin: 0;
+}
+
+/* =============================================
+   Paste Section
+   ============================================= */
+.paste-section {
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+
+.paste-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.paste-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.2px;
+}
+
+.paste-hint {
+    font-size: 11px;
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.paste-hint code {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 10px;
+    font-family: 'SF Mono', 'Fira Mono', monospace;
+    color: var(--accent-color);
+}
+
+.paste-area {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-family: 'SF Mono', 'Fira Mono', monospace;
+    font-size: 13px;
+    padding: 10px 12px;
+    resize: vertical;
+    outline: none;
+    line-height: 1.6;
+    transition: border-color 0.2s ease;
+}
+
+.paste-area:focus {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.03);
+}
+
+.paste-area::placeholder {
+    color: rgba(255, 255, 255, 0.15);
+}
+
+.paste-feedback {
+    margin-top: 8px;
+    font-size: 11px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.paste-feedback.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--accent-color);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.paste-feedback.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* =============================================
+   Match Row — single score field
+   ============================================= */
+.match-row {
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+}
+
+.score-field-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.score-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-family: 'SF Mono', 'Fira Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 7px 10px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.score-input:focus {
+    border-color: rgba(16, 185, 129, 0.5);
+    background: rgba(16, 185, 129, 0.04);
+}
+
+.score-input.invalid {
+    border-color: rgba(239, 68, 68, 0.5);
+    animation: shake 0.25s ease;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    33% {
+        transform: translateX(-4px);
+    }
+
+    66% {
+        transform: translateX(4px);
+    }
+}
+
+.score-preview {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    min-width: 40px;
+    text-align: center;
+}
+
+.score-preview.filled {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.score-error {
+    font-size: 10px;
+    color: #ef4444;
+    white-space: nowrap;
+}
+
+/* =============================================
+   Add Row Button / Footer
+   ============================================= */
+.add-row-footer {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0 16px;
+}
+
+.add-row-btn {
+    background: rgba(16, 185, 129, 0.07);
+    border: 1px dashed rgba(16, 185, 129, 0.3);
+    border-radius: 10px;
+    color: var(--accent-color);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: var(--font-family);
+    padding: 10px 24px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.add-row-btn:hover {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.5);
+    border-style: solid;
+}
+
+.add-row-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}

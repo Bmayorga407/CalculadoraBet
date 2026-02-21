@@ -117,9 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (bttsPanel) bttsPanel.style.display = isBtts ? "grid" : "none";
         if (ouPanel) ouPanel.style.display = isBtts ? "none" : "grid";
 
+        // Support both old toggle-btn and new seg-option classes
         if (btnBttsMode) {
             btnBttsMode.classList.toggle("active", isBtts);
-            btnBttsMode.classList.toggle("winner", false); // winner is set inside calculateBtts
+            btnBttsMode.classList.toggle("winner", false);
             btnBttsMode.setAttribute("aria-selected", isBtts ? "true" : "false");
         }
         if (btnOuMode) {
@@ -130,6 +131,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Label pill in EV/Edge section
         if (bttsMarketLabel) bttsMarketLabel.textContent = isBtts ? "BTTS" : "O/U";
+    };
+
+    // --- Hero Block Updater ---
+    const updateHero = (pick, probPct, fairOdd) => {
+        const heroPick = document.getElementById('hero-pick');
+        const heroProb = document.getElementById('hero-prob');
+        const heroFair = document.getElementById('hero-fair');
+        if (!heroPick || !heroProb || !heroFair) return;
+        if (probPct <= 0) {
+            heroPick.textContent = '\u2014 \u2014';
+            heroProb.textContent = '\u2014';
+            heroFair.textContent = '\u2014';
+            heroProb.style.color = 'var(--text-secondary)';
+        } else {
+            heroPick.textContent = pick;
+            heroProb.textContent = probPct.toFixed(1) + '%';
+            heroFair.textContent = fairOdd > 0 ? fairOdd.toFixed(2) : '-.--';
+            heroProb.style.color = '';
+        }
     };
     // "btts" | "ou"
 
@@ -557,7 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Market label (for the house odd card)
         if (bttsMarketLabel) {
             if (currentBttsMarket === "ou") bttsMarketLabel.textContent = `O/U ${ouLine.toFixed(1)} (${ouPick === "over" ? "Over" : "Under"})`;
-            else bttsMarketLabel.textContent = "BTTS Sí";
+            else bttsMarketLabel.textContent = "BTTS S\u00ed";
         }
 
         // Highlight which MODE has higher probability (BTTS vs O/U pick)
@@ -566,6 +586,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const modeWinner = (ouPickPct > bttsPct) ? "ou" : "btts";
         if (btnBttsMode) btnBttsMode.classList.toggle("winner", modeWinner === "btts");
         if (btnOuMode) btnOuMode.classList.toggle("winner", modeWinner === "ou");
+
+        // --- Update Hero Block ---
+        {
+            const heroPick = currentBttsMarket === "ou"
+                ? (ouPick === "over" ? `Over ${ouLine.toFixed(1)}` : `Under ${ouLine.toFixed(1)}`)
+                : (pBtts >= 0.5 ? 'BTTS S\u00ed' : 'BTTS No');
+            const heroProb = currentBttsMarket === "ou" ? ouPickPct : bttsPct;
+            const heroFair = pSelected > 0 ? (1 / pSelected) : 0;
+            updateHero(heroPick, heroProb, heroFair);
+        }
 
         // --- EV/Edge + Kelly 1/4 for the ACTIVE market ---
         if (fairOddSelected > 0 && bttsEdgeValue && bttsEvValue) {
@@ -578,6 +608,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 bttsEvValue.textContent = formatSigned(evPct, 2) + "%";
                 bttsEvValue.style.color = evPct > 0 ? "var(--accent-color)" : "#ef4444";
+
+                // Value Badge & Pro Sensitivity
+                updateValueTag(evPct, pSelected * 100, houseOdd, bttsBadge, bttsExplanation, bttsBadgeContainer);
+                updateProSensitivity(pSelected * 100, houseOdd, sensBttsDown, sensBttsUp, sensBttsReading, proSectionBtts);
 
                 const f = kellyFraction(pSelected, houseOdd, 0.25);
                 const stakeMoney = Math.floor(bankroll * f);
@@ -595,12 +629,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } else {
                 bttsEdgeValue.textContent = "0.00%";
-                bttsEvValue.textContent = formatSigned(evPct, 2);
-                bttsEvValue.parentElement.style.color = evPct > 0 ? "var(--accent-color)" : "#ef4444";
-
-                // Value Badge & Pro Sensitivity
-                updateValueTag(evPct, probabilityFinal, houseOdd, bttsBadge, bttsExplanation, bttsBadgeContainer);
-                updateProSensitivity(probabilityFinal, houseOdd, sensBttsDown, sensBttsUp, sensBttsReading, proSectionBtts);
+                bttsEvValue.textContent = "0.00%";
+                if (bttsKellyCard) bttsKellyCard.style.display = 'none';
+                updateValueTag(0, pSelected * 100, 0, bttsBadge, bttsExplanation, bttsBadgeContainer);
+                updateProSensitivity(pSelected * 100, 0, sensBttsDown, sensBttsUp, sensBttsReading, proSectionBtts);
             }
         } else {
             if (bttsEdgeValue) bttsEdgeValue.textContent = "0.00%";
@@ -677,85 +709,153 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Ingreso de Partidos Logic ---
     let currentManualTeam = "";
+    const MAX_MANUAL_ROWS = 20;
+    const DEFAULT_ROWS = 5;
+    let visibleRows = DEFAULT_ROWS;
+
     const manualData = {
-        Local: Array.from({ length: 20 }, () => ({ scored: "", conceded: "" })),
-        Visitor: Array.from({ length: 20 }, () => ({ scored: "", conceded: "" }))
+        Local: Array.from({ length: MAX_MANUAL_ROWS }, () => ({ scored: "", conceded: "" })),
+        Visitor: Array.from({ length: MAX_MANUAL_ROWS }, () => ({ scored: "", conceded: "" }))
     };
 
     const matchRowsContainer = document.getElementById('match-rows');
     const manualScoredPercent = document.getElementById('manual-scored-percent');
     const manualConcededPercent = document.getElementById('manual-conceded-percent');
     const manualPlayedCount = document.getElementById('manual-played-count');
+    const btnAddRow = document.getElementById('btn-add-row');
+    const pasteArea = document.getElementById('paste-area');
+    const pasteFeedback = document.getElementById('paste-feedback');
 
-    const generateMatchRows = () => {
+    // Parse a score string: accepts "2-1", "2:1", "2 1"
+    const parseScore = (str) => {
+        if (!str || !str.trim()) return null;
+        const s = str.trim();
+        const m = s.match(/^(\d+)(?:[-:\s])(\d+)$/);
+        if (!m) return null;
+        return { scored: parseInt(m[1], 10), conceded: parseInt(m[2], 10) };
+    };
+
+    // Show feedback message in the paste area
+    const showPasteFeedback = (msg, type) => {
+        if (!pasteFeedback) return;
+        pasteFeedback.textContent = msg;
+        pasteFeedback.className = 'paste-feedback ' + (type || 'success');
+        pasteFeedback.style.display = 'block';
+        clearTimeout(pasteFeedback._timer);
+        pasteFeedback._timer = setTimeout(() => {
+            pasteFeedback.style.display = 'none';
+        }, 4000);
+    };
+
+    // Update the add-row button state
+    const updateAddRowBtn = () => {
+        if (!btnAddRow) return;
+        btnAddRow.disabled = visibleRows >= MAX_MANUAL_ROWS;
+        btnAddRow.textContent = visibleRows >= MAX_MANUAL_ROWS
+            ? `M\u00e1x. ${MAX_MANUAL_ROWS} partidos`
+            : `+ Agregar partido (${visibleRows}/${MAX_MANUAL_ROWS})`;
+    };
+
+    const generateMatchRows = (focusIndex = -1) => {
         if (!matchRowsContainer) return;
         matchRowsContainer.innerHTML = "";
         const isVisitor = currentManualTeam === 'Equipo Visitante';
         const teamData = manualData[isVisitor ? 'Visitor' : 'Local'];
 
-        for (let i = 0; i < 20; i++) {
+        for (let i = 0; i < visibleRows; i++) {
+            const s = teamData[i].scored;
+            const c = teamData[i].conceded;
+            const hasData = s !== "" || c !== "";
+            const displayVal = hasData ? `${s === '' ? '?' : s}-${c === '' ? '?' : c}` : '';
+
             const row = document.createElement('div');
             row.className = 'match-row';
-
-            const eqInput = `
-                <div class="match-inputs">
-                    <label>Goles Eq.</label>
-                    <input type="number" class="manual-in-scored" value="${teamData[i].scored}" min="0" data-index="${i}">
-                </div>
-            `;
-            const rivInput = `
-                <div class="match-inputs">
-                    <label>Goles Riv.</label>
-                    <input type="number" class="manual-in-conceded" value="${teamData[i].conceded}" min="0" data-index="${i}">
-                </div>
-            `;
-
             row.innerHTML = `
                 <div class="match-label">P${i + 1}</div>
-                ${isVisitor ? rivInput + eqInput : eqInput + rivInput}
+                <div class="score-field-wrapper">
+                    <input
+                        type="text"
+                        class="score-input"
+                        placeholder="2-1"
+                        value="${displayVal}"
+                        data-index="${i}"
+                        autocomplete="off"
+                        inputmode="numeric"
+                    >
+                    <span class="score-preview${hasData ? ' filled' : ''}" id="score-prev-${i}">
+                        ${hasData ? (isVisitor ? `${c}-${s}` : `${s}-${c}`) : ''}
+                    </span>
+                </div>
             `;
             matchRowsContainer.appendChild(row);
         }
 
-        matchRowsContainer.querySelectorAll('input').forEach(input => {
-            input.addEventListener('input', (e) => {
-                const idx = parseInt(e.target.dataset.index);
-                const type = e.target.classList.contains('manual-in-scored') ? 'scored' : 'conceded';
-                teamData[idx][type] = e.target.value;
+        // Attach events
+        matchRowsContainer.querySelectorAll('.score-input').forEach(input => {
+            const idx = parseInt(input.dataset.index);
+            const isVisitorTeam = currentManualTeam === 'Equipo Visitante';
+            const teamKey = isVisitorTeam ? 'Visitor' : 'Local';
+
+            input.addEventListener('input', () => {
+                const raw = input.value.trim();
+                const parsed = parseScore(raw);
+                input.classList.toggle('invalid', raw !== '' && !parsed);
+
+                if (parsed) {
+                    manualData[teamKey][idx].scored = parsed.scored;
+                    manualData[teamKey][idx].conceded = parsed.conceded;
+                    const prev = document.getElementById(`score-prev-${idx}`);
+                    if (prev) {
+                        prev.textContent = isVisitorTeam ? `${parsed.conceded}-${parsed.scored}` : `${parsed.scored}-${parsed.conceded}`;
+                        prev.className = 'score-preview filled';
+                    }
+                } else if (raw === '') {
+                    manualData[teamKey][idx].scored = '';
+                    manualData[teamKey][idx].conceded = '';
+                    const prev = document.getElementById(`score-prev-${idx}`);
+                    if (prev) { prev.textContent = ''; prev.className = 'score-preview'; }
+                }
                 updateManualStats();
                 saveState();
             });
 
             input.addEventListener('keydown', (e) => {
-                const idx = parseInt(e.target.dataset.index);
-                const isScored = e.target.classList.contains('manual-in-scored');
-                let targetInput = null;
-
-                if (e.key === 'ArrowDown') {
+                if (e.key === 'Enter') {
                     e.preventDefault();
-                    if (idx < 19) {
-                        targetInput = matchRowsContainer.querySelector(`.manual-in-${isScored ? 'scored' : 'conceded'}[data-index="${idx + 1}"]`);
+                    const raw = input.value.trim();
+                    const parsed = parseScore(raw);
+                    if (parsed) {
+                        // Advance to next row
+                        const nextIdx = idx + 1;
+                        if (nextIdx < visibleRows) {
+                            const next = matchRowsContainer.querySelector(`.score-input[data-index="${nextIdx}"]`);
+                            if (next) { next.focus(); next.select(); }
+                        } else if (visibleRows < MAX_MANUAL_ROWS) {
+                            // Auto-add a row
+                            visibleRows++;
+                            generateMatchRows(visibleRows - 1);
+                            updateAddRowBtn();
+                        }
                     }
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const next = matchRowsContainer.querySelector(`.score-input[data-index="${idx + 1}"]`);
+                    if (next) { next.focus(); next.select(); }
                 } else if (e.key === 'ArrowUp') {
                     e.preventDefault();
-                    if (idx > 0) {
-                        targetInput = matchRowsContainer.querySelector(`.manual-in-${isScored ? 'scored' : 'conceded'}[data-index="${idx - 1}"]`);
-                    }
-                } else if (e.key === 'ArrowRight') {
-                    if (isScored) {
-                        e.preventDefault();
-                        targetInput = matchRowsContainer.querySelector(`.manual-in-conceded[data-index="${idx}"]`);
-                    }
-                } else if (e.key === 'ArrowLeft') {
-                    if (!isScored) {
-                        e.preventDefault();
-                        targetInput = matchRowsContainer.querySelector(`.manual-in-scored[data-index="${idx}"]`);
-                    }
+                    const prev = matchRowsContainer.querySelector(`.score-input[data-index="${idx - 1}"]`);
+                    if (prev) { prev.focus(); prev.select(); }
                 }
-
-                if (targetInput) targetInput.focus();
             });
         });
+
+        // Focus requested row
+        if (focusIndex >= 0) {
+            const target = matchRowsContainer.querySelector(`.score-input[data-index="${focusIndex}"]`);
+            if (target) { target.focus(); target.select(); }
+        }
+
+        updateAddRowBtn();
     };
 
     const updateManualStats = () => {
@@ -836,11 +936,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Restore manual data safely
             if (state.manualData && state.manualData.Local && state.manualData.Visitor) {
-                manualData.Local = state.manualData.Local.map(m => ({ scored: m.scored ?? "", conceded: m.conceded ?? "" })).slice(0, 20);
-                manualData.Visitor = state.manualData.Visitor.map(m => ({ scored: m.scored ?? "", conceded: m.conceded ?? "" })).slice(0, 20);
-                // Ensure length 20
-                while (manualData.Local.length < 20) manualData.Local.push({ scored: "", conceded: "" });
-                while (manualData.Visitor.length < 20) manualData.Visitor.push({ scored: "", conceded: "" });
+                manualData.Local = state.manualData.Local.map(m => ({ scored: m.scored ?? "", conceded: m.conceded ?? "" })).slice(0, MAX_MANUAL_ROWS);
+                manualData.Visitor = state.manualData.Visitor.map(m => ({ scored: m.scored ?? "", conceded: m.conceded ?? "" })).slice(0, MAX_MANUAL_ROWS);
+                // Ensure length MAX_MANUAL_ROWS
+                while (manualData.Local.length < MAX_MANUAL_ROWS) manualData.Local.push({ scored: "", conceded: "" });
+                while (manualData.Visitor.length < MAX_MANUAL_ROWS) manualData.Visitor.push({ scored: "", conceded: "" });
             }
 
             // Apply stats to inputs (without opening manual view)
@@ -909,6 +1009,12 @@ document.addEventListener('DOMContentLoaded', () => {
         currentManualTeam = team;
         showView(bttsManualView);
         if (manualTeamName) manualTeamName.textContent = team;
+        // Restore visible rows: at least as many as have data, but minimum DEFAULT_ROWS
+        const teamKey = team === 'Equipo Local' ? 'Local' : 'Visitor';
+        const dataCount = manualData[teamKey].filter(m => m.scored !== '' || m.conceded !== '').length;
+        visibleRows = Math.max(dataCount, DEFAULT_ROWS);
+        if (pasteArea) pasteArea.value = '';
+        if (pasteFeedback) pasteFeedback.style.display = 'none';
         generateMatchRows();
         updateManualStats();
     };
@@ -987,7 +1093,7 @@ document.addEventListener('DOMContentLoaded', () => {
         btnClearManual.addEventListener('click', () => {
             if (clearStage === 0) {
                 clearStage = 1;
-                btnClearManual.textContent = "¿Confirmar?";
+                btnClearManual.textContent = "\u00bfConfirmar?";
                 btnClearManual.classList.add('confirming');
                 clearTimer = setTimeout(() => {
                     clearStage = 0;
@@ -997,13 +1103,69 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 if (clearTimer) clearTimeout(clearTimer);
                 const teamKey = currentManualTeam === 'Equipo Local' ? 'Local' : 'Visitor';
-                manualData[teamKey] = Array.from({ length: 20 }, () => ({ scored: "", conceded: "" }));
+                manualData[teamKey] = Array.from({ length: MAX_MANUAL_ROWS }, () => ({ scored: "", conceded: "" }));
+                visibleRows = DEFAULT_ROWS;
+                if (pasteArea) pasteArea.value = '';
+                if (pasteFeedback) pasteFeedback.style.display = 'none';
                 generateMatchRows();
                 updateManualStats();
                 saveState();
                 clearStage = 0;
                 btnClearManual.textContent = "Borrar Todo";
                 btnClearManual.classList.remove('confirming');
+            }
+        });
+    }
+
+    // Add Row Button
+    if (btnAddRow) {
+        btnAddRow.addEventListener('click', () => {
+            if (visibleRows < MAX_MANUAL_ROWS) {
+                visibleRows++;
+                generateMatchRows(visibleRows - 1);
+                updateAddRowBtn();
+            }
+        });
+    }
+
+    // Paste Area: bulk score entry
+    if (pasteArea) {
+        pasteArea.addEventListener('input', () => {
+            const lines = pasteArea.value.split('\n').map(l => l.trim()).filter(Boolean);
+            if (lines.length === 0) return;
+
+            const parsed = lines.map(parseScore);
+            const valid = parsed.filter(Boolean);
+            if (valid.length === 0) {
+                showPasteFeedback('No se encontraron marcadores v\u00e1lidos. Usa: 2-1 \u00b7 2:1 \u00b7 2 1', 'warning');
+                return;
+            }
+
+            const teamKey = currentManualTeam === 'Equipo Local' ? 'Local' : 'Visitor';
+            let truncated = false;
+
+            if (valid.length > MAX_MANUAL_ROWS) {
+                truncated = true;
+            }
+
+            const toInsert = valid.slice(0, MAX_MANUAL_ROWS);
+            // Reset and fill
+            manualData[teamKey] = Array.from({ length: MAX_MANUAL_ROWS }, () => ({ scored: "", conceded: "" }));
+            toInsert.forEach((p, i) => {
+                manualData[teamKey][i].scored = p.scored;
+                manualData[teamKey][i].conceded = p.conceded;
+            });
+
+            // Expand visible rows to at least what was pasted
+            visibleRows = Math.min(Math.max(toInsert.length, DEFAULT_ROWS), MAX_MANUAL_ROWS);
+            generateMatchRows();
+            updateManualStats();
+            saveState();
+
+            if (truncated) {
+                showPasteFeedback(`Se tomaron los primeros ${MAX_MANUAL_ROWS} partidos (hab\u00eda ${valid.length}).`, 'warning');
+            } else {
+                showPasteFeedback(`${toInsert.length} partido${toInsert.length !== 1 ? 's' : ''} cargado${toInsert.length !== 1 ? 's' : ''} correctamente.`, 'success');
             }
         });
     }

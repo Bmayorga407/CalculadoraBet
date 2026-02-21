@@ -223,334 +223,297 @@
                 <p class="subtitle">Ambos Equipos Anotan (Sí/No) y Total de Goles</p>
             </header>
 
-            <!-- Stats Input Section -->
-            <section class="card input-card">
-                <!-- Local Row Stacked -->
-                <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 24px;">
-                    <div style="display: flex; flex-direction: column; padding-top: 18px;">
-                        <button class="manual-btn" id="btn-manual-local" type="button"
-                            style="height: 64px; min-width: 70px;">Ingreso</button>
+            <!-- Hero Summary Block -->
+            <section class="btts-hero" id="btts-hero">
+                <div class="hero-pick" id="hero-pick">— —</div>
+                <div class="hero-prob-row">
+                    <div class="hero-stat">
+                        <span class="hero-value" id="hero-prob">—</span>
+                        <span class="hero-label">Probabilidad</span>
                     </div>
-
-                    <div class="team-inputs-grid">
-                        <!-- Column 1: Manual Data (Stacked) -->
-                        <div class="team-prob-col">
-                            <div class="match-inputs stacked">
-                                <div class="mini-input">
-                                    <label>Marcó %</label>
-                                    <div class="input-wrapper">
-                                        <input type="number" id="btts-local-scored" placeholder="0" value="0" readonly>
-                                        <span class="unit">%</span>
-                                    </div>
-                                </div>
-                                <div class="mini-input">
-                                    <label>Recibió %</label>
-                                    <div class="input-wrapper">
-                                        <input type="number" id="btts-local-conceded" placeholder="0" value="0"
-                                            readonly>
-                                        <span class="unit">%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Column 2: Calculated Averages -->
-                        <div class="team-prob-col">
-                            <div class="match-inputs stacked">
-                                <div class="mini-input">
-                                    <label>Avg Anot.</label>
-                                    <input type="number" id="btts-local-avg-scored" step="0.1" placeholder="0.0"
-                                        value="0.0" readonly>
-                                </div>
-                                <div class="mini-input">
-                                    <label>Avg Enc.</label>
-                                    <input type="number" id="btts-local-avg-conceded" step="0.1" placeholder="0.0"
-                                        value="0.0" readonly>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Column 3: Expected Goals (xG) -->
-                        <div class="team-prob-col xg-col">
-                            <div class="match-inputs">
-                                <div class="mini-input">
-                                    <label>xG (Exp) <button type="button" class="info-icon"
-                                            id="info-xg-local">ⓘ</button></label>
-                                    <div class="team-prob-box xg-box tall-box">
-                                        <span id="btts-local-xg">0.00</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Column 4: Individual Prob -->
-                        <div class="team-prob-col">
-                            <div class="match-inputs">
-                                <div class="mini-input">
-                                    <label>Prob %</label>
-                                    <div class="team-prob-box tall-box">
-                                        <span id="btts-local-prob">0.0</span><span class="unit">%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Visitor Row Stacked -->
-                <div style="display: flex; align-items: flex-start; gap: 12px;">
-                    <div style="display: flex; flex-direction: column; padding-top: 18px;">
-                        <button class="manual-btn" id="btn-manual-visitor" type="button"
-                            style="height: 64px; min-width: 70px;">Ingreso</button>
-                    </div>
-
-                    <div class="team-inputs-grid">
-                        <!-- Column 1: Manual Data (Stacked) -->
-                        <div class="team-prob-col">
-                            <div class="match-inputs stacked">
-                                <div class="mini-input">
-                                    <label>Marcó %</label>
-                                    <div class="input-wrapper">
-                                        <input type="number" id="btts-visitor-scored" placeholder="0" value="0"
-                                            readonly>
-                                        <span class="unit">%</span>
-                                    </div>
-                                </div>
-                                <div class="mini-input">
-                                    <label>Recibió %</label>
-                                    <div class="input-wrapper">
-                                        <input type="number" id="btts-visitor-conceded" placeholder="0" value="0"
-                                            readonly>
-                                        <span class="unit">%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Column 2: Calculated Averages -->
-                        <div class="team-prob-col">
-                            <div class="match-inputs stacked">
-                                <div class="mini-input">
-                                    <label>Avg Anot.</label>
-                                    <input type="number" id="btts-visitor-avg-scored" step="0.1" placeholder="0.0"
-                                        value="0.0" readonly>
-                                </div>
-                                <div class="mini-input">
-                                    <label>Avg Enc.</label>
-                                    <input type="number" id="btts-visitor-avg-conceded" step="0.1" placeholder="0.0"
-                                        value="0.0" readonly>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Column 3: Expected Goals (xG) -->
-                        <div class="team-prob-col xg-col">
-                            <div class="match-inputs">
-                                <div class="mini-input">
-                                    <label>xG (Exp) <button type="button" class="info-icon"
-                                            id="info-xg-visitor">ⓘ</button></label>
-                                    <div class="team-prob-box xg-box tall-box">
-                                        <span id="btts-visitor-xg">0.00</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Column 4: Individual Prob -->
-                        <div class="team-prob-col">
-                            <div class="match-inputs">
-                                <div class="mini-input">
-                                    <label>Prob %</label>
-                                    <div class="team-prob-box tall-box">
-                                        <span id="btts-visitor-prob">0.0</span><span class="unit">%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="hero-divider"></div>
+                    <div class="hero-stat">
+                        <span class="hero-value" id="hero-fair">—</span>
+                        <span class="hero-label">Cuota Justa</span>
                     </div>
                 </div>
             </section>
 
-            <!-- Advanced & Settings Section -->
-            <section class="results-grid">
-                <div class="card result-card full-width">
-                    <div class="advanced-settings">
-                        <div class="setting-item">
-                            <label>Muestra (Partidos)</label>
-                            <input type="number" id="btts-sample" placeholder="10" value="10">
-                        </div>
-                        <div class="setting-item">
-                            <label>Modo</label>
-                            <select id="btts-mode">
-                                <option value="hybrid">Híbrido (recomendado)</option>
-                                <option value="model">Solo Modelo</option>
-                                <option value="empirical">Solo Histórico</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+            <!-- Market Segmented Control -->
+            <div class="segmented-control" role="tablist" aria-label="Mercado">
+                <button id="btn-btts-mode" class="seg-option active" type="button" role="tab" aria-selected="true">BTTS</button>
+                <button id="btn-ou-mode" class="seg-option" type="button" role="tab" aria-selected="false">Over / Under</button>
+            </div>
 
-                <!-- Probabilities Display -->
-                <div class="card result-card full-width">
-                    <div class="btts-mode-toggle" role="tablist" aria-label="Mercado">
-                        <button id="btn-btts-mode" class="toggle-btn active" type="button" role="tab"
-                            aria-selected="true">BTTS</button>
-                        <button id="btn-ou-mode" class="toggle-btn" type="button" role="tab"
-                            aria-selected="false">Over/Under</button>
-                    </div>
+            <!-- 2-Column Layout Wrapper -->
+            <div class="btts-layout-grid">
 
-                    <div class="probability-row">
-                        <div id="btts-panel-btts" class="btts-panel">
-                            <div class="stat-col">
-                                <div class="prob-item" id="btts-model-container">
-                                    <div class="label-line">
-                                        <h2>BTTS Modelo</h2><span id="btts-sample-warning" class="badge-warning"
-                                            style="display:none;">Muestra baja</span>
+                <!-- LEFT: Controls -->
+                <div class="btts-col-controls">
+
+                    <!-- Stats Input Section -->
+                    <section class="card input-card">
+                        <!-- Local Row -->
+                        <div class="team-row">
+                            <div class="team-row-label">Local</div>
+                            <div class="team-row-body">
+                                <div class="team-inputs-grid">
+                                    <div class="team-prob-col">
+                                        <div class="match-inputs stacked">
+                                            <div class="mini-input">
+                                                <label>Marcó %</label>
+                                                <div class="input-wrapper">
+                                                    <input type="number" id="btts-local-scored" placeholder="0" value="0" readonly>
+                                                    <span class="unit">%</span>
+                                                </div>
+                                            </div>
+                                            <div class="mini-input">
+                                                <label>Recibió %</label>
+                                                <div class="input-wrapper">
+                                                    <input type="number" id="btts-local-conceded" placeholder="0" value="0" readonly>
+                                                    <span class="unit">%</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="value-display" id="btts-model-display">
-                                        <span id="btts-model-prob" class="text-green">0</span><span
-                                            class="unit">%</span>
+                                    <div class="team-prob-col">
+                                        <div class="match-inputs stacked">
+                                            <div class="mini-input">
+                                                <label>Avg Anot.</label>
+                                                <input type="number" id="btts-local-avg-scored" step="0.1" placeholder="0.0" value="0.0" readonly>
+                                            </div>
+                                            <div class="mini-input">
+                                                <label>Avg Enc.</label>
+                                                <input type="number" id="btts-local-avg-conceded" step="0.1" placeholder="0.0" value="0.0" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="team-prob-col xg-col">
+                                        <div class="match-inputs">
+                                            <div class="mini-input">
+                                                <label>xG (Exp) <button type="button" class="info-icon" id="info-xg-local">ⓘ</button></label>
+                                                <div class="team-prob-box xg-box tall-box"><span id="btts-local-xg">0.00</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="team-prob-col">
+                                        <div class="match-inputs">
+                                            <div class="mini-input">
+                                                <label>Prob %</label>
+                                                <div class="team-prob-box tall-box"><span id="btts-local-prob">0.0</span><span class="unit">%</span></div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                                <button class="manual-btn" id="btn-manual-local" type="button">⊕ Ingresar partidos</button>
+                            </div>
+                        </div>
 
-                                <div class="prob-item" id="btts-final-container">
-                                    <h2>BTTS Final</h2>
-                                    <div class="value-display" id="btts-final-display">
-                                        <span id="btts-avg-prob" class="text-green">0</span><span class="unit">%</span>
+                        <div class="team-separator"></div>
+
+                        <!-- Visitor Row -->
+                        <div class="team-row">
+                            <div class="team-row-label">Visita</div>
+                            <div class="team-row-body">
+                                <div class="team-inputs-grid">
+                                    <div class="team-prob-col">
+                                        <div class="match-inputs stacked">
+                                            <div class="mini-input">
+                                                <label>Marcó %</label>
+                                                <div class="input-wrapper">
+                                                    <input type="number" id="btts-visitor-scored" placeholder="0" value="0" readonly>
+                                                    <span class="unit">%</span>
+                                                </div>
+                                            </div>
+                                            <div class="mini-input">
+                                                <label>Recibió %</label>
+                                                <div class="input-wrapper">
+                                                    <input type="number" id="btts-visitor-conceded" placeholder="0" value="0" readonly>
+                                                    <span class="unit">%</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="team-prob-col">
+                                        <div class="match-inputs stacked">
+                                            <div class="mini-input">
+                                                <label>Avg Anot.</label>
+                                                <input type="number" id="btts-visitor-avg-scored" step="0.1" placeholder="0.0" value="0.0" readonly>
+                                            </div>
+                                            <div class="mini-input">
+                                                <label>Avg Enc.</label>
+                                                <input type="number" id="btts-visitor-avg-conceded" step="0.1" placeholder="0.0" value="0.0" readonly>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="team-prob-col xg-col">
+                                        <div class="match-inputs">
+                                            <div class="mini-input">
+                                                <label>xG (Exp) <button type="button" class="info-icon" id="info-xg-visitor">ⓘ</button></label>
+                                                <div class="team-prob-box xg-box tall-box"><span id="btts-visitor-xg">0.00</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="team-prob-col">
+                                        <div class="match-inputs">
+                                            <div class="mini-input">
+                                                <label>Prob %</label>
+                                                <div class="team-prob-box tall-box"><span id="btts-visitor-prob">0.0</span><span class="unit">%</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="manual-btn" id="btn-manual-visitor" type="button">⊕ Ingresar partidos</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Settings Card -->
+                    <div class="card result-card full-width">
+                        <div class="advanced-settings">
+                            <div class="setting-item">
+                                <label>Muestra (Partidos)</label>
+                                <input type="number" id="btts-sample" placeholder="10" value="10">
+                            </div>
+                            <div class="setting-item">
+                                <label>Modo</label>
+                                <select id="btts-mode">
+                                    <option value="hybrid">Híbrido (recomendado)</option>
+                                    <option value="model">Solo Modelo</option>
+                                    <option value="empirical">Solo Histórico</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /btts-col-controls -->
+
+                <!-- RIGHT: Results -->
+                <div class="btts-col-results">
+
+                    <!-- Probabilities Display -->
+                    <div class="card result-card full-width">
+                        <div class="probability-row">
+                            <div id="btts-panel-btts" class="btts-panel">
+                                <div class="stat-col">
+                                    <div class="prob-item" id="btts-model-container">
+                                        <div class="label-line">
+                                            <h2>BTTS Modelo</h2><span id="btts-sample-warning" class="badge-warning" style="display:none;">Muestra baja</span>
+                                        </div>
+                                        <div class="value-display" id="btts-model-display">
+                                            <span id="btts-model-prob" class="text-green">0</span><span class="unit">%</span>
+                                        </div>
+                                    </div>
+                                    <div class="prob-item" id="btts-final-container">
+                                        <h2>BTTS Final</h2>
+                                        <div class="value-display" id="btts-final-display">
+                                            <span id="btts-avg-prob" class="text-green">0</span><span class="unit">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="divider-vertical"></div>
+                                <div class="stat-col">
+                                    <div class="prob-item">
+                                        <h2>Prom. Goles <button type="button" class="info-icon" id="info-goals-combined">ⓘ</button></h2>
+                                        <div class="value-display"><span id="btts-combined-avg">0.00</span></div>
+                                    </div>
+                                    <div class="prob-item">
+                                        <h2>Cuota Justa</h2>
+                                        <div class="value-display"><span id="btts-fair-odd">-.--</span></div>
                                     </div>
                                 </div>
                             </div>
 
+                            <div id="btts-panel-ou" class="btts-panel" style="display:none;">
+                                <div class="stat-col">
+                                    <div class="ou-controls">
+                                        <div class="ou-hint" id="ou-pick-hint">Pick: <span id="ou-pick-label">Over 2.5</span></div>
+                                        <div class="mini-input">
+                                            <label>Línea O/U</label>
+                                            <select id="ou-line" aria-label="Línea Over Under">
+                                                <option value="0.5">0.5</option>
+                                                <option value="1.5">1.5</option>
+                                                <option value="2.5" selected>2.5</option>
+                                                <option value="3.5">3.5</option>
+                                                <option value="4.5">4.5</option>
+                                                <option value="5.5">5.5</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="divider-vertical"></div>
+                                <div class="stat-col">
+                                    <div class="prob-item" id="ou-over-container">
+                                        <h2 id="ou-over-title">Over</h2>
+                                        <div class="value-display"><span id="ou-over-prob" class="text-green">0</span><span class="unit">%</span></div>
+                                        <div class="subline">Cuota justa: <span id="ou-over-fair">-.--</span></div>
+                                    </div>
+                                    <div class="prob-item" id="ou-under-container">
+                                        <h2 id="ou-under-title">Under</h2>
+                                        <div class="value-display"><span id="ou-under-prob" class="text-green">0</span><span class="unit">%</span></div>
+                                        <div class="subline">Cuota justa: <span id="ou-under-fair">-.--</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison & Odds -->
+                    <div class="card result-card full-width">
+                        <div class="comparison-container">
+                            <div class="value-badge-container" id="btts-value-badge-container" style="display: none;">
+                                <div id="btts-value-badge" class="value-badge"></div>
+                                <p id="btts-value-explanation" class="value-explanation"></p>
+                            </div>
+                            <div id="pro-sensitivity-btts" class="pro-section" style="display: none;">
+                                <h3>Análisis de Sensibilidad</h3>
+                                <div class="sensitivity-grid">
+                                    <div class="sensitivity-card"><span class="sens-label">-5% Prob</span><span id="sens-btts-down" class="sens-value">--</span></div>
+                                    <div class="sensitivity-card"><span class="sens-label">+5% Prob</span><span id="sens-btts-up" class="sens-value">--</span></div>
+                                </div>
+                                <p id="sens-btts-reading" class="sens-reading"></p>
+                            </div>
+                            <div class="comp-item">
+                                <h2>Cuota Casa <span id="btts-market-label" class="badge-market">BTTS</span></h2>
+                                <div class="house-input-wrapper">
+                                    <input type="number" id="btts-house-odd" placeholder="-" step="0.01">
+                                </div>
+                            </div>
                             <div class="divider-vertical"></div>
-
-                            <div class="stat-col">
-                                <div class="prob-item">
-                                    <h2>Prom. Goles <button type="button" class="info-icon"
-                                            id="info-goals-combined">ⓘ</button></h2>
-                                    <div class="value-display">
-                                        <span id="btts-combined-avg">0.00</span>
-                                    </div>
-                                </div>
-
-                                <div class="prob-item">
-                                    <h2>Cuota Justa</h2>
-                                    <div class="value-display">
-                                        <span id="btts-fair-odd">-.--</span>
-                                    </div>
-                                </div>
+                            <div class="comp-item">
+                                <h2>Edge</h2>
+                                <div class="value-display"><span id="btts-edge-value">0.00</span><span class="unit">%</span></div>
                             </div>
-                        </div>
-
-                        <div id="btts-panel-ou" class="btts-panel" style="display:none;">
-                            <div class="stat-col">
-                                <div class="ou-controls">
-                                    <div class="ou-hint" id="ou-pick-hint">Pick sugerido: <span id="ou-pick-label">Over
-                                            2.5</span></div>
-                                    <div class="mini-input">
-                                        <label>Línea O/U</label>
-                                        <select id="ou-line" aria-label="Línea Over Under">
-                                            <option value="0.5">0.5</option>
-                                            <option value="1.5">1.5</option>
-                                            <option value="2.5" selected>2.5</option>
-                                            <option value="3.5">3.5</option>
-                                            <option value="4.5">4.5</option>
-                                            <option value="5.5">5.5</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
                             <div class="divider-vertical"></div>
-
-                            <div class="stat-col">
-                                <div class="prob-item" id="ou-over-container">
-                                    <h2 id="ou-over-title">Over</h2>
-                                    <div class="value-display">
-                                        <span id="ou-over-prob" class="text-green">0</span><span class="unit">%</span>
-                                    </div>
-                                    <div class="subline">Cuota justa: <span id="ou-over-fair">-.--</span></div>
-                                </div>
-
-                                <div class="prob-item" id="ou-under-container">
-                                    <h2 id="ou-under-title">Under</h2>
-                                    <div class="value-display">
-                                        <span id="ou-under-prob" class="text-green">0</span><span class="unit">%</span>
-                                    </div>
-                                    <div class="subline">Cuota justa: <span id="ou-under-fair">-.--</span></div>
-                                </div>
+                            <div class="comp-item">
+                                <h2>EV</h2>
+                                <div class="value-display"><span id="btts-ev-value">0.00</span><span class="unit">%</span></div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Comparison & Odds -->
-                <div class="card result-card full-width">
-                    <div class="comparison-container">
-                        <div class="value-badge-container" id="btts-value-badge-container" style="display: none;">
-                            <div id="btts-value-badge" class="value-badge"></div>
-                            <p id="btts-value-explanation" class="value-explanation"></p>
-                        </div>
-
-                        <div id="pro-sensitivity-btts" class="pro-section" style="display: none;">
-                            <h3>Análisis de Sensibilidad</h3>
-                            <div class="sensitivity-grid">
-                                <div class="sensitivity-card">
-                                    <span class="sens-label">-5% Prob</span>
-                                    <span id="sens-btts-down" class="sens-value">--</span>
-                                </div>
-                                <div class="sensitivity-card">
-                                    <span class="sens-label">+5% Prob</span>
-                                    <span id="sens-btts-up" class="sens-value">--</span>
-                                </div>
-                            </div>
-                            <p id="sens-btts-reading" class="sens-reading"></p>
-                        </div>
-
-                        <div class="comp-item">
-                            <h2>Cuota Casa <span id="btts-market-label" class="badge-market">BTTS</span></h2>
-                            <div class="house-input-wrapper">
-                                <input type="number" id="btts-house-odd" placeholder="-" step="0.01">
-                            </div>
-                        </div>
-                        <div class="divider-vertical"></div>
-                        <div class="comp-item">
-                            <h2>Edge</h2>
-                            <div class="value-display">
-                                <span id="btts-edge-value">0.00</span><span class="unit">%</span>
-                            </div>
-                        </div>
-                        <div class="divider-vertical"></div>
-                        <div class="comp-item">
-                            <h2>EV</h2>
-                            <div class="value-display">
-                                <span id="btts-ev-value">0.00</span><span class="unit">%</span>
-                            </div>
-                        </div>
+                    <!-- Stake Recommendation -->
+                    <div class="card result-card full-width" id="btts-kelly-card" style="display: none;">
+                        <h2 id="btts-stake-label">Stake Recomendado</h2>
+                        <div class="value-display"><span id="btts-kelly-stake">0.00</span></div>
                     </div>
-                </div>
 
-                <!-- Stake Recommendation -->
-                <div class="card result-card full-width" id="btts-kelly-card" style="display: none;">
-                    <h2 id="btts-stake-label">Stake Recomendado</h2>
-                    <div class="value-display">
-                        <span id="btts-kelly-stake">0.00</span>
-                    </div>
-                </div>
-            </section>
+                </div><!-- /btts-col-results -->
+
+            </div><!-- /btts-layout-grid -->
         </main>
 
         <!-- BTTS Manual Entry View -->
         <main id="btts-manual-view" style="display: none;">
             <header>
-                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                    <div style="display: flex; gap: 12px; align-items: center;">
+                <div class="manual-header-row">
+                    <div class="manual-header-left">
                         <button id="btn-back-manual" class="back-button" type="button">← Atrás</button>
                         <button id="btn-clear-manual" class="clear-btn" type="button">Borrar Todo</button>
                     </div>
-                    <div style="text-align: right;">
-                        <h1 id="manual-entry-title" style="margin: 0; font-size: 20px;">Ingreso Manual</h1>
-                        <p class="subtitle" style="margin: 0;">Analizando: <span id="manual-team-name"
-                                style="color: var(--accent-color); font-weight: 600;">Equipo</span></p>
+                    <div class="manual-header-right">
+                        <h1 id="manual-entry-title">Ingreso Manual</h1>
+                        <p class="subtitle">Analizando: <span id="manual-team-name" style="color: var(--accent-color); font-weight: 600;">Equipo</span></p>
                     </div>
                 </div>
             </header>
@@ -575,10 +538,25 @@
                 </div>
             </section>
 
+            <!-- Paste Area -->
+            <section class="card paste-section">
+                <div class="paste-header">
+                    <span class="paste-title">📋 Pegado Masivo</span>
+                    <span class="paste-hint">Pega marcadores (uno por línea): <code>2-1</code> · <code>2:1</code> · <code>2 1</code></span>
+                </div>
+                <textarea id="paste-area" class="paste-area" placeholder="2-1&#10;0 0&#10;1:2&#10;3:1" rows="3" spellcheck="false"></textarea>
+                <div class="paste-feedback" id="paste-feedback" style="display:none;"></div>
+            </section>
+
             <!-- Match Rows Container -->
             <section class="match-rows-container" id="match-rows">
                 <!-- Dynamically generated rows go here -->
             </section>
+
+            <!-- Add Row Button -->
+            <div class="add-row-footer">
+                <button class="add-row-btn" id="btn-add-row" type="button">+ Agregar partido</button>
+            </div>
         </main>
     </div>
     <script src="script.js"></script>
