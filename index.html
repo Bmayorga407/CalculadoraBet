@@ -160,18 +160,35 @@
 
                     <!-- Pro Mode: Sensitivity Analysis (full-width) -->
                     <div id="pro-sensitivity-prob" class="pro-section" style="display: none; margin-bottom: 16px;">
-                        <h3>Análisis de Sensibilidad</h3>
+                        <div class="pro-header"
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h3 style="margin-bottom: 0;">Análisis de Riesgo Pro</h3>
+                            <div id="prob-robustness-badge" class="robust-badge">--</div>
+                        </div>
+
+                        <div class="pro-metrics"
+                            style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div class="pro-metric-row">
+                                <span class="metric-label">Margen de error tolerado:</span>
+                                <span id="prob-error-margin" class="metric-value">--</span>
+                            </div>
+                            <div class="pro-metric-row">
+                                <span class="metric-label">Stake Conservador:</span>
+                                <span id="prob-cons-stake" class="metric-value">--</span>
+                            </div>
+                        </div>
+
                         <p id="prob-range-summary" class="range-summary"
                             style="display: none; text-align: center; margin-bottom: 16px; color: var(--text-secondary);">
                         </p>
-                        <div class="sensitivity-grid">
-                            <div class="sensitivity-card">
-                                <span class="sens-label">-5% Prob</span>
-                                <span id="sens-prob-down" class="sens-value">--</span>
+                        <div class="sensitivity-grid" style="grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <div class="sensitivity-card" style="padding: 8px;">
+                                <span class="sens-label" style="font-size: 10px;">-5% Prob EV</span>
+                                <span id="sens-prob-down" class="sens-value" style="font-size: 14px;">--</span>
                             </div>
-                            <div class="sensitivity-card">
-                                <span class="sens-label">+5% Prob</span>
-                                <span id="sens-prob-up" class="sens-value">--</span>
+                            <div class="sensitivity-card" style="padding: 8px;">
+                                <span class="sens-label" style="font-size: 10px;">+5% Prob EV</span>
+                                <span id="sens-prob-up" class="sens-value" style="font-size: 14px;">--</span>
                             </div>
                         </div>
                         <p id="sens-prob-reading" class="sens-reading"></p>
@@ -500,12 +517,29 @@
                             <p id="btts-value-explanation" class="value-explanation"></p>
                         </div>
                         <div id="pro-sensitivity-btts" class="pro-section" style="display: none; margin-bottom: 16px;">
-                            <h3>Análisis de Sensibilidad</h3>
-                            <div class="sensitivity-grid">
-                                <div class="sensitivity-card"><span class="sens-label">-5% Prob</span><span
-                                        id="sens-btts-down" class="sens-value">--</span></div>
-                                <div class="sensitivity-card"><span class="sens-label">+5% Prob</span><span
-                                        id="sens-btts-up" class="sens-value">--</span></div>
+                            <div class="pro-header"
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <h3 style="margin-bottom: 0;">Análisis de Riesgo Pro</h3>
+                                <div id="btts-robustness-badge" class="robust-badge">--</div>
+                            </div>
+                            <div class="pro-metrics"
+                                style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px; margin-bottom: 16px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div class="pro-metric-row">
+                                    <span class="metric-label">Margen de error tolerado:</span>
+                                    <span id="btts-error-margin" class="metric-value">--</span>
+                                </div>
+                                <div class="pro-metric-row">
+                                    <span class="metric-label">Stake Conservador:</span>
+                                    <span id="btts-cons-stake" class="metric-value">--</span>
+                                </div>
+                            </div>
+                            <div class="sensitivity-grid" style="grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <div class="sensitivity-card" style="padding: 8px;"><span class="sens-label"
+                                        style="font-size: 10px;">-5% Prob EV</span><span id="sens-btts-down"
+                                        class="sens-value" style="font-size: 14px;">--</span></div>
+                                <div class="sensitivity-card" style="padding: 8px;"><span class="sens-label"
+                                        style="font-size: 10px;">+5% Prob EV</span><span id="sens-btts-up"
+                                        class="sens-value" style="font-size: 14px;">--</span></div>
                             </div>
                             <p id="sens-btts-reading" class="sens-reading"></p>
                         </div>

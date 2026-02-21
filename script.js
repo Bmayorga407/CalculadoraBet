@@ -344,12 +344,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (explanationObj) explanationObj.textContent = explanation;
     };
 
-    const updateProSensitivity = (probPct, houseOdd, downEl, upEl, readingEl, sectionEl) => {
+    const updateProSensitivity = (probPct, houseOdd, downEl, upEl, readingEl, sectionEl, prefix = 'prob') => {
         if (!proModeActive) {
             if (sectionEl) sectionEl.style.display = 'none';
-            // Also hide confidence indicator
-            const confEl = document.getElementById('confidence-indicator');
-            if (confEl) confEl.style.display = 'none';
             return;
         }
         if (sectionEl) sectionEl.style.display = 'block';
@@ -358,9 +355,57 @@ document.addEventListener('DOMContentLoaded', () => {
         const pDown = clamp(p - 0.05, 0.01, 0.99);
         const pUp = clamp(p + 0.05, 0.01, 0.99);
 
-        const evDown = (pDown * houseOdd - 1) * 100;
-        const evUp = (pUp * houseOdd - 1) * 100;
+        const evNow = houseOdd > 0 ? (p * houseOdd - 1) * 100 : 0;
+        const evDown = houseOdd > 0 ? (pDown * houseOdd - 1) * 100 : 0;
+        const evUp = houseOdd > 0 ? (pUp * houseOdd - 1) * 100 : 0;
 
+        // UI Elements
+        const badgeEl = document.getElementById(`${prefix}-robustness-badge`);
+        const marginEl = document.getElementById(`${prefix}-error-margin`);
+        const stakeEl = document.getElementById(`${prefix}-cons-stake`);
+
+        // 1. Robustness
+        if (badgeEl) {
+            if (evNow <= 0 || houseOdd <= 1) {
+                badgeEl.textContent = "No Apostar";
+                badgeEl.className = "robust-badge robust-red";
+            } else if (evDown <= 0) {
+                badgeEl.textContent = "Frágil";
+                badgeEl.className = "robust-badge robust-yellow";
+            } else {
+                badgeEl.textContent = "Robusto";
+                badgeEl.className = "robust-badge robust-green";
+            }
+        }
+
+        // 2. Error Margin
+        if (marginEl) {
+            if (houseOdd > 1) {
+                const pBreakEven = 1 / houseOdd;
+                const margin = (p - pBreakEven) * 100;
+                marginEl.textContent = margin > 0 ? `+${margin.toFixed(1)}%` : `${margin.toFixed(1)}%`;
+                marginEl.style.color = margin > 0 ? "var(--accent-color)" : "#ef4444";
+            } else {
+                marginEl.textContent = "--";
+                marginEl.style.color = "inherit";
+            }
+        }
+
+        // 3. Conservative Stake (Quarter Kelly using pDown)
+        if (stakeEl) {
+            if (houseOdd > 1 && evDown > 0) {
+                const b = houseOdd - 1;
+                const kelly = ((pDown * houseOdd) - 1) / b;
+                const quarterKelly = (kelly / 4) * 100;
+                stakeEl.textContent = `${quarterKelly.toFixed(2)}%`;
+                stakeEl.style.color = "var(--accent-color)";
+            } else {
+                stakeEl.textContent = "0% (No Bet)";
+                stakeEl.style.color = "#ef4444";
+            }
+        }
+
+        // 4. Sensitivity Visuals
         if (downEl) {
             downEl.textContent = formatSigned(evDown, 2) + "%";
             downEl.style.color = evDown > 0 ? "var(--accent-color)" : "#ef4444";
@@ -372,39 +417,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (readingEl) {
             let msg = "";
-            if (evDown > 0) msg = "Sigue teniendo valor incluso si tu probabilidad baja 5%.";
-            else if (evUp < 0) msg = "Sigue sin tener valor incluso si tu probabilidad sube 5%.";
-            else if (evDown < 0 && evUp > 0) msg = "Se vuelve negativo si tu probabilidad baja 5%. Sensibilidad alta.";
+            if (evDown > 0) msg = "El valor resiste una caída del 5% en tu probabilidad.";
+            else if (evNow > 0 && evDown <= 0) msg = "Poco margen. Si tu prob cae 5% el valor es negativo.";
+            else msg = "No hay valor esperado con los cálculos actuales.";
             readingEl.textContent = msg;
-        }
-
-        // Probability range summary
-        const rangeEl = document.getElementById('prob-range-summary');
-        if (rangeEl) {
-            const pDownPct = (pDown * 100).toFixed(1);
-            const pUpPct = (pUp * 100).toFixed(1);
-            rangeEl.textContent = `Prob ${pDownPct}%–${pUpPct}% → EV ${formatSigned(evDown, 1)}% a ${formatSigned(evUp, 1)}%`;
-            rangeEl.style.display = 'block';
-        }
-
-        // Confidence indicator
-        const confEl = document.getElementById('confidence-indicator');
-        const confDot = document.getElementById('confidence-dot');
-        const confText = document.getElementById('confidence-text');
-        if (confEl && confDot && confText) {
-            confEl.style.display = 'flex';
-            const evNow = (p * houseOdd - 1) * 100;
-            let level, color;
-            if (evNow > 5 && evDown > 0) {
-                level = 'Alta'; color = 'var(--accent-color)';
-            } else if (evNow > 0) {
-                level = 'Media'; color = '#f59e0b';
-            } else {
-                level = 'Baja'; color = '#ef4444';
-            }
-            confDot.style.background = color;
-            confText.textContent = `Confianza: ${level}`;
-            confText.style.color = color;
         }
     };
 
@@ -615,7 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Value Badge & Pro Sensitivity
                 updateValueTag(evPct, pSelected * 100, houseOdd, bttsBadge, bttsExplanation, bttsBadgeContainer);
-                updateProSensitivity(pSelected * 100, houseOdd, sensBttsDown, sensBttsUp, sensBttsReading, proSectionBtts);
+                updateProSensitivity(pSelected * 100, houseOdd, sensBttsDown, sensBttsUp, sensBttsReading, proSectionBtts, 'btts');
 
                 const f = kellyFraction(pSelected, houseOdd, 0.25);
                 const stakeMoney = Math.floor(bankroll * f);
@@ -688,7 +704,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Value Badge & Pro Sensitivity
             updateValueTag(evPct, p * 100, houseOdd, probBadge, probExplanation, probBadgeContainer);
-            updateProSensitivity(p * 100, houseOdd, sensProbDown, sensProbUp, sensProbReading, proSectionProb);
+            updateProSensitivity(p * 100, houseOdd, sensProbDown, sensProbUp, sensProbReading, proSectionProb, 'prob');
 
             // Kelly 1/4
             const f = kellyFraction(p, houseOdd, 0.25);
