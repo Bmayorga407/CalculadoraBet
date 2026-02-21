@@ -448,7 +448,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // 4. EV Monetario y Proyección
         if (evSingle && evHundred) {
             if (units > 0 && houseOdd > 1) {
-                const moneyStake = bankroll * (pKellyCons / 100);
+                const moneyStakeRaw = bankroll * (pKellyCons / 100);
+                const moneyStake = Math.round(moneyStakeRaw / 10) * 10; // Redondeo a 10
                 const moneyEv = moneyStake * (evNow / 100);
 
                 evSingle.textContent = `${currBase}${moneyEv.toFixed(2)}`;
@@ -714,16 +715,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateProSensitivity(pSelected * 100, houseOdd, sensBttsDown, sensBttsUp, sensBttsReading, proSectionBtts, 'btts');
 
                 const f = kellyFraction(pSelected, houseOdd, 0.25);
-                const stakeMoney = Math.floor(bankroll * f);
                 const stakePct = f * 100;
+                const stakeMoneyRaw = bankroll * f;
+                const stakeMoneyRounded = Math.round(stakeMoneyRaw / 10) * 10; // Redondeo a 10
+
+                // Units mapping
+                let units = 0;
+                if (stakePct <= 0) units = 0;
+                else if (stakePct <= 1.0) units = 1;
+                else if (stakePct <= 2.0) units = 2;
+                else if (stakePct <= 3.0) units = 3;
+                else if (stakePct <= 4.0) units = 4;
+                else units = 5;
 
                 if (bttsKellyCard) bttsKellyCard.style.display = 'flex';
                 if (bttsKellyStake) {
-                    if (stakePct <= 0) {
-                        bttsKellyStake.textContent = "0% (No Bet)";
+                    if (units === 0) {
+                        bttsKellyStake.textContent = "0u (No Bet)";
                         bttsKellyStake.style.color = "#ef4444";
                     } else {
-                        bttsKellyStake.textContent = `${stakePct.toFixed(2)}% (${currency}${stakeMoney})`;
+                        bttsKellyStake.textContent = `${units}u (${currency}${stakeMoneyRounded})`;
                         bttsKellyStake.style.color = "var(--accent-color)";
                     }
                 }
@@ -789,15 +800,31 @@ document.addEventListener('DOMContentLoaded', () => {
             // Kelly 1/4
             const f = kellyFraction(p, houseOdd, 0.25);
             const stakePct = f * 100;
-            const stakeAmount = Math.floor(bankroll * f);
+            const stakeAmountRaw = bankroll * f;
+            const stakeAmountRounded = Math.round(stakeAmountRaw / 10) * 10; // Redondeo a 10
+
+            // Units mapping
+            let units = 0;
+            if (stakePct <= 0) units = 0;
+            else if (stakePct <= 1.0) units = 1;
+            else if (stakePct <= 2.0) units = 2;
+            else if (stakePct <= 3.0) units = 3;
+            else if (stakePct <= 4.0) units = 4;
+            else units = 5;
 
             kellyCard.style.display = 'flex';
-            if (stakePct <= 0) {
-                kellyStakeDisplay.textContent = "0% (No Bet)";
+            if (units === 0) {
+                kellyStakeDisplay.textContent = "0u (No Bet)";
                 kellyStakeDisplay.parentElement.style.color = "#ef4444";
             } else {
-                kellyStakeDisplay.textContent = `${stakePct.toFixed(2)}% (${currencySymbol}${stakeAmount})`;
+                kellyStakeDisplay.textContent = `${units}u (${currencySymbol}${stakeAmountRounded})`;
                 kellyStakeDisplay.parentElement.style.color = "var(--accent-color)";
+                // Small percentage detail if needed (hidden by default in HTML)
+                const kellyPctEl = document.getElementById('kelly-pct');
+                if (kellyPctEl) {
+                    kellyPctEl.textContent = `(${stakePct.toFixed(1)}%)`;
+                    // kellyPctEl.style.display = 'inline'; // Uncomment to show % detail
+                }
             }
         } else {
             summaryHouseOdd.textContent = '-.--';
