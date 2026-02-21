@@ -547,8 +547,20 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const calculateOverProbability = (lambdaHome, lambdaAway, line) => {
-        const k = Math.floor(line);
-        return 1 - poissonCdf(k, lambdaHome + lambdaAway);
+        const totalLambda = lambdaHome + lambdaAway;
+        if (line % 0.5 === 0) {
+            // Standard lines (0.5, 1.0, 1.5...)
+            const k = Math.floor(line);
+            return 1 - poissonCdf(k, totalLambda);
+        } else {
+            // Asian lines (0.25, 0.75)
+            // Example 2.25 is average of 2.0 and 2.5
+            const lineLower = line - 0.25;
+            const lineUpper = line + 0.25;
+            const pLower = 1 - poissonCdf(Math.floor(lineLower), totalLambda);
+            const pUpper = 1 - poissonCdf(Math.floor(lineUpper), totalLambda);
+            return (pLower + pUpper) / 2;
+        }
     };
 
     // --- BTTS Logic ---
@@ -666,8 +678,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const overPct = overOU * 100;
         const underPct = underOU * 100;
 
-        if (ouOverTitle) ouOverTitle.textContent = `Over ${ouLine.toFixed(1)}`;
-        if (ouUnderTitle) ouUnderTitle.textContent = `Under ${ouLine.toFixed(1)}`;
+        const lineLabel = ouLine % 0.5 === 0 ? ouLine.toFixed(1) : ouLine.toFixed(2);
+        if (ouOverTitle) ouOverTitle.textContent = `Over ${lineLabel}`;
+        if (ouUnderTitle) ouUnderTitle.textContent = `Under ${lineLabel}`;
         if (ouOverProbEl) ouOverProbEl.textContent = overPct.toFixed(1);
         if (ouUnderProbEl) ouUnderProbEl.textContent = underPct.toFixed(1);
         if (ouOverFairEl) ouOverFairEl.textContent = overOU > 0 ? (1 / overOU).toFixed(2) : "-.--";
@@ -676,10 +689,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const ouPick = (overPct >= underPct) ? "over" : "under";
         if (ouOverContainer) ouOverContainer.classList.toggle("winner-card", ouPick === "over");
         if (ouUnderContainer) ouUnderContainer.classList.toggle("winner-card", ouPick === "under");
-        if (ouPickLabel) ouPickLabel.textContent = ouPick === "over" ? `Over ${ouLine.toFixed(1)}` : `Under ${ouLine.toFixed(1)}`;
+        if (ouPickLabel) ouPickLabel.textContent = ouPick === "over" ? `Over ${lineLabel}` : `Under ${lineLabel}`;
 
         // --- O/U Optimal Line Scanner ---
-        const linesToScan = [1.5, 2.0, 2.25, 2.5, 2.75, 3.0, 3.5];
+        const linesToScan = [1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5];
         let bestLine = 2.5;
         let bestScore = -999;
         let bestType = "Over";
@@ -692,8 +705,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (scoreOver > bestScore) { bestScore = scoreOver; bestLine = l; bestType = "Over"; }
             if (scoreUnder > bestScore) { bestScore = scoreUnder; bestLine = l; bestType = "Under"; }
         });
+        const bestLineLabel = bestLine % 0.5 === 0 ? bestLine.toFixed(1) : bestLine.toFixed(2);
         const optLineValue = document.getElementById('ou-optimal-line-value');
-        if (optLineValue) optLineValue.textContent = `${bestType} ${bestLine}`;
+        if (optLineValue) optLineValue.textContent = `${bestType} ${bestLineLabel}`;
 
         // --- Market Choice & Pro Analysis ---
         let pSelected = 0;
