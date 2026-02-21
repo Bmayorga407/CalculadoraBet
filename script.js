@@ -61,6 +61,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const bttsEvValue = document.getElementById('btts-ev-value');
     const bttsKellyStake = document.getElementById('btts-kelly-stake');
     const bttsKellyCard = document.getElementById('btts-kelly-card');
+    const bttsSampleWarning = document.getElementById('btts-sample-warning');
+    const bttsModelContainer = document.getElementById('btts-model-container');
 
     // BTTS / O-U Toggle Elements
     const btnBttsMode = document.getElementById('btn-btts-mode');
