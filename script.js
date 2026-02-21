@@ -1059,7 +1059,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const liveUpdateBtts = debounce(calculateBtts, 150);
 
     if (btnProbability) btnProbability.addEventListener('click', () => showView(calculatorView));
-    if (btnBtts) btnBtts.addEventListener('click', () => { showView(bttsView); debouncedCalculateBtts(); });
+    if (btnBtts) btnBtts.addEventListener('click', () => { showView(bttsView); calculateBtts(); debouncedCalculateBtts(); });
     if (btnBack) btnBack.addEventListener('click', () => showView(mainMenu));
     if (btnBackBtts) btnBackBtts.addEventListener('click', () => showView(mainMenu));
     if (btnBackManual) btnBackManual.addEventListener('click', () => showView(bttsView));
@@ -1072,6 +1072,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentBttsMarket = "btts";
             applyBttsMarketUI();
             saveState();
+            calculateBtts();
             debouncedCalculateBtts();
         });
     }
@@ -1080,12 +1081,14 @@ document.addEventListener('DOMContentLoaded', () => {
             currentBttsMarket = "ou";
             applyBttsMarketUI();
             saveState();
+            calculateBtts();
             debouncedCalculateBtts();
         });
     }
     if (ouLineSelect) {
         ouLineSelect.addEventListener('change', () => {
             saveState();
+            calculateBtts();
             debouncedCalculateBtts();
         });
     }
