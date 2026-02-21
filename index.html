@@ -81,7 +81,7 @@
                         <div class="pro-toggle-wrapper">
                             <span>Pro</span>
                             <label class="switch">
-                                <input type="checkbox" id="pro-mode-toggle">
+                                <input type="checkbox" id="pro-mode-toggle-prob">
                                 <span class="slider round"></span>
                             </label>
                         </div>
@@ -326,6 +326,13 @@
                     </div>
                     <div class="header-actions">
                         <button id="btn-show-history-btts" class="icon-btn" title="Historial">🕒</button>
+                        <div class="pro-toggle-wrapper">
+                            <span>Pro</span>
+                            <label class="switch">
+                                <input type="checkbox" id="pro-mode-toggle-btts">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
                     </div>
                 </div>
                 <div class="manual-header-right" style="text-align: left; margin-bottom: 16px;">
@@ -425,8 +432,13 @@
                                         </div>
                                     </div>
                                 </div>
-                                <button class="manual-btn" id="btn-manual-local" type="button">⊕ Ingresar
-                                    partidos</button>
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+                                    <button class="manual-btn" id="btn-manual-local" type="button">⊕ Ingresar
+                                        partidos</button>
+                                    <span id="sample-quality-badge" class="robust-badge"
+                                        style="font-size: 10px; padding: 2px 8px; display: none;"></span>
+                                </div>
                             </div>
                         </div>
 
@@ -526,22 +538,21 @@
                         <div class="probability-row">
                             <div id="btts-panel-btts" class="btts-panel">
                                 <div class="stat-col">
-                                    <div class="prob-item" id="btts-model-container">
-                                        <div class="label-line">
-                                            <h2>BTTS Modelo</h2><span id="btts-sample-warning" class="badge-warning"
-                                                style="display:none;">Muestra baja</span>
-                                        </div>
-                                        <div class="value-display" id="btts-model-display">
-                                            <span id="btts-model-prob" class="text-green">0</span><span
+                                    <div class="prob-item" id="btts-yes-container">
+                                        <h2>BTTS Sí</h2>
+                                        <div class="value-display">
+                                            <span id="btts-yes-prob" class="text-green">0</span><span
                                                 class="unit">%</span>
                                         </div>
+                                        <div class="subline">Cuota justa: <span id="btts-yes-fair">-.--</span></div>
                                     </div>
-                                    <div class="prob-item" id="btts-final-container">
-                                        <h2>BTTS Final</h2>
-                                        <div class="value-display" id="btts-final-display">
-                                            <span id="btts-avg-prob" class="text-green">0</span><span
+                                    <div class="prob-item" id="btts-no-container">
+                                        <h2>BTTS No</h2>
+                                        <div class="value-display">
+                                            <span id="btts-no-prob" class="text-green">0</span><span
                                                 class="unit">%</span>
                                         </div>
+                                        <div class="subline">Cuota justa: <span id="btts-no-fair">-.--</span></div>
                                     </div>
                                 </div>
                                 <div class="divider-vertical"></div>
@@ -589,6 +600,18 @@
                                         <div class="value-display"><span id="ou-under-prob"
                                                 class="text-green">0</span><span class="unit">%</span></div>
                                         <div class="subline">Cuota justa: <span id="ou-under-fair">-.--</span></div>
+                                    </div>
+                                </div>
+                                <div class="divider-vertical"></div>
+                                <div class="stat-col">
+                                    <div class="card" id="ou-optimal-line-card"
+                                        style="background: rgba(255,255,255,0.02); border: 1px solid var(--accent-color); border-radius: 8px; padding: 10px; width: 100%; text-align: center;">
+                                        <div
+                                            style="font-size: 10px; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 4px;">
+                                            Línea Óptima Sugerida</div>
+                                        <div id="ou-optimal-line-value"
+                                            style="font-size: 14px; font-weight: 600; color: var(--accent-color);">--
+                                        </div>
                                     </div>
                                 </div>
                             </div>

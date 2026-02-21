@@ -53,7 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const bttsMode = document.getElementById('btts-mode');
 
     // BTTS Result Elements
-    const bttsAvgProb = document.getElementById('btts-avg-prob');
     const bttsLocalProb = document.getElementById('btts-local-prob');
     const bttsVisitorProb = document.getElementById('btts-visitor-prob');
     const bttsCombinedAvg = document.getElementById('btts-combined-avg');
@@ -62,8 +61,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const bttsEvValue = document.getElementById('btts-ev-value');
     const bttsKellyStake = document.getElementById('btts-kelly-stake');
     const bttsKellyCard = document.getElementById('btts-kelly-card');
-    const bttsSampleWarning = document.getElementById('btts-sample-warning');
-    const bttsModelContainer = document.getElementById('btts-model-container');
+
+    const bttsYesContainer = document.getElementById('btts-yes-container');
+    const bttsNoContainer = document.getElementById('btts-no-container');
+    const bttsYesProbEl = document.getElementById('btts-yes-prob');
+    const bttsNoProbEl = document.getElementById('btts-no-prob');
+    const bttsYesFairEl = document.getElementById('btts-yes-fair');
+    const bttsNoFairEl = document.getElementById('btts-no-fair');
+    const sampleBadge = document.getElementById('sample-quality-badge');
 
     // BTTS / O-U Toggle Elements
     const btnBttsMode = document.getElementById('btn-btts-mode');
@@ -84,7 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const bttsMarketLabel = document.getElementById('btts-market-label');
 
     // New Enhancement Elements
-    const proModeToggle = document.getElementById('pro-mode-toggle');
+    const proModeToggleProb = document.getElementById('pro-mode-toggle-prob');
+    const proModeToggleBtts = document.getElementById('pro-mode-toggle-btts');
     const btnShowHistory = document.getElementById('btn-show-history');
     const historyModal = document.getElementById('history-modal');
     const historyCloseBtn = document.getElementById('history-close-btn');
@@ -162,7 +168,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // State
     let currentBttsMarket = "btts";
-    let proModeActive = false;
+    let proModeProb = false;
+    let proModeBtts = false;
     let history = JSON.parse(localStorage.getItem('bet_history') || '[]');
     let favorites = JSON.parse(localStorage.getItem('bet_favs') || '[]');
     let activeTab = 'recent';
@@ -352,16 +359,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (explanationObj) explanationObj.textContent = explanation;
     };
 
-    const updateProSensitivity = (probPct, houseOdd, downEl, upEl, readingEl, sectionEl, prefix = 'prob') => {
-        if (!proModeActive) {
+    const updateProSensitivity = (probPct, houseOdd, downEl, upEl, readingEl, sectionEl, prefix = 'prob', customPenalty = 0.05) => {
+        const isPro = prefix === 'prob' ? proModeProb : proModeBtts;
+        if (!isPro) {
             if (sectionEl) sectionEl.style.display = 'none';
             return;
         }
         if (sectionEl) sectionEl.style.display = 'block';
 
         const p = probPct / 100;
-        const pDown = clamp(p - 0.05, 0.01, 0.99);
-        const pUp = clamp(p + 0.05, 0.01, 0.99);
+        const pDown = clamp(p - customPenalty, 0.01, 0.99);
+        const pUp = clamp(p + customPenalty, 0.01, 0.99);
         const oddDown = Math.max(1.01, houseOdd - 0.05);
         const oddUp = houseOdd + 0.05;
 
@@ -535,6 +543,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return clamp(sum, 0, 1);
     };
 
+    const calculateOverProbability = (lambdaHome, lambdaAway, line) => {
+        const k = Math.floor(line);
+        return 1 - poissonCdf(k, lambdaHome + lambdaAway);
+    };
+
     // --- BTTS Logic ---
     const calculateBtts = () => {
         const localScored = clamp(toNumber(bttsLocalScored.value), 0, 100);
@@ -550,86 +563,91 @@ document.addEventListener('DOMContentLoaded', () => {
         const currency = getCurrencySymbol(currencySelect);
         const mode = (bttsMode && bttsMode.value) ? bttsMode.value : "hybrid";
 
-        // Keep the input itself consistent with clamps
         if (bttsSample && String(bttsSample.value) !== String(sampleSize)) bttsSample.value = sampleSize;
 
-        // Averages from manual entry (goals)
         const avgSLocal = Math.max(0, toNumber(bttsLocalAvgScored.value, 0));
         const avgCLocal = Math.max(0, toNumber(bttsLocalAvgConceded.value, 0));
         const avgSVisitor = Math.max(0, toNumber(bttsVisitorAvgScored.value, 0));
         const avgCVisitor = Math.max(0, toNumber(bttsVisitorAvgConceded.value, 0));
 
-        // xG (simple blend)
         let lambdaHome = (avgSLocal + avgCVisitor) / 2;
         let lambdaAway = (avgSVisitor + avgCLocal) / 2;
 
         const rawLambdaHome = lambdaHome;
         const rawLambdaAway = lambdaAway;
 
-        // smoothing weight: w=0.1 at N=1, w=1 at N=20
         const xgWeight = Math.min(1, 0.1 + (sampleSize - 1) * (0.9 / 19));
 
-        // Progressive cap for extreme xG
         if (lambdaHome > 3.0) lambdaHome = 3.0 + (lambdaHome - 3.0) * xgWeight;
         if (lambdaAway > 3.0) lambdaAway = 3.0 + (lambdaAway - 3.0) * xgWeight;
 
-        const bttsLocalXg = document.getElementById('btts-local-xg');
-        const bttsVisitorXg = document.getElementById('btts-visitor-xg');
         if (bttsLocalXg) bttsLocalXg.textContent = lambdaHome.toFixed(2);
         if (bttsVisitorXg) bttsVisitorXg.textContent = lambdaAway.toFixed(2);
 
-        // Tooltips/modals
-        const xgLocalData = { title: "xG (Local)", raw: rawLambdaHome, used: lambdaHome, weight: xgWeight };
-        const xgVisitorData = { title: "xG (Visita)", raw: rawLambdaAway, used: lambdaAway, weight: xgWeight };
-        const btnInfoLocal = document.getElementById('info-xg-local');
-        const btnInfoVisitor = document.getElementById('info-xg-visitor');
-        if (btnInfoLocal) btnInfoLocal.onclick = () => showDetail(xgLocalData);
-        if (btnInfoVisitor) btnInfoVisitor.onclick = () => showDetail(xgVisitorData);
-
-        // Poisson BTTS
         const probabilityPoisson = (1 - Math.exp(-lambdaHome) - Math.exp(-lambdaAway) + Math.exp(-(lambdaHome + lambdaAway))) * 100;
 
-        // Individual score probabilities
         const probLocal = (1 - Math.exp(-lambdaHome)) * 100;
         const probVisitor = (1 - Math.exp(-lambdaAway)) * 100;
         if (bttsLocalProb) bttsLocalProb.textContent = probLocal.toFixed(1);
         if (bttsVisitorProb) bttsVisitorProb.textContent = probVisitor.toFixed(1);
 
-        // Empirical BTTS approximation + shrinkage
         const probPercentageRaw = (localScored * visitorScored) / 100;
         const baseline = 53;
         const k = 10;
         const w = sampleSize / (sampleSize + k);
         const adjustedEmpirical = (w * probPercentageRaw) + ((1 - w) * baseline);
 
-        // Hybrid weight by sample size (same idea, cleaner)
         let probabilityFinal = adjustedEmpirical;
         if (mode === "model") {
             probabilityFinal = probabilityPoisson;
         } else if (mode === "empirical") {
             probabilityFinal = adjustedEmpirical;
         } else {
-            // hybrid
             if (sampleSize < 8) probabilityFinal = (0.3 * probabilityPoisson) + (0.7 * adjustedEmpirical);
             else if (sampleSize <= 15) probabilityFinal = (0.5 * probabilityPoisson) + (0.5 * adjustedEmpirical);
             else probabilityFinal = (0.7 * probabilityPoisson) + (0.3 * adjustedEmpirical);
         }
 
-        // Display model and final
-        const bttsModelProb = document.getElementById('btts-model-prob');
-        if (bttsModelProb) bttsModelProb.textContent = probabilityPoisson.toFixed(1);
-        if (bttsAvgProb) bttsAvgProb.textContent = probabilityFinal.toFixed(1);
+        // --- BTTS Sí/No Dual Logic ---
+        const probYes = probabilityFinal;
+        const probNo = 100 - probYes;
+        const fairYes = probYes > 0 ? (100 / probYes) : 0;
+        const fairNo = probNo > 0 ? (100 / probNo) : 0;
 
-        // Reliability hint
-        if (sampleSize < 5) {
-            if (bttsSampleWarning) bttsSampleWarning.style.display = 'inline-block';
-            if (bttsModelContainer) bttsModelContainer.style.opacity = '0.4';
-        } else {
-            if (bttsSampleWarning) bttsSampleWarning.style.display = 'none';
-            if (bttsModelContainer) bttsModelContainer.style.opacity = '1';
+        const bttsYesProbEl = document.getElementById('btts-yes-prob');
+        const bttsNoProbEl = document.getElementById('btts-no-prob');
+        const bttsYesFairEl = document.getElementById('btts-yes-fair');
+        const bttsNoFairEl = document.getElementById('btts-no-fair');
+
+        if (bttsYesProbEl) bttsYesProbEl.textContent = probYes.toFixed(1);
+        if (bttsNoProbEl) bttsNoProbEl.textContent = probNo.toFixed(1);
+        if (bttsYesFairEl) bttsYesFairEl.textContent = fairYes > 0 ? fairYes.toFixed(2) : '-.--';
+        if (bttsNoFairEl) bttsNoFairEl.textContent = fairNo > 0 ? fairNo.toFixed(2) : '-.--';
+
+        // Highlight BTTS winner
+        if (bttsYesContainer) bttsYesContainer.classList.toggle("winner-card", probYes >= probNo);
+        if (bttsNoContainer) bttsNoContainer.classList.toggle("winner-card", probNo > probYes);
+
+        // --- Sample Quality Indicator ---
+        const sampleBadge = document.getElementById('sample-quality-badge');
+        let sampleStrength = "decent";
+        if (sampleSize < 5) sampleStrength = "low";
+        else if (sampleSize <= 10) sampleStrength = "medium";
+
+        if (sampleBadge) {
+            sampleBadge.style.display = 'inline-block';
+            if (sampleStrength === "low") {
+                sampleBadge.textContent = "Muestra Baja";
+                sampleBadge.className = "robust-badge badge-sample-low";
+            } else if (sampleStrength === "medium") {
+                sampleBadge.textContent = "Muestra Media";
+                sampleBadge.className = "robust-badge badge-sample-medium";
+            } else {
+                sampleBadge.textContent = "Muestra Decente";
+                sampleBadge.className = "robust-badge badge-sample-decent";
+            }
         }
 
-        // Combined goals (adjusted shrinkage)
         const neutralBaseline = 1.33;
         const kGoals = 10;
         const lambdaHomeAdj = (rawLambdaHome * sampleSize + neutralBaseline * kGoals) / (sampleSize + kGoals);
@@ -637,125 +655,87 @@ document.addEventListener('DOMContentLoaded', () => {
         const combinedAvg = lambdaHomeAdj + lambdaAwayAdj;
         if (bttsCombinedAvg) bttsCombinedAvg.textContent = combinedAvg > 0 ? combinedAvg.toFixed(2) : "---";
 
-        const goalsData = {
-            title: "Promedio Goles (Ajustado)",
-            raw: rawLambdaHome + rawLambdaAway,
-            used: combinedAvg,
-            weight: sampleSize / (sampleSize + kGoals)
-        };
-        const btnInfoGoals = document.getElementById('info-goals-combined');
-        if (btnInfoGoals) btnInfoGoals.onclick = () => showDetail(goalsData);
-
-
-        // --- Over/Under probabilities from total goals ---
+        // --- O/U probabilities ---
         const ouLine = clamp(toNumber(ouLineSelect ? ouLineSelect.value : 2.5, 2.5), 0.5, 6.0);
-        const kLine = Math.floor(ouLine); // for x.5 lines: Under x.5 = P(Total <= x)
+        const kLine = Math.floor(ouLine);
         const underOU = poissonCdf(kLine, combinedAvg);
         const overOU = clamp(1 - underOU, 0, 1);
-
         const overPct = overOU * 100;
         const underPct = underOU * 100;
 
         if (ouOverTitle) ouOverTitle.textContent = `Over ${ouLine.toFixed(1)}`;
         if (ouUnderTitle) ouUnderTitle.textContent = `Under ${ouLine.toFixed(1)}`;
-
         if (ouOverProbEl) ouOverProbEl.textContent = overPct.toFixed(1);
         if (ouUnderProbEl) ouUnderProbEl.textContent = underPct.toFixed(1);
-
         if (ouOverFairEl) ouOverFairEl.textContent = overOU > 0 ? (1 / overOU).toFixed(2) : "-.--";
         if (ouUnderFairEl) ouUnderFairEl.textContent = underOU > 0 ? (1 / underOU).toFixed(2) : "-.--";
 
-        // Highlight the higher-probability side in O/U
         const ouPick = (overPct >= underPct) ? "over" : "under";
         if (ouOverContainer) ouOverContainer.classList.toggle("winner-card", ouPick === "over");
         if (ouUnderContainer) ouUnderContainer.classList.toggle("winner-card", ouPick === "under");
-
         if (ouPickLabel) ouPickLabel.textContent = ouPick === "over" ? `Over ${ouLine.toFixed(1)}` : `Under ${ouLine.toFixed(1)}`;
 
-        // --- BTTS fair odd (always shown in BTTS panel) ---
-        const pBtts = clamp(probabilityFinal / 100, 0, 1);
-        const fairOddBtts = pBtts > 0 ? (1 / pBtts) : 0;
-        if (bttsFairOdd) bttsFairOdd.textContent = pBtts > 0 ? fairOddBtts.toFixed(2) : "-.--";
+        // --- O/U Optimal Line Scanner ---
+        const linesToScan = [1.5, 2.0, 2.25, 2.5, 2.75, 3.0, 3.5];
+        let bestLine = 2.5;
+        let bestScore = -999;
+        let bestType = "Over";
 
-        // --- Choose active market for EV/Edge/Kelly ---
-        const pSelected = (currentBttsMarket === "ou")
-            ? (ouPick === "over" ? overOU : underOU)
-            : pBtts;
+        linesToScan.forEach(l => {
+            const pOver = calculateOverProbability(lambdaHomeAdj, lambdaAwayAdj, l) * 100;
+            const pUnder = 100 - pOver;
+            const scoreOver = pOver > 48 && pOver < 62 ? pOver : pOver * 0.4;
+            const scoreUnder = pUnder > 48 && pUnder < 62 ? pUnder : pUnder * 0.4;
+            if (scoreOver > bestScore) { bestScore = scoreOver; bestLine = l; bestType = "Over"; }
+            if (scoreUnder > bestScore) { bestScore = scoreUnder; bestLine = l; bestType = "Under"; }
+        });
+        const optLineValue = document.getElementById('ou-optimal-line-value');
+        if (optLineValue) optLineValue.textContent = `${bestType} ${bestLine}`;
 
-        const fairOddSelected = pSelected > 0 ? (1 / pSelected) : 0;
-
-        // Market label (for the house odd card)
-        if (bttsMarketLabel) {
-            if (currentBttsMarket === "ou") bttsMarketLabel.textContent = `O/U ${ouLine.toFixed(1)} (${ouPick === "over" ? "Over" : "Under"})`;
-            else bttsMarketLabel.textContent = "BTTS S\u00ed";
-        }
-
-        // Highlight which MODE has higher probability (BTTS vs O/U pick)
-        const ouPickPct = (ouPick === "over" ? overPct : underPct);
-        const bttsPct = pBtts * 100;
-        const modeWinner = (ouPickPct > bttsPct) ? "ou" : "btts";
-        if (btnBttsMode) btnBttsMode.classList.toggle("winner", modeWinner === "btts");
-        if (btnOuMode) btnOuMode.classList.toggle("winner", modeWinner === "ou");
-
-        // --- Update Hero Block ---
-        {
-            const heroPick = currentBttsMarket === "ou"
-                ? (ouPick === "over" ? `Over ${ouLine.toFixed(1)}` : `Under ${ouLine.toFixed(1)}`)
-                : (pBtts >= 0.5 ? 'BTTS S\u00ed' : 'BTTS No');
-            const heroProb = currentBttsMarket === "ou" ? ouPickPct : bttsPct;
-            const heroFair = pSelected > 0 ? (1 / pSelected) : 0;
-            updateHero(heroPick, heroProb, heroFair);
-        }
-
-        // --- EV/Edge + Kelly 1/4 for the ACTIVE market ---
-        if (fairOddSelected > 0 && bttsEdgeValue && bttsEvValue) {
-            if (houseOdd > 1) {
-                const evPct = ((pSelected * houseOdd) - 1) * 100;
-                const displayedFairOdd = parseFloat(fairOddSelected.toFixed(2));
-                const edgePct = displayedFairOdd > 0 ? (houseOdd - displayedFairOdd) : 0;
-
-                bttsEdgeValue.textContent = formatSigned(edgePct, 2);
-                bttsEdgeValue.style.color = edgePct > 0 ? "var(--accent-color)" : (edgePct < 0 ? "#ef4444" : "var(--text-primary)");
-
-                bttsEvValue.textContent = formatSigned(evPct, 2) + "%";
-                bttsEvValue.style.color = evPct > 0 ? "var(--accent-color)" : "#ef4444";
-
-                // Value Badge & Pro Sensitivity
-                updateValueTag(evPct, pSelected * 100, houseOdd, bttsBadge, bttsExplanation, bttsBadgeContainer);
-                updateProSensitivity(pSelected * 100, houseOdd, sensBttsDown, sensBttsUp, sensBttsReading, proSectionBtts, 'btts');
-
-                const f = kellyFraction(pSelected, houseOdd, 0.25);
-                const stakePct = f * 100;
-
-                // Units mapping (1u = 1% bankroll)
-                let units = clamp(Math.floor(stakePct), 0, 5);
-                const stakeMoneyRounded = Math.round((bankroll * units / 100) / 10) * 10;
-
-                if (bttsKellyCard) bttsKellyCard.style.display = 'flex';
-                if (bttsKellyStake) {
-                    if (units === 0) {
-                        bttsKellyStake.textContent = "0.00% (Referencia)";
-                        bttsKellyStake.style.color = "var(--text-secondary)";
-                    } else {
-                        // Kelly is reference, so we keep % but mark it
-                        bttsKellyStake.textContent = `${units}u (${currency}${stakeMoneyRounded})`;
-                        bttsKellyStake.style.color = "var(--accent-color)";
-                    }
-                }
-            } else {
-                bttsEdgeValue.textContent = "0.00%";
-                bttsEvValue.textContent = "0.00%";
-                if (bttsKellyCard) bttsKellyCard.style.display = 'none';
-                updateValueTag(0, pSelected * 100, 0, bttsBadge, bttsExplanation, bttsBadgeContainer);
-                updateProSensitivity(pSelected * 100, 0, sensBttsDown, sensBttsUp, sensBttsReading, proSectionBtts);
-            }
+        // --- Market Choice & Pro Analysis ---
+        let pSelected = 0;
+        if (currentBttsMarket === "ou") {
+            pSelected = (ouPick === "over" ? overPct : underPct);
         } else {
-            if (bttsEdgeValue) bttsEdgeValue.textContent = "0.00%";
-            if (bttsEvValue) bttsEvValue.textContent = "0.00%";
-            if (bttsKellyCard) bttsKellyCard.style.display = 'none';
+            pSelected = probYes;
         }
 
-        // Save relevant state (market + line)
+        if (heroProb) heroProb.textContent = pSelected.toFixed(1) + '%';
+        if (heroFair) {
+            const f = pSelected > 0 ? (100 / pSelected) : 0;
+            heroFair.textContent = f > 0 ? f.toFixed(2) : '-.--';
+        }
+
+        // Reliability Penalty
+        let penalty = 0.05;
+        if (sampleStrength === "low") penalty = 0.07;
+        else if (sampleStrength === "decent") penalty = 0.03;
+
+        updateProSensitivity(pSelected, houseOdd, sensBttsDown, sensBttsUp, sensBttsReading, proSectionBtts, 'btts', penalty);
+
+        // Kelly / Stake
+        if (houseOdd > 1 && bttsKellyCard) {
+            bttsKellyCard.style.display = 'flex';
+            const p = pSelected / 100;
+            const pDown = clamp(p - penalty, 0.01, 0.99);
+            const b = houseOdd - 1;
+            const pKellyCons = clamp((((pDown * houseOdd) - 1) / b / 4) * 100, 0, 100);
+            const units = clamp(Math.floor(pKellyCons), 0, 5);
+            const stakeMoneyRounded = Math.round((bankroll * units / 100) / 10) * 10;
+
+            if (bttsKellyStake) {
+                if (units === 0) {
+                    bttsKellyStake.textContent = "0.00% (Referencia)";
+                    bttsKellyStake.style.color = "var(--text-secondary)";
+                } else {
+                    bttsKellyStake.textContent = `${units}u (${currency}${stakeMoneyRounded})`;
+                    bttsKellyStake.style.color = "var(--accent-color)";
+                }
+            }
+        } else if (bttsKellyCard) {
+            bttsKellyCard.style.display = 'none';
+        }
+
         saveState();
     };
 
@@ -1037,6 +1017,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 bttsMode: bttsMode ? bttsMode.value : "hybrid",
                 bttsMarket: currentBttsMarket,
                 ouLine: ouLineSelect ? ouLineSelect.value : "2.5",
+                proModeProb,
+                proModeBtts,
                 manualData
             };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -1055,6 +1037,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (bttsMode && state.bttsMode) bttsMode.value = state.bttsMode;
             if (state.bttsMarket) currentBttsMarket = state.bttsMarket;
             if (ouLineSelect && state.ouLine) ouLineSelect.value = state.ouLine;
+
+            if (state.proModeProb !== undefined) {
+                proModeProb = state.proModeProb;
+                if (proModeToggleProb) proModeToggleProb.checked = proModeProb;
+            }
+            if (state.proModeBtts !== undefined) {
+                proModeBtts = state.proModeBtts;
+                if (proModeToggleBtts) proModeToggleBtts.checked = proModeBtts;
+            }
 
             // Restore manual data safely
             if (state.manualData && state.manualData.Local && state.manualData.Visitor) {
@@ -1414,10 +1405,16 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('beforeunload', saveState);
 
     // Enhancement Listeners
-    if (proModeToggle) {
-        proModeToggle.addEventListener('change', (e) => {
-            proModeActive = e.target.checked;
+    if (proModeToggleProb) {
+        proModeToggleProb.addEventListener('change', (e) => {
+            proModeProb = e.target.checked;
             calculate();
+        });
+    }
+
+    if (proModeToggleBtts) {
+        proModeToggleBtts.addEventListener('change', (e) => {
+            proModeBtts = e.target.checked;
             calculateBtts();
         });
     }
