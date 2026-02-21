@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnManualLocal = document.getElementById('btn-manual-local');
     const btnManualVisitor = document.getElementById('btn-manual-visitor');
     const btnClearManual = document.getElementById('btn-clear-manual');
+    const btnClearBtts = document.getElementById('btn-clear-btts');
     const manualTeamName = document.getElementById('manual-team-name');
 
     // Probability Calculator Elements
@@ -1094,7 +1095,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // Clear Manual Rows with Confirmation
+    // Clear All BTTS Form with Confirmation (Main BTTS View)
+    if (btnClearBtts) {
+        let bttsClearStage = 0, bttsClearTimer = null;
+        btnClearBtts.addEventListener('click', () => {
+            if (bttsClearStage === 0) {
+                bttsClearStage = 1;
+                btnClearBtts.textContent = "¿Confirmar?";
+                btnClearBtts.classList.add('confirming');
+                bttsClearTimer = setTimeout(() => {
+                    bttsClearStage = 0;
+                    btnClearBtts.textContent = "Borrar Datos";
+                    btnClearBtts.classList.remove('confirming');
+                }, 3000);
+            } else {
+                if (bttsClearTimer) clearTimeout(bttsClearTimer);
+
+                // Reset all manual data arrays to empty slots
+                manualData['Local'] = Array.from({ length: MAX_MANUAL_ROWS }, () => ({ scored: "", conceded: "" }));
+                manualData['Visitor'] = Array.from({ length: MAX_MANUAL_ROWS }, () => ({ scored: "", conceded: "" }));
+
+                // Clear the BTTS inputs visually (and in state)
+                const zeroInputs = [bttsLocalScored, bttsLocalConceded, bttsVisitorScored, bttsVisitorConceded];
+                const zeroDecimals = [bttsLocalAvgScored, bttsLocalAvgConceded, bttsVisitorAvgScored, bttsVisitorAvgConceded];
+
+                zeroInputs.forEach(i => { if (i) i.value = "0"; });
+                zeroDecimals.forEach(i => { if (i) i.value = "0.0"; });
+                if (bttsSample) bttsSample.value = "10";
+
+                // Apply calculations right away to reflect empty state
+                saveState();
+                calculateBtts();
+                debouncedCalculateBtts();
+
+                bttsClearStage = 0;
+                btnClearBtts.textContent = "Borrar Datos";
+                btnClearBtts.classList.remove('confirming');
+            }
+        });
+    }
+
+    // Clear Manual Rows with Confirmation (Inside detail view)
     if (btnClearManual) {
         let clearStage = 0, clearTimer = null;
         btnClearManual.addEventListener('click', () => {
