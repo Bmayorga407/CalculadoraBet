@@ -190,54 +190,62 @@
                     </div>
                 </section>
 
-                <!-- Detailed Analysis (Always Visible) -->
+                <!-- Detailed Analysis — Collapsible accordion on mobile -->
                 <section id="prob-analysis-section" class="glass-card details-section">
-                    <h3>Análisis Detallado</h3>
+                    <details class="details-accordion">
+                        <summary class="details-accordion-summary">
+                            <span class="summary-label">Análisis Detallado</span>
+                            <span class="summary-chevron">›</span>
+                        </summary>
 
-                    <div class="ev-monetary-grid">
-                        <div class="ev-box">
-                            <label>EV 1 Apuesta</label>
-                            <span id="prob-ev-money-single">--</span>
-                        </div>
-                        <div class="ev-box">
-                            <label>EV 100 Apuestas</label>
-                            <span id="prob-ev-money-hundred">--</span>
-                        </div>
-                    </div>
+                        <div class="details-accordion-body">
+                            <div class="ev-monetary-grid">
+                                <div class="ev-box">
+                                    <label>EV 1 Apuesta</label>
+                                    <span id="prob-ev-money-single">--</span>
+                                </div>
+                                <div class="ev-box">
+                                    <label>EV 100 Apuestas</label>
+                                    <span id="prob-ev-money-hundred">--</span>
+                                </div>
+                            </div>
 
-                    <div class="metrics-list">
-                        <div class="metric-item">
-                            <span>Robustez Matemática</span>
-                            <span id="prob-robustness-badge" class="robust-badge">--</span>
-                        </div>
-                        <div class="metric-item">
-                            <span>Margen Error Tolerado</span>
-                            <span id="prob-error-margin">--</span>
-                        </div>
-                    </div>
+                            <div class="metrics-list">
+                                <div class="metric-item">
+                                    <span>Robustez Matemática</span>
+                                    <span id="prob-robustness-badge" class="robust-badge">--</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span>Margen Error Tolerado</span>
+                                    <span id="prob-error-margin">--</span>
+                                </div>
+                            </div>
 
-                    <div class="sensitivity-area">
-                        <label>Sensibilidad del Valor</label>
-                        <div class="sens-grid">
-                            <div class="sens-node">
-                                <span>Prob -5%</span>
-                                <span id="sens-prob-down">--</span>
-                            </div>
-                            <div class="sens-node">
-                                <span>Prob +5%</span>
-                                <span id="sens-prob-up">--</span>
-                            </div>
-                            <div class="sens-node alt">
-                                <span>Cuota -0.05</span>
-                                <span id="sens-odd-down">--</span>
-                            </div>
-                            <div class="sens-node alt">
-                                <span>Cuota +0.05</span>
-                                <span id="sens-odd-up">--</span>
+                            <div class="sensitivity-area">
+                                <label>Sensibilidad del Valor</label>
+                                <div class="sens-grid">
+                                    <div class="sens-node">
+                                        <span>Prob -5%</span>
+                                        <span id="sens-prob-down">--</span>
+                                    </div>
+                                    <div class="sens-node">
+                                        <span>Prob +5%</span>
+                                        <span id="sens-prob-up">--</span>
+                                    </div>
+                                    <div class="sens-node alt">
+                                        <span>Cuota -0.05</span>
+                                        <span id="sens-odd-down">--</span>
+                                    </div>
+                                    <div class="sens-node alt">
+                                        <span>Cuota +0.05</span>
+                                        <span id="sens-odd-up">--</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </details>
                 </section>
+
 
                 <!-- History reference - Hidden logic card -->
                 <div id="kelly-card" style="display: none;">
@@ -482,54 +490,63 @@
                         </div>
                     </section>
 
-                    <!-- BTTS Detailed Analysis -->
+                    <!-- BTTS Detailed Analysis — Collapsible accordion on mobile -->
                     <section class="glass-card details-section">
-                        <div class="ev-monetary-grid">
-                            <div class="ev-box">
-                                <label>EV 1 Bet</label>
-                                <span id="btts-ev-money-single">--</span>
-                            </div>
-                            <div class="ev-box">
-                                <label>EV 100 Bets</label>
-                                <span id="btts-ev-money-hundred">--</span>
-                            </div>
-                        </div>
-                        <div class="metrics-list">
-                            <div class="metric-item">
-                                <span>Robustez Matemática</span>
-                                <span id="btts-robustness-badge" class="robust-badge">--</span>
-                            </div>
-                            <div class="metric-item">
-                                <span>Margen Error Tolerado</span>
-                                <span id="btts-error-margin">--</span>
-                            </div>
-                        </div>
-                        <div class="sensitivity-area">
-                            <label>Sensibilidad del Valor</label>
-                            <div class="sens-grid">
-                                <div class="sens-node">
-                                    <span>Prob -5%</span>
-                                    <span id="sens-btts-down">--</span>
+                        <details class="details-accordion">
+                            <summary class="details-accordion-summary">
+                                <span class="summary-label">Análisis Detallado</span>
+                                <span class="summary-chevron">›</span>
+                            </summary>
+                            <div class="details-accordion-body">
+                                <div class="ev-monetary-grid">
+                                    <div class="ev-box">
+                                        <label>EV 1 Bet</label>
+                                        <span id="btts-ev-money-single">--</span>
+                                    </div>
+                                    <div class="ev-box">
+                                        <label>EV 100 Bets</label>
+                                        <span id="btts-ev-money-hundred">--</span>
+                                    </div>
                                 </div>
-                                <div class="sens-node">
-                                    <span>Prob +5%</span>
-                                    <span id="sens-btts-up">--</span>
+                                <div class="metrics-list">
+                                    <div class="metric-item">
+                                        <span>Robustez Matemática</span>
+                                        <span id="btts-robustness-badge" class="robust-badge">--</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span>Margen Error Tolerado</span>
+                                        <span id="btts-error-margin">--</span>
+                                    </div>
                                 </div>
-                                <div class="sens-node alt">
-                                    <span>Cuota -0.05</span>
-                                    <span id="sens-odd-btts-down">--</span>
-                                </div>
-                                <div class="sens-node alt">
-                                    <span>Cuota +0.05</span>
-                                    <span id="sens-odd-btts-up">--</span>
+                                <div class="sensitivity-area">
+                                    <label>Sensibilidad del Valor</label>
+                                    <div class="sens-grid">
+                                        <div class="sens-node">
+                                            <span>Prob -5%</span>
+                                            <span id="sens-btts-down">--</span>
+                                        </div>
+                                        <div class="sens-node">
+                                            <span>Prob +5%</span>
+                                            <span id="sens-btts-up">--</span>
+                                        </div>
+                                        <div class="sens-node alt">
+                                            <span>Cuota -0.05</span>
+                                            <span id="sens-odd-btts-down">--</span>
+                                        </div>
+                                        <div class="sens-node alt">
+                                            <span>Cuota +0.05</span>
+                                            <span id="sens-odd-btts-up">--</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </details>
                     </section>
+
                 </div>
-            </div>
-            <!-- Dummy element for script.js back-compat if needed -->
-            <div id="btts-kelly-card" style="display: none;"></div>
+
+                <!-- Dummy element for script.js back-compat if needed -->
+                <div id="btts-kelly-card" style="display: none;"></div>
         </main>
 
         <!-- BTTS Manual Entry View -->
