@@ -360,6 +360,13 @@ body {
     margin-bottom: var(--space-xl);
 }
 
+.pro-visual-stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
 .verdict-header {
     font-size: 10px;
     text-transform: uppercase;
@@ -766,45 +773,214 @@ body {
 }
 
 /* Analysis Section BTTS */
-.btts-analysis-section .verdict-display.mini {
-    padding-bottom: var(--space-l);
-    margin-bottom: var(--space-l);
+/* Pro Insight & Value section (Apple Level) */
+.insight-pro-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
 }
 
-/* Market Panels Transition */
-#btts-panel-btts,
-#btts-panel-ou {
-    animation: fadeInSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+.insight-pro-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, transparent 30%, rgba(255, 255, 255, 0.02) 70%);
+    pointer-events: none;
+    z-index: 0;
 }
 
-@keyframes fadeInSlide {
+.insight-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+.insight-icon {
+    font-size: 28px;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+}
+
+.insight-header h2 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin: 0;
+    background: linear-gradient(135deg, #fff, rgba(255, 255, 255, 0.7));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.insight-reason {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0 0 16px 0;
+    position: relative;
+    z-index: 1;
+}
+
+.value-highlight {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: fadeInScale 0.4s ease-out;
+}
+
+.badge-pill {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.value-text {
+    font-size: 13px;
+    color: var(--text-primary);
+    margin: 0;
+    font-weight: 500;
+}
+
+/* States for Insight Card */
+.verdict-bet {
+    background: radial-gradient(circle at top right, rgba(74, 222, 128, 0.08), transparent 60%),
+        rgba(255, 255, 255, 0.02) !important;
+    border-color: rgba(74, 222, 128, 0.25) !important;
+    box-shadow: 0 10px 40px rgba(74, 222, 128, 0.1);
+}
+
+.verdict-reduce {
+    background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.08), transparent 60%),
+        rgba(255, 255, 255, 0.02) !important;
+    border-color: rgba(245, 158, 11, 0.25) !important;
+    box-shadow: 0 10px 40px rgba(245, 158, 11, 0.1);
+}
+
+.verdict-no-bet {
+    background: radial-gradient(circle at top right, rgba(239, 68, 68, 0.08), transparent 60%),
+        rgba(255, 255, 255, 0.02) !important;
+    border-color: rgba(239, 68, 68, 0.25) !important;
+    box-shadow: 0 10px 40px rgba(239, 68, 68, 0.1);
+}
+
+/* Market Odds & Stats Grid */
+.market-odds-pro {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.input-pro label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+}
+
+.pro-visual-stats {
+    display: flex;
+    gap: 12px;
+}
+
+.metric-group {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.m-label {
+    font-size: 9px;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.m-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: var(--font-number);
+}
+
+/* Stake display Refined */
+.stake-display-pro {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+}
+
+.stake-label {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+
+.stake-value-row {
+    font-size: 40px;
+    font-weight: 900;
+    color: var(--accent-color);
+    letter-spacing: -1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.stake-value-row .u {
+    font-size: 18px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.stake-value-row .money {
+    font-size: 15px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    margin-left: 12px;
+}
+
+@keyframes fadeInScale {
     from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: scale(0.98) translateY(5px);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* EV Value Pulse */
-.res-value[style*="var(--accent-color)"] {
-    animation: pulseGlow 2s infinite;
-}
-
-@keyframes pulseGlow {
-    0% {
-        filter: drop-shadow(0 0 0px var(--success-glow));
-    }
-
-    50% {
-        filter: drop-shadow(0 0 8px var(--success-glow));
-    }
-
-    100% {
-        filter: drop-shadow(0 0 0px var(--success-glow));
+        transform: scale(1) translateY(0);
     }
 }
 

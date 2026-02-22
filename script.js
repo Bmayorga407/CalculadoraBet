@@ -24,11 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const displayHouseProb = document.getElementById('house-prob');
     const houseOddInput = document.getElementById('house-odd');
     const singleOddDisplay = document.getElementById('single-odd');
-    const edgeContainer = document.getElementById('edge-container');
-    const edgeDivider = document.getElementById('edge-divider');
     const edgeValueDisplay = document.getElementById('edge-value');
-    const evContainer = document.getElementById('ev-container');
-    const evDivider = document.getElementById('ev-divider');
     const evValueDisplay = document.getElementById('ev-value');
     const summaryHouseOdd = document.getElementById('summary-house-odd');
     const currencySelect = document.getElementById('global-currency');
@@ -40,13 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // BTTS Elements
     const bttsLocalScored = document.getElementById('btts-local-scored');
     const bttsLocalConceded = document.getElementById('btts-local-conceded');
-    const bttsLocalAvgScored = document.getElementById('btts-local-avg-scored');
-    const bttsLocalAvgConceded = document.getElementById('btts-local-avg-conceded');
-
     const bttsVisitorScored = document.getElementById('btts-visitor-scored');
     const bttsVisitorConceded = document.getElementById('btts-visitor-conceded');
-    const bttsVisitorAvgScored = document.getElementById('btts-visitor-avg-scored');
-    const bttsVisitorAvgConceded = document.getElementById('btts-visitor-avg-conceded');
 
     const bttsLocalXg = document.getElementById('btts-local-xg');
     const bttsVisitorXg = document.getElementById('btts-visitor-xg');
@@ -111,8 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const bttsExplanation = document.getElementById('btts-value-explanation');
 
     // Pro Mode Sections
-    const proSectionProb = document.getElementById('pro-sensitivity-prob');
-    const proSectionBtts = document.getElementById('pro-sensitivity-btts');
+    const proSectionBtts = document.getElementById('btts-analysis-section');
+    const proSectionProb = document.getElementById('prob-analysis-section');
 
     // Sensitivity Elements
     const sensProbDown = document.getElementById('sens-prob-down');
@@ -174,6 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
     let history = JSON.parse(localStorage.getItem('bet_history') || '[]');
     let favorites = JSON.parse(localStorage.getItem('bet_favs') || '[]');
     let activeTab = 'recent';
+    let bttsClearTimer = null;
+    let bttsClearStage = 0;
 
     // Constants
     const DECIMAL_PLACES_PROB = 1;
@@ -212,6 +205,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (t) clearTimeout(t);
             t = setTimeout(() => fn(...args), delay);
         };
+    };
+
+    const formatSigned = (val, decimals = 2) => {
+        if (!Number.isFinite(val)) return "0.00";
+        const displayed = val.toFixed(decimals);
+        if (displayed === "0.00" || displayed === "-0.00") return "0.00";
+        return (val > 0 ? "+" : "") + displayed;
     };
 
     // Kelly fraction for decimal odds
@@ -340,22 +340,22 @@ document.addEventListener('DOMContentLoaded', () => {
         let explanation = "";
 
         if (evPct > 5) {
-            status = "✅ Valor positivo";
-            badgeClass = "badge-positive";
+            status = "Valor Positivo";
+            badgeClass = "robust-green";
             explanation = `La cuota tiene un buen margen a tu favor (EV: ${evPct.toFixed(2)}%).`;
         } else if (evPct > 0) {
-            status = "⚠️ Margen bajo";
-            badgeClass = "badge-low";
+            status = "Margen Bajo";
+            badgeClass = "robust-yellow";
             explanation = `Hay valor, pero el margen de error es estrecho (EV: ${evPct.toFixed(2)}%).`;
         } else {
-            status = "❌ Sin valor";
-            badgeClass = "badge-none";
+            status = "Sin Valor";
+            badgeClass = "robust-red";
             explanation = `La cuota ofrecida no compensa el riesgo estimado (EV: ${evPct.toFixed(2)}%).`;
         }
 
         if (badgeObj) {
             badgeObj.textContent = status;
-            badgeObj.className = "value-badge " + badgeClass;
+            badgeObj.className = "badge-pill " + badgeClass;
         }
         if (explanationObj) explanationObj.textContent = explanation;
     };
@@ -373,6 +373,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const pUp = clamp(p + customPenalty, 0.01, 0.99);
         const oddDown = Math.max(1.01, houseOdd - 0.05);
         const oddUp = houseOdd + 0.05;
+
+        // Projection Display
+        if (readingEl) {
+            readingEl.textContent = `${prefix === 'prob' ? 'Probabilidad' : 'xG'} Proyectada: ${prefix === 'prob' ? (p * 100).toFixed(1) + '%' : (customPenalty > 0 ? (p - customPenalty).toFixed(2) + ' (Penalizado)' : p.toFixed(2))}`;
+            readingEl.style.color = "var(--text-secondary)";
+        }
 
         const evNow = houseOdd > 0 ? (p * houseOdd - 1) * 100 : 0;
         const evDown = houseOdd > 0 ? (pDown * houseOdd - 1) * 100 : 0;
@@ -485,22 +491,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 5. Veredicto Final Actionable
         if (verdictCard) {
-            verdictCard.className = "verdict-card"; // Reset
+            verdictCard.className = "insight-pro-card"; // Reset refined
             if (houseOdd <= 1 || units === 0 || evNow <= 0) {
                 verdictCard.classList.add("verdict-no-bet");
-                if (verdictIcon) verdictIcon.textContent = "❌";
-                if (verdictTitle) { verdictTitle.textContent = "No apostar"; verdictTitle.style.color = "#ef4444"; }
-                if (verdictReason) verdictReason.textContent = "Expectativa negativa o el riesgo conservador es inviable.";
+                if (verdictIcon) verdictIcon.textContent = "⛔";
+                if (verdictTitle) verdictTitle.textContent = "No Apostar";
+                if (verdictReason) verdictReason.textContent = "Expectativa negativa o el riesgo conservador es inviable para este mercado.";
             } else if (evDown <= 0) {
                 verdictCard.classList.add("verdict-reduce");
                 if (verdictIcon) verdictIcon.textContent = "⚠️";
-                if (verdictTitle) { verdictTitle.textContent = "Apostar con stake reducido"; verdictTitle.style.color = "#f59e0b"; }
-                if (verdictReason) verdictReason.textContent = "Valor positivo pero frágil si tu cálculo de prob falla en un 5%.";
+                if (verdictTitle) verdictTitle.textContent = "Stake Reducido";
+                if (verdictReason) verdictReason.textContent = "Valor positivo pero frágil. Una ligera variación en la probabilidad eliminaría el margen.";
             } else {
                 verdictCard.classList.add("verdict-bet");
                 if (verdictIcon) verdictIcon.textContent = "✅";
-                if (verdictTitle) { verdictTitle.textContent = "Apostar"; verdictTitle.style.color = "#4ade80"; }
-                if (verdictReason) verdictReason.textContent = "Cálculo robusto. El valor se mantiene en escenarios adversos.";
+                if (verdictTitle) verdictTitle.textContent = "Apostar";
+                if (verdictReason) verdictReason.textContent = "Cálculo robusto. El valor se mantiene incluso en escenarios adversos.";
             }
         }
 
@@ -524,11 +530,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     };
 
-    const formatSigned = (n, decimals = 2) => {
-        if (!Number.isFinite(n)) return "0.00";
-        const sign = n > 0 ? "+" : "";
-        return sign + n.toFixed(decimals);
-    };
 
     const poissonCdf = (k, lambda) => {
         // P(X <= k) for Poisson(lambda)
@@ -578,13 +579,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (bttsSample && String(bttsSample.value) !== String(sampleSize)) bttsSample.value = sampleSize;
 
-        const avgSLocal = Math.max(0, toNumber(bttsLocalAvgScored.value, 0));
-        const avgCLocal = Math.max(0, toNumber(bttsLocalAvgConceded.value, 0));
-        const avgSVisitor = Math.max(0, toNumber(bttsVisitorAvgScored.value, 0));
-        const avgCVisitor = Math.max(0, toNumber(bttsVisitorAvgConceded.value, 0));
+        const pSLocal = clamp(toNumber(bttsLocalScored.value), 0, 99.9) / 100;
+        const pCLocal = clamp(toNumber(bttsLocalConceded.value), 0, 99.9) / 100;
+        const pSVisitor = clamp(toNumber(bttsVisitorScored.value), 0, 99.9) / 100;
+        const pCVisitor = clamp(toNumber(bttsVisitorConceded.value), 0, 99.9) / 100;
 
-        let lambdaHome = (avgSLocal + avgCVisitor) / 2;
-        let lambdaAway = (avgSVisitor + avgCLocal) / 2;
+        // Estimate lambda from % using Poisson: P(at least 1) = 1 - e^-lambda => lambda = -ln(1-P)
+        const lambdaSLocal = pSLocal > 0 ? -Math.log(1 - pSLocal) : 0;
+        const lambdaCLocal = pCLocal > 0 ? -Math.log(1 - pCLocal) : 0;
+        const lambdaSVisitor = pSVisitor > 0 ? -Math.log(1 - pSVisitor) : 0;
+        const lambdaCVisitor = pCVisitor > 0 ? -Math.log(1 - pCVisitor) : 0;
+
+        let lambdaHome = (lambdaSLocal + lambdaCVisitor) / 2;
+        let lambdaAway = (lambdaSVisitor + lambdaCLocal) / 2;
 
         const rawLambdaHome = lambdaHome;
         const rawLambdaAway = lambdaAway;
@@ -669,10 +676,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (bttsCombinedAvg) bttsCombinedAvg.textContent = combinedAvg > 0 ? combinedAvg.toFixed(2) : "---";
 
         // --- O/U probabilities ---
+        const ouLineSelect = document.getElementById('ou-line');
         const ouLine = clamp(toNumber(ouLineSelect ? ouLineSelect.value : 2.5, 2.5), 0.5, 6.0);
-        const kLine = Math.floor(ouLine);
-        const underOU = poissonCdf(kLine, combinedAvg);
-        const overOU = clamp(1 - underOU, 0, 1);
+
+        const overOU = calculateOverProbability(lambdaHomeAdj, lambdaAwayAdj, ouLine);
+        const underOU = clamp(1 - overOU, 0, 1);
         const overPct = overOU * 100;
         const underPct = underOU * 100;
 
@@ -804,7 +812,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // EV and Edge (different things)
             // Edge & EV
-            const evPct = houseOdd > 0 ? (pAvg * houseOdd - 1) * 100 : 0;
+            const evPct = houseOdd > 0 ? (p * houseOdd - 1) * 100 : 0;
             const displayedFairOdd = parseFloat(fairOdd.toFixed(2));
             const edgePct = displayedFairOdd > 0 ? (houseOdd - displayedFairOdd) : 0;
 
@@ -818,11 +826,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Value Badge & Pro Sensitivity
-            updateValueTag(evPct, pAvg * 100, houseOdd, probBadge, probExplanation, probBadgeContainer);
-            updateProSensitivity(pAvg * 100, houseOdd, sensProbDown, sensProbUp, sensProbReading, proSectionProb, 'prob');
+            updateValueTag(evPct, p * 100, houseOdd, probBadge, probExplanation, probBadgeContainer);
+            updateProSensitivity(p * 100, houseOdd, sensProbDown, sensProbUp, sensProbReading, proSectionProb, 'prob');
 
             // Kelly 1/4
-            const f = kellyFraction(pAvg, houseOdd, 0.25); // Changed 'p' to 'pAvg'
+            const f = kellyFraction(p, houseOdd, 0.25);
             const stakePct = f * 100;
 
             // Units mapping (1u = 1% bankroll)
@@ -843,8 +851,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             summaryHouseOdd.textContent = '-.--';
             displayHouseProb.textContent = '0.0%';
-            edgeContainer.style.display = 'none';
-            evContainer.style.display = 'none';
             kellyCard.style.display = 'none';
         }
     };
@@ -1006,16 +1012,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (manualConcededPercent) manualConcededPercent.textContent = `${cPercent.toFixed(0)}%`;
         if (manualPlayedCount) manualPlayedCount.textContent = played;
 
-        if (currentManualTeam === 'Equipo Local') {
-            bttsLocalScored.value = sPercent.toFixed(0);
-            bttsLocalConceded.value = cPercent.toFixed(0);
-            bttsLocalAvgScored.value = avgS.toFixed(1);
-            bttsLocalAvgConceded.value = avgC.toFixed(1);
+        if (currentManualTeam === 'Local') {
+            if (bttsLocalScored) bttsLocalScored.value = sPercent.toFixed(0);
+            if (bttsLocalConceded) bttsLocalConceded.value = cPercent.toFixed(0);
+            if (bttsLocalXg) bttsLocalXg.textContent = avgS.toFixed(2);
+            // xG calculation logic is handled by calculateBtts, but we can set it here too if needed
         } else {
-            bttsVisitorScored.value = sPercent.toFixed(0);
-            bttsVisitorConceded.value = cPercent.toFixed(0);
-            bttsVisitorAvgScored.value = avgS.toFixed(1);
-            bttsVisitorAvgConceded.value = avgC.toFixed(1);
+            if (bttsVisitorScored) bttsVisitorScored.value = sPercent.toFixed(0);
+            if (bttsVisitorConceded) bttsVisitorConceded.value = cPercent.toFixed(0);
+            if (bttsVisitorXg) bttsVisitorXg.textContent = avgS.toFixed(2);
         }
         bttsSample.value = played > 0 ? played : 10;
         saveState();
@@ -1100,13 +1105,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (bttsLocalScored) bttsLocalScored.value = local.sPercent.toFixed(0);
                 if (bttsLocalConceded) bttsLocalConceded.value = local.cPercent.toFixed(0);
-                if (bttsLocalAvgScored) bttsLocalAvgScored.value = local.avgS.toFixed(1);
-                if (bttsLocalAvgConceded) bttsLocalAvgConceded.value = local.avgC.toFixed(1);
+                if (bttsLocalXg) bttsLocalXg.textContent = local.avgS.toFixed(2);
 
                 if (bttsVisitorScored) bttsVisitorScored.value = visitor.sPercent.toFixed(0);
                 if (bttsVisitorConceded) bttsVisitorConceded.value = visitor.cPercent.toFixed(0);
-                if (bttsVisitorAvgScored) bttsVisitorAvgScored.value = visitor.avgS.toFixed(1);
-                if (bttsVisitorAvgConceded) bttsVisitorAvgConceded.value = visitor.avgC.toFixed(1);
+                if (bttsVisitorXg) bttsVisitorXg.textContent = visitor.avgS.toFixed(2);
 
                 const defaultSample = clamp(Math.max(local.played, visitor.played, 10), 1, 20);
                 if (bttsSample) bttsSample.value = defaultSample;
@@ -1171,10 +1174,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (odd > 1 && valFinal > 0) {
             saveToHistory({
-                type: 'btts', market: currentBttsMarket.toUpperCase(), marketType: currentBttsMarket,
+                type: 'btts', market: (currentBttsMarket || 'btts').toUpperCase(), marketType: currentBttsMarket,
                 prob: valFinal, odd, ev: ((valFinal / 100) * odd - 1) * 100,
-                lS: bttsLocalScored.value, lC: bttsLocalConceded.value,
-                vS: bttsVisitorScored.value, vC: bttsVisitorConceded.value
+                lS: bttsLocalScored ? bttsLocalScored.value : "0",
+                lC: bttsLocalConceded ? bttsLocalConceded.value : "0",
+                vS: bttsVisitorScored ? bttsVisitorScored.value : "0",
+                vC: bttsVisitorConceded ? bttsVisitorConceded.value : "0"
             });
         }
     }, 2000);
@@ -1218,10 +1223,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
     // Clear All BTTS Form with Confirmation (Main BTTS View)
     if (btnClearBtts) {
-        let bttsClearStage = 0, bttsClearTimer = null;
         btnClearBtts.addEventListener('click', () => {
             if (bttsClearStage === 0) {
                 bttsClearStage = 1;
@@ -1229,32 +1232,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnClearBtts.classList.add('confirming');
                 bttsClearTimer = setTimeout(() => {
                     bttsClearStage = 0;
-                    btnClearBtts.textContent = "Borrar Datos";
-                    btnClearBtts.classList.remove('confirming');
+                    if (btnClearBtts) btnClearBtts.textContent = "Borrar";
+                    if (btnClearBtts) btnClearBtts.classList.remove('confirming');
                 }, 3000);
             } else {
                 if (bttsClearTimer) clearTimeout(bttsClearTimer);
 
-                // Reset all manual data arrays to empty slots
+                bttsClearStage = 0;
+                if (btnClearBtts) {
+                    btnClearBtts.textContent = "Borrar";
+                    btnClearBtts.classList.remove('confirming');
+                }
+
+                // 1. Clear State
                 manualData['Local'] = Array.from({ length: MAX_MANUAL_ROWS }, () => ({ scored: "", conceded: "" }));
                 manualData['Visitor'] = Array.from({ length: MAX_MANUAL_ROWS }, () => ({ scored: "", conceded: "" }));
+                visibleRows = DEFAULT_ROWS;
 
-                // Clear the BTTS inputs visually (and in state)
-                const zeroInputs = [bttsLocalScored, bttsLocalConceded, bttsVisitorScored, bttsVisitorConceded];
-                const zeroDecimals = [bttsLocalAvgScored, bttsLocalAvgConceded, bttsVisitorAvgScored, bttsVisitorAvgConceded];
-
-                zeroInputs.forEach(i => { if (i) i.value = "0"; });
-                zeroDecimals.forEach(i => { if (i) i.value = "0.0"; });
+                // 2. Clear visible inputs manually
+                if (bttsLocalScored) bttsLocalScored.value = "0";
+                if (bttsLocalConceded) bttsLocalConceded.value = "0";
+                if (bttsVisitorScored) bttsVisitorScored.value = "0";
+                if (bttsVisitorConceded) bttsVisitorConceded.value = "0";
                 if (bttsSample) bttsSample.value = "10";
 
-                // Apply calculations right away to reflect empty state
-                saveState();
-                calculateBtts();
-                debouncedCalculateBtts();
+                // 3. Reset badges
+                [bttsLocalXg, bttsVisitorXg].forEach(b => { if (b) b.textContent = "0.00"; });
+                [bttsLocalProb, bttsVisitorProb].forEach(b => { if (b) b.textContent = "0.0"; });
 
-                bttsClearStage = 0;
-                btnClearBtts.textContent = "Borrar Datos";
-                btnClearBtts.classList.remove('confirming');
+                // 4. Update UI if manual view is open
+                if (bttsManualView && bttsManualView.style.display !== 'none') {
+                    generateMatchRows();
+                    updateManualStats();
+                }
+
+                calculateBtts();
+                saveState();
+                console.log("BTTS Reset Complete");
             }
         });
     }
@@ -1413,6 +1427,14 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('beforeunload', saveState);
 
     // Pro Mode Toggles Removed
+
+    // BTTS / O-U View specific listeners
+    if (ouLineSelect) {
+        ouLineSelect.addEventListener('change', () => {
+            calculateBtts();
+            debouncedCalculateBtts();
+        });
+    }
 
     const btnShowHistoryBtts = document.getElementById('btn-show-history-btts');
 
