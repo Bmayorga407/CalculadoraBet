@@ -195,27 +195,31 @@
                     <details class="details-accordion">
                         <summary class="details-accordion-summary">
                             <span class="summary-label">Análisis Detallado</span>
-                            <span class="summary-chevron">›</span>
+
                         </summary>
 
                         <div class="details-accordion-body">
                             <div class="ev-monetary-grid">
-                                <div class="ev-box">
+                                <div class="ev-box"
+                                    data-tooltip="Ganancia o pérdida esperada por cada apuesta individual. Positivo = a largo plazo ganas.">
                                     <label>EV 1 Apuesta</label>
                                     <span id="prob-ev-money-single">--</span>
                                 </div>
-                                <div class="ev-box">
+                                <div class="ev-box"
+                                    data-tooltip="Si hicieras 100 apuestas iguales, esto es cuánto ganarías o perderías en total. Ideal para ver el big picture.">
                                     <label>EV 100 Apuestas</label>
                                     <span id="prob-ev-money-hundred">--</span>
                                 </div>
                             </div>
 
                             <div class="metrics-list">
-                                <div class="metric-item">
+                                <div class="metric-item"
+                                    data-tooltip="¿Qué tan sólido es el cálculo? ROBUSTO = el análisis es confiable aunque los datos tengan pequeños errores.">
                                     <span>Robustez Matemática</span>
                                     <span id="prob-robustness-badge" class="robust-badge">--</span>
                                 </div>
-                                <div class="metric-item">
+                                <div class="metric-item"
+                                    data-tooltip="Cuánto puede estar equivocada tu probabilidad estimada sin que la apuesta deje de tener valor. Mayor = más seguro.">
                                     <span>Margen Error Tolerado</span>
                                     <span id="prob-error-margin">--</span>
                                 </div>
@@ -224,19 +228,23 @@
                             <div class="sensitivity-area">
                                 <label>Sensibilidad del Valor</label>
                                 <div class="sens-grid">
-                                    <div class="sens-node">
+                                    <div class="sens-node"
+                                        data-tooltip="¿Qué pasa con el valor si la probabilidad real es 5% menor a la estimada?">
                                         <span>Prob -5%</span>
                                         <span id="sens-prob-down">--</span>
                                     </div>
-                                    <div class="sens-node">
+                                    <div class="sens-node"
+                                        data-tooltip="¿Qué pasa con el valor si la probabilidad real es 5% mayor a la estimada?">
                                         <span>Prob +5%</span>
                                         <span id="sens-prob-up">--</span>
                                     </div>
-                                    <div class="sens-node alt">
+                                    <div class="sens-node alt"
+                                        data-tooltip="¿Qué pasa si la cuota de la casa baja 0.05? Muestra si la apuesta aún tiene valor.">
                                         <span>Cuota -0.05</span>
                                         <span id="sens-odd-down">--</span>
                                     </div>
-                                    <div class="sens-node alt">
+                                    <div class="sens-node alt"
+                                        data-tooltip="¿Qué pasa si la cuota de la casa sube 0.05? Muestra el impacto positivo en el valor.">
                                         <span>Cuota +0.05</span>
                                         <span id="sens-odd-up">--</span>
                                     </div>
@@ -496,25 +504,29 @@
                         <details class="details-accordion">
                             <summary class="details-accordion-summary">
                                 <span class="summary-label">Análisis Detallado</span>
-                                <span class="summary-chevron">›</span>
+
                             </summary>
                             <div class="details-accordion-body">
                                 <div class="ev-monetary-grid">
-                                    <div class="ev-box">
+                                    <div class="ev-box"
+                                        data-tooltip="Ganancia o pérdida esperada por cada apuesta individual. Positivo = a largo plazo ganas.">
                                         <label>EV 1 Bet</label>
                                         <span id="btts-ev-money-single">--</span>
                                     </div>
-                                    <div class="ev-box">
+                                    <div class="ev-box"
+                                        data-tooltip="Si hicieras 100 apuestas iguales, esto es cuánto ganarías o perderías en total. Ideal para ver el big picture.">
                                         <label>EV 100 Bets</label>
                                         <span id="btts-ev-money-hundred">--</span>
                                     </div>
                                 </div>
                                 <div class="metrics-list">
-                                    <div class="metric-item">
+                                    <div class="metric-item"
+                                        data-tooltip="¿Qué tan sólido es el cálculo? ROBUSTO = el análisis es confiable aunque los datos tengan pequeños errores.">
                                         <span>Robustez Matemática</span>
                                         <span id="btts-robustness-badge" class="robust-badge">--</span>
                                     </div>
-                                    <div class="metric-item">
+                                    <div class="metric-item"
+                                        data-tooltip="Cuánto puede estar equivocada tu probabilidad estimada sin que la apuesta deje de tener valor. Mayor = más seguro.">
                                         <span>Margen Error Tolerado</span>
                                         <span id="btts-error-margin">--</span>
                                     </div>
@@ -522,19 +534,23 @@
                                 <div class="sensitivity-area">
                                     <label>Sensibilidad del Valor</label>
                                     <div class="sens-grid">
-                                        <div class="sens-node">
+                                        <div class="sens-node"
+                                            data-tooltip="¿Qué pasa con el valor si la probabilidad real es 5% menor a la estimada?">
                                             <span>Prob -5%</span>
                                             <span id="sens-btts-down">--</span>
                                         </div>
-                                        <div class="sens-node">
+                                        <div class="sens-node"
+                                            data-tooltip="¿Qué pasa con el valor si la probabilidad real es 5% mayor a la estimada?">
                                             <span>Prob +5%</span>
                                             <span id="sens-btts-up">--</span>
                                         </div>
-                                        <div class="sens-node alt">
+                                        <div class="sens-node alt"
+                                            data-tooltip="¿Qué pasa si la cuota de la casa baja 0.05? Muestra si la apuesta aún tiene valor.">
                                             <span>Cuota -0.05</span>
                                             <span id="sens-odd-btts-down">--</span>
                                         </div>
-                                        <div class="sens-node alt">
+                                        <div class="sens-node alt"
+                                            data-tooltip="¿Qué pasa si la cuota de la casa sube 0.05? Muestra el impacto positivo en el valor.">
                                             <span>Cuota +0.05</span>
                                             <span id="sens-odd-btts-up">--</span>
                                         </div>

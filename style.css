@@ -8,10 +8,10 @@
     --text-secondary: rgba(235, 235, 245, 0.6);
     --text-tertiary: rgba(235, 235, 245, 0.3);
 
-    --accent-color: #34c759;
+    --accent-color: #4ade80;
     /* Apple Green */
-    --accent-blue: #00A3FF;
-    --accent-orange: #ff9500;
+    --accent-blue: #60a5fa;
+    --accent-orange: #f97316;
     --accent-red: #ff3b30;
 
     --accent-blue-glow: rgba(0, 163, 255, 0.4);
@@ -1031,17 +1031,6 @@ main.view-exit {
     backdrop-filter: none;
 }
 
-.insight-pro-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at center, transparent 30%, rgba(255, 255, 255, 0.02) 70%);
-    pointer-events: none;
-    z-index: 0;
-}
 
 .insight-header {
     display: flex;
@@ -1118,6 +1107,13 @@ main.view-exit {
 
 .verdict-no-bet {
     background: radial-gradient(circle at top right, rgba(239, 68, 68, 0.06), transparent 60%);
+    border-color: transparent;
+    box-shadow: none;
+}
+
+/* New: 🟠 Apostar Bajo — orange tint */
+.verdict-low {
+    background: radial-gradient(circle at top right, rgba(249, 115, 22, 0.06), transparent 60%);
     border-color: transparent;
     box-shadow: none;
 }
@@ -3939,3 +3935,40 @@ select:focus-visible {
 }
 
 /* fin @media BTTS mobile */
+
+/* ══════════════════════════════════════════
+   TOOLTIP SYSTEM — JS-injected, floats over everything
+   ══════════════════════════════════════════ */
+
+[data-tooltip] {
+    cursor: help;
+}
+
+#app-tooltip {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    max-width: 240px;
+    background: rgba(18, 18, 22, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-m);
+    color: rgba(235, 235, 245, 0.88);
+    font-size: 12px;
+    font-family: var(--font-family);
+    font-weight: 400;
+    line-height: 1.5;
+    padding: 8px 12px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 0.5px rgba(255, 255, 255, 0.05);
+    text-align: center;
+    white-space: normal;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+#app-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+}

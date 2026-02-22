@@ -417,34 +417,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const globalBankrollStr = (document.getElementById('global-bankroll')?.value || "1000").replace(/\./g, '').replace(/,/g, '.');
         const bankroll = parseFloat(globalBankrollStr) || 1000;
 
-        // 1. Robustness
-        if (badgeEl) {
-            if (evNow <= 0 || houseOdd <= 1) {
-                badgeEl.textContent = "No Apostar";
-                badgeEl.className = "robust-badge robust-red";
-            } else if (evDown <= 0) {
-                badgeEl.textContent = "Frágil";
-                badgeEl.className = "robust-badge robust-yellow";
-            } else {
-                badgeEl.textContent = "Robusto";
-                badgeEl.className = "robust-badge robust-green";
-            }
+
+        // 3. Determine semaphore level FIRST (drives everything else)
+        //    Variables available: evNow, evDown, evUp, houseOdd, p
+        const pMargin = houseOdd > 1 ? (p - 1 / houseOdd) * 100 : 0; // % margin above break-even
+
+        let semaphore; // 'no-bet' | 'low' | 'moderate' | 'bet'
+        if (houseOdd <= 1 || evNow <= 0) {
+            semaphore = 'no-bet';
+        } else if (evDown > 0) {
+            // Robusto: value holds even in adverse scenario
+            semaphore = 'bet';
+        } else if (pMargin >= 4) {
+            // Frágil pero margen cómodo: apostar moderado
+            semaphore = 'moderate';
+        } else {
+            // Frágil y margen estrecho: solo prueba
+            semaphore = 'low';
         }
 
-        // 2. Error Margin
-        if (marginEl) {
-            if (houseOdd > 1) {
-                const pBreakEven = 1 / houseOdd;
-                const margin = (p - pBreakEven) * 100;
-                marginEl.textContent = margin > 0 ? `+${margin.toFixed(1)}%` : `${margin.toFixed(1)}%`;
-                marginEl.style.color = margin > 0 ? "var(--accent-color)" : "#ef4444";
-            } else {
-                marginEl.textContent = "--";
-                marginEl.style.color = "inherit";
-            }
-        }
-
-        // 3. Stakes & Units mapping
+        // 4. Stake calculation
+        //    - Robusto ('bet'): use conservative Kelly (pDown) — stricter baseline
+        //    - Frágil ('low'/'moderate'): use base Kelly (p) — conservative would always be 0 since evDown≤0 by definition
+        //    Semaphore caps act as the risk control for fragile states
         let units = 0;
         let pKellyBase = 0;
         let pKellyCons = 0;
@@ -454,20 +449,64 @@ document.addEventListener('DOMContentLoaded', () => {
             pKellyBase = clamp((((p * houseOdd) - 1) / b / 4) * 100, 0, 100);
             pKellyCons = clamp((((pDown * houseOdd) - 1) / b / 4) * 100, 0, 100);
 
-            // Standard units: floor of conservative Kelly (1u = 1% bankroll)
-            units = clamp(Math.floor(pKellyCons), 0, 5);
+            // For fragile states, conservative Kelly is always 0 (evDown≤0 by definition).
+            // Use base Kelly for raw units — caps already control the risk.
+            const kellyForUnits = (semaphore === 'low' || semaphore === 'moderate') ? pKellyBase : pKellyCons;
+            const rawUnits = clamp(Math.floor(kellyForUnits), 0, 5);
+
+            // Apply hard caps per semaphore level
+            if (semaphore === 'no-bet') units = 0;
+            if (semaphore === 'low') units = Math.min(rawUnits, 1);
+            if (semaphore === 'moderate') units = Math.min(rawUnits, 2);
+            if (semaphore === 'bet') units = clamp(rawUnits, 2, 5);
         }
 
+        // Fallback: if Kelly gives 0 units despite positive semaphore, downgrade
+        if (semaphore === 'bet' && units === 0) semaphore = 'moderate';
+        if (semaphore === 'moderate' && units === 0) semaphore = 'low';
+        if (semaphore === 'low' && units === 0) semaphore = 'no-bet';
+
+        // 5. Robustness badge (reflects semaphore)
+        if (badgeEl) {
+            if (semaphore === 'no-bet') {
+                badgeEl.textContent = "Sin Valor";
+                badgeEl.className = "robust-badge robust-red";
+            } else if (semaphore === 'low') {
+                badgeEl.textContent = "Frágil";
+                badgeEl.className = "robust-badge robust-yellow";
+            } else if (semaphore === 'moderate') {
+                badgeEl.textContent = "Moderado";
+                badgeEl.className = "robust-badge robust-yellow";
+            } else {
+                badgeEl.textContent = "Robusto";
+                badgeEl.className = "robust-badge robust-green";
+            }
+        }
+
+        // 6. Error Margin display
+        if (marginEl) {
+            if (houseOdd > 1) {
+                const margin = pMargin;
+                marginEl.textContent = margin > 0 ? `+${margin.toFixed(1)}%` : `${margin.toFixed(1)}%`;
+                marginEl.style.color = margin > 3 ? "var(--accent-color)" : margin > 0 ? "var(--accent-orange)" : "#ef4444";
+            } else {
+                marginEl.textContent = "--";
+                marginEl.style.color = "inherit";
+            }
+        }
+
+        // 7. Stake display — always coherent with semaphore
         if (stakeUnitsEl) {
             stakeUnitsEl.textContent = units;
-            stakeUnitsEl.style.color = units > 0 ? "var(--accent-color)" : "#ef4444";
+            stakeUnitsEl.style.color = units === 0 ? "#ef4444"
+                : units <= 1 ? "var(--accent-orange)"
+                    : units <= 2 ? "#f59e0b"
+                        : "var(--accent-color)";
         }
 
         if (stakeMoneyEl) {
             if (units > 0 && houseOdd > 1) {
-                // Calculation: bankroll * units%
-                const moneyStakeRefRaw = bankroll * (units / 100);
-                const moneyStakeRef = Math.round(moneyStakeRefRaw / 10) * 10;
+                const moneyStakeRef = Math.round(bankroll * (units / 100) / 10) * 10;
                 stakeMoneyEl.textContent = `(≈ ${currBase}${moneyStakeRef})`;
             } else {
                 stakeMoneyEl.textContent = "";
@@ -477,17 +516,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (kellyBaseEl) kellyBaseEl.textContent = `Base: ${pKellyBase.toFixed(1)}%`;
         if (kellyConsEl) kellyConsEl.textContent = `Cons: ${pKellyCons.toFixed(1)}%`;
 
-        // 4. EV Monetario y Proyección (Based on integer units)
+        // 8. EV Monetario — only meaningful if stake > 0
         if (evSingle && evHundred) {
             if (units > 0 && houseOdd > 1) {
-                // Stake is exactly units * 1% bankroll
-                const moneyStakeRaw = bankroll * (units / 100);
-                const moneyStake = Math.round(moneyStakeRaw / 10) * 10;
+                const moneyStake = Math.round(bankroll * (units / 100) / 10) * 10;
                 const moneyEv = moneyStake * (evNow / 100);
-
                 evSingle.textContent = `${currBase}${moneyEv.toFixed(2)}`;
                 evHundred.textContent = `${currBase}${(moneyEv * 100).toFixed(2)}`;
-                evSingle.style.color = "var(--accent-color)";
+                evSingle.style.color = moneyEv > 0 ? "var(--accent-color)" : "#ef4444";
+                evHundred.style.color = evHundred.style.color = moneyEv > 0 ? "var(--accent-color)" : "#ef4444";
             } else {
                 evSingle.textContent = `${currBase}0.00`;
                 evHundred.textContent = `${currBase}0.00`;
@@ -496,25 +533,42 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 5. Veredicto Final Actionable
+        // 9. Semaphore Verdict — 4 levels, always coherent with stake
         if (verdictCard) {
-            verdictCard.className = "insight-pro-card"; // Reset refined
-            if (houseOdd <= 1 || units === 0 || evNow <= 0) {
-                verdictCard.classList.add("verdict-no-bet");
-                if (verdictIcon) verdictIcon.textContent = "⛔";
-                if (verdictTitle) verdictTitle.textContent = "No Apostar";
-                if (verdictReason) verdictReason.textContent = "Expectativa negativa o el riesgo conservador es inviable para este mercado.";
-            } else if (evDown <= 0) {
-                verdictCard.classList.add("verdict-reduce");
-                if (verdictIcon) verdictIcon.textContent = "⚠️";
-                if (verdictTitle) verdictTitle.textContent = "Stake Reducido";
-                if (verdictReason) verdictReason.textContent = "Valor positivo pero frágil. Una ligera variación en la probabilidad eliminaría el margen.";
-            } else {
-                verdictCard.classList.add("verdict-bet");
-                if (verdictIcon) verdictIcon.textContent = "✅";
-                if (verdictTitle) verdictTitle.textContent = "Apostar";
-                if (verdictReason) verdictReason.textContent = "Cálculo robusto. El valor se mantiene incluso en escenarios adversos.";
-            }
+            verdictCard.className = "insight-pro-card"; // Reset classes
+
+            const verdictConfig = {
+                'no-bet': {
+                    cssClass: 'verdict-no-bet',
+                    icon: '🔴',
+                    title: 'No Apostar',
+                    reason: 'Sin valor o riesgo demasiado alto para este mercado.'
+                },
+                'low': {
+                    cssClass: 'verdict-low',
+                    icon: '🟠',
+                    title: 'Apostar Bajo / Prueba',
+                    reason: 'Margen pequeño y frágil. Solo apuesta de prueba.'
+                },
+                'moderate': {
+                    cssClass: 'verdict-reduce',
+                    icon: '🟡',
+                    title: 'Apostar Moderado',
+                    reason: 'Valor positivo pero frágil. Stake limitado por riesgo.'
+                },
+                'bet': {
+                    cssClass: 'verdict-bet',
+                    icon: '🟢',
+                    title: 'Apostar',
+                    reason: 'Valor alto y robusto. Soporta escenarios adversos.'
+                }
+            };
+
+            const cfg = verdictConfig[semaphore];
+            verdictCard.classList.add(cfg.cssClass);
+            if (verdictIcon) verdictIcon.textContent = cfg.icon;
+            if (verdictTitle) verdictTitle.textContent = cfg.title;
+            if (verdictReason) verdictReason.textContent = cfg.reason;
         }
 
         // 6. Sensitivity Visuals
@@ -1520,3 +1574,70 @@ document.addEventListener('DOMContentLoaded', () => {
     debouncedCalculate();
     debouncedCalculateBtts();
 });
+
+/* ══════════════════════════════════════════════════
+   GLOBAL TOOLTIP SYSTEM — floats above all content
+   Uses position:fixed so overflow:hidden never clips it
+   ══════════════════════════════════════════════════ */
+(function initTooltips() {
+    const tip = document.createElement('div');
+    tip.id = 'app-tooltip';
+    document.body.appendChild(tip);
+
+    let hideTimer = null;
+
+    function showTip(el) {
+        clearTimeout(hideTimer);
+        const text = el.getAttribute('data-tooltip');
+        if (!text) return;
+
+        tip.textContent = text;
+        tip.classList.remove('visible');
+
+        // Position before making visible so we can measure it
+        tip.style.visibility = 'hidden';
+        tip.style.display = 'block';
+
+        const rect = el.getBoundingClientRect();
+        const tipW = tip.offsetWidth;
+        const tipH = tip.offsetHeight;
+        const gap = 10;
+        const vp = window.innerHeight;
+
+        // Default: above the element
+        let top = rect.top - tipH - gap;
+        // If no room above, flip to below
+        if (top < 8) top = rect.bottom + gap;
+
+        // Center horizontally, clamp to viewport
+        let left = rect.left + rect.width / 2 - tipW / 2;
+        left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
+
+        tip.style.top = top + 'px';
+        tip.style.left = left + 'px';
+        tip.style.visibility = '';
+
+        // Trigger fade-in
+        requestAnimationFrame(() => tip.classList.add('visible'));
+    }
+
+    function hideTip() {
+        tip.classList.remove('visible');
+        hideTimer = setTimeout(() => { tip.style.display = 'none'; }, 200);
+    }
+
+    // Delegate events from all [data-tooltip] elements
+    document.addEventListener('mouseover', (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        if (target) showTip(target);
+    });
+
+    document.addEventListener('mouseout', (e) => {
+        const target = e.target.closest('[data-tooltip]');
+        if (target) hideTip();
+    });
+
+    // Hide on scroll/resize so it doesn't drift
+    document.addEventListener('scroll', hideTip, true);
+    window.addEventListener('resize', hideTip);
+})();
