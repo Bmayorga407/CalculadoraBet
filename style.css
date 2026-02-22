@@ -269,29 +269,67 @@ body {
     color: var(--text-secondary);
 }
 
-/* Content Grid */
-.calc-content-grid {
-    display: grid;
-    grid-template-columns: 1fr;
+/* Content Grid - Single Column Layout */
+.calc-content-grid,
+.calc-content-single-column {
+    display: flex;
+    flex-direction: column;
     gap: var(--space-l);
+    max-width: 680px;
+    margin: 0 auto;
+}
+
+/* Quick Stats 4-col bar */
+.main-stats-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+}
+
+.main-stats-grid-4 .stat-box {
+    text-align: center;
+    padding: var(--space-m) var(--space-s);
+    border-right: 1px solid var(--card-border);
+}
+
+.main-stats-grid-4 .stat-box:last-child {
+    border-right: none;
 }
 
 @media (min-width: 768px) {
     .app-container {
-        max-width: 900px;
+        max-width: 800px;
     }
 
-    .calc-content-grid {
-        grid-template-columns: 1fr 1.2fr;
+    .calc-content-grid,
+    .calc-content-single-column {
+        max-width: 680px;
     }
 
-    .input-section {
-        grid-column: 1 / 2;
+    /* Legacy support for BTTS grid */
+    .btts-content-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.15fr;
+        gap: var(--space-l);
+    }
+}
+
+@media (max-width: 600px) {
+    .main-stats-grid-4 {
+        grid-template-columns: repeat(2, 1fr);
     }
 
-    .analysis-section {
-        grid-column: 2 / 3;
-        grid-row: 1 / 3;
+    .main-stats-grid-4 .stat-box:nth-child(2) {
+        border-right: none;
+    }
+
+    .main-stats-grid-4 .stat-box:nth-child(3) {
+        border-top: 1px solid var(--card-border);
+    }
+
+    .main-stats-grid-4 .stat-box:nth-child(4) {
+        border-top: 1px solid var(--card-border);
+        border-right: none;
     }
 }
 
@@ -363,8 +401,8 @@ body {
 .pro-visual-stats-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: 12px;
+    margin: 0 0 16px;
 }
 
 .verdict-header {
@@ -399,24 +437,73 @@ body {
 /* Stats and Boxes */
 .main-stats-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-l);
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    text-align: center;
+}
+
+.main-stats-grid .stat-box {
+    padding: var(--space-m) var(--space-s);
+    border-right: 1px solid var(--card-border);
+}
+
+.main-stats-grid .stat-box:last-child {
+    border-right: none;
 }
 
 .stat-box label {
     display: block;
-    font-size: 11px;
+    font-size: 10px;
+    font-weight: 600;
     color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     margin-bottom: var(--space-xs);
 }
 
 .stat-value {
     font-size: 20px;
     font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.stat-value .unit,
+.stat-unit {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    margin-left: 1px;
 }
 
 .text-accent {
     color: var(--accent-color);
+}
+
+/* Kelly card hidden completely */
+#kelly-card {
+    display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    pointer-events: none !important;
+}
+
+@media (max-width: 600px) {
+    .main-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .main-stats-grid .stat-box:nth-child(2) {
+        border-right: none;
+    }
+
+    .main-stats-grid .stat-box:nth-child(3) {
+        border-top: 1px solid var(--card-border);
+    }
+
+    .main-stats-grid .stat-box:nth-child(4) {
+        border-top: 1px solid var(--card-border);
+        border-right: none;
+    }
 }
 
 /* Value Alert */
@@ -905,38 +992,40 @@ body {
 
 .metric-group {
     flex: 1;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
-    padding: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 14px 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 4px;
 }
 
 .m-label {
-    font-size: 9px;
+    font-size: 10px;
     color: var(--text-tertiary);
     text-transform: uppercase;
     font-weight: 700;
-    margin-bottom: 2px;
+    letter-spacing: 0.8px;
 }
 
 .m-value {
-    font-size: 16px;
-    font-weight: 700;
+    font-size: 22px;
+    font-weight: 800;
     color: var(--text-primary);
-    font-family: var(--font-number);
+    letter-spacing: -0.5px;
 }
 
 /* Stake display Refined */
 .stake-display-pro {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 16px;
     padding: 20px;
     text-align: center;
+    margin-top: 2px;
 }
 
 .stake-label {

@@ -102,7 +102,7 @@
                 </div>
             </header>
 
-            <div class="calc-content-grid">
+            <div class="calc-content-single-column">
                 <!-- User Inputs -->
                 <section class="glass-card input-section">
                     <div class="input-row">
@@ -122,35 +122,34 @@
                         </div>
                     </div>
                     <div class="input-row full-width">
-                        <div class="input-field odds-field">
+                        <div class="input-field">
                             <label>Cuota Casa</label>
                             <div class="input-wrapper-refined">
-                                <input type="number" id="house-odd" placeholder="1.00" step="0.01">
+                                <input type="number" id="house-odd" placeholder="1.00" step="0.01" min="1.01">
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- Verdict & Primary Analysis -->
+                <!-- Quick Stats Bar -->
                 <section class="glass-card analysis-section">
-                    <div id="prob-verdict-card" class="verdict-display">
-                        <div class="verdict-header">Veredicto Final</div>
-                        <div class="verdict-main">
-                            <span id="prob-verdict-icon">⛔</span>
-                            <h2 id="prob-verdict-title">--</h2>
-                        </div>
-                        <p id="prob-verdict-reason"></p>
-                    </div>
-
                     <div class="main-stats-grid">
                         <div class="stat-box">
                             <label>Prob. Promedio</label>
-                            <div class="stat-value text-accent"><span id="avg-prob">0</span><span class="unit">%</span>
-                            </div>
+                            <div class="stat-value text-accent"><span id="avg-prob">0</span><span
+                                    class="stat-unit">%</span></div>
                         </div>
                         <div class="stat-box">
                             <label>Cuota Justa</label>
                             <div class="stat-value"><span id="single-odd">-.--</span></div>
+                        </div>
+                        <div class="stat-box">
+                            <label>Cuota Casa</label>
+                            <div class="stat-value"><span id="summary-house-odd">-.--</span></div>
+                        </div>
+                        <div class="stat-box">
+                            <label>Prob. Casa</label>
+                            <div class="stat-value"><span id="house-prob">0.0%</span></div>
                         </div>
                     </div>
                 </section>
@@ -241,7 +240,12 @@
                 </section>
 
                 <!-- History reference - Hidden logic card -->
-                <div id="kelly-card" style="display: none;"></div>
+                <div id="kelly-card" style="display: none;">
+                    <div class="kelly-inner">
+                        <span class="kelly-label">Kelly Stake</span>
+                        <span id="kelly-stake" class="kelly-value">0u</span>
+                    </div>
+                </div>
             </div>
         </main>
 

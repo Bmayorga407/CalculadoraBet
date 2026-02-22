@@ -32,6 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const bankrollResetBtn = document.getElementById('btn-reset-bankroll');
     const kellyCard = document.getElementById('kelly-card');
     const kellyStakeDisplay = document.getElementById('kelly-stake');
+    // New stake display elements
+    const probStakeUnits = document.getElementById('prob-stake-units');
+    const probStakeMoney = document.getElementById('prob-stake-money-ref');
+    const probStakeCard = document.getElementById('prob-stake-card');
 
     // BTTS Elements
     const bttsLocalScored = document.getElementById('btts-local-scored');
@@ -805,13 +809,12 @@ document.addEventListener('DOMContentLoaded', () => {
         singleOddDisplay.textContent = fairOdd > 0 ? fairOdd.toFixed(2) : '-.--';
 
         if (houseOdd > 1) {
-            summaryHouseOdd.textContent = houseOdd.toFixed(2);
+            if (summaryHouseOdd) summaryHouseOdd.textContent = houseOdd.toFixed(2);
 
             const p_house = 1 / houseOdd;
-            displayHouseProb.textContent = (p_house * 100).toFixed(1) + '%';
+            if (displayHouseProb) displayHouseProb.textContent = (p_house * 100).toFixed(1) + '%';
 
-            // EV and Edge (different things)
-            // Edge & EV
+            // EV and Edge
             const evPct = houseOdd > 0 ? (p * houseOdd - 1) * 100 : 0;
             const displayedFairOdd = parseFloat(fairOdd.toFixed(2));
             const edgePct = displayedFairOdd > 0 ? (houseOdd - displayedFairOdd) : 0;
@@ -837,21 +840,23 @@ document.addEventListener('DOMContentLoaded', () => {
             let units = clamp(Math.floor(stakePct), 0, 5);
             const stakeAmountRounded = Math.round((bankroll * units / 100) / 10) * 10;
 
-            kellyCard.style.display = 'flex';
-            if (units === 0) {
-                kellyStakeDisplay.textContent = "0.00% (Referencia)";
-                kellyStakeDisplay.parentElement.style.color = "var(--text-secondary)";
-            } else {
-                kellyStakeDisplay.textContent = `${units}u (${currencySymbol}${stakeAmountRounded})`;
-                kellyStakeDisplay.parentElement.style.color = "var(--accent-color)";
-                // Small percentage detail hidden
-                const kellyPctEl = document.getElementById('kelly-pct');
-                if (kellyPctEl) kellyPctEl.style.display = 'none';
+            // Update the new stake display UI
+            if (probStakeCard) probStakeCard.style.display = 'block';
+            if (probStakeUnits) {
+                probStakeUnits.textContent = units;
+                probStakeUnits.style.color = units === 0 ? 'var(--text-secondary)' : 'var(--accent-color)';
             }
+            if (probStakeMoney) {
+                probStakeMoney.textContent = units === 0 ? '(No apostar)' : `(≈ ${currencySymbol}${stakeAmountRounded})`;
+            }
+
+            // Legacy hidden kelly-card – keep always hidden
+            // (do not toggle its display)
         } else {
-            summaryHouseOdd.textContent = '-.--';
-            displayHouseProb.textContent = '0.0%';
-            kellyCard.style.display = 'none';
+            if (summaryHouseOdd) summaryHouseOdd.textContent = '-.--';
+            if (displayHouseProb) displayHouseProb.textContent = '0.0%';
+            if (probStakeUnits) probStakeUnits.textContent = '0';
+            if (probStakeMoney) probStakeMoney.textContent = '';
         }
     };
 
