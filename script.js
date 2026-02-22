@@ -280,27 +280,40 @@ document.addEventListener('DOMContentLoaded', () => {
         list.forEach(item => {
             const div = document.createElement('div');
             div.className = 'history-item';
-            // Colored value badge for history
+
+            // Colored value badge for history (more muted / sober text style)
             let hBadgeClass = 'badge-none';
-            let hBadgeText = '❌ Sin valor';
-            if (item.ev > 5) { hBadgeClass = 'badge-positive'; hBadgeText = '✅ Valor'; }
-            else if (item.ev > 0) { hBadgeClass = 'badge-low'; hBadgeText = '⚠️ Bajo'; }
+            let hBadgeText = 'Sin valor';
+            if (item.ev > 5) { hBadgeClass = 'badge-positive'; hBadgeText = 'Valor'; }
+            else if (item.ev > 0) { hBadgeClass = 'badge-low'; hBadgeText = 'Valor bajo'; }
+
+            // Premium SVG star
+            const starSvg = `
+            <svg viewBox="0 0 24 24" width="16" height="16" 
+                 fill="${item.favorite ? '#f59e0b' : 'none'}" 
+                 stroke="${item.favorite ? '#f59e0b' : 'rgba(255,255,255,0.4)'}" 
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="fav-icon-svg">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>`;
+
             div.innerHTML = `
                 <div class="history-item-header">
-                    <div class="history-title-row">
-                        <span class="history-item-title">${item.market} - ${item.timestamp}</span>
-                        <span class="history-value-tag ${hBadgeClass}">${hBadgeText}</span>
-                    </div>
-                    <button class="history-fav-btn ${item.favorite ? 'active' : ''}" onclick="window.toggleFav(${item.id})">
-                        ${item.favorite ? '⭐' : '☆'}
-                    </button>
+                    <span class="history-item-title">${item.market} &middot; ${item.timestamp}</span>
+                    <span class="history-value-tag ${hBadgeClass}">${hBadgeText}</span>
                 </div>
+                
                 <div class="history-item-body">
                     <div class="history-stat"><span class="label">Prob</span><span class="value">${item.prob.toFixed(1)}%</span></div>
                     <div class="history-stat"><span class="label">Cuota</span><span class="value">${item.odd.toFixed(2)}</span></div>
-                    <div class="history-stat"><span class="label">EV</span><span class="value" style="color: ${item.ev > 0 ? 'var(--accent-color)' : '#ef4444'}">${item.ev.toFixed(2)}%</span></div>
+                    <div class="history-stat"><span class="label">EV</span><span class="value" style="color: ${item.ev > 0 ? 'var(--text-primary)' : 'var(--text-secondary)'}">${item.ev > 0 ? '+' : ''}${item.ev.toFixed(2)}%</span></div>
                 </div>
-                <button class="history-load-btn" onclick="window.loadItem(${item.id})">Usar de nuevo</button>
+                
+                <div class="history-item-actions">
+                    <button class="history-load-btn" onclick="window.loadItem(${item.id})">Usar de nuevo</button>
+                    <button class="history-fav-btn ${item.favorite ? 'active' : ''}" onclick="window.toggleFav(${item.id})">
+                        ${starSvg}
+                    </button>
+                </div>
             `;
             historyListContainer.appendChild(div);
         });
@@ -507,9 +520,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (stakeMoneyEl) {
             if (units > 0 && houseOdd > 1) {
                 const moneyStakeRef = Math.round(bankroll * (units / 100) / 10) * 10;
-                stakeMoneyEl.textContent = `(≈ ${currBase}${moneyStakeRef})`;
+                stakeMoneyEl.textContent = `(≈ ${currBase}${moneyStakeRef.toLocaleString('es-CL')})`;
             } else {
                 stakeMoneyEl.textContent = "";
+            }
+        }
+
+        // Bankroll context (point 4 of polish)
+        const stakeBankRefEl = document.getElementById(`${prefix}-stake-bankroll-ref`);
+        if (stakeBankRefEl) {
+            if (units > 0 && bankroll > 0) {
+                stakeBankRefEl.textContent = `Bank: ${currBase}${formatBankroll(bankroll)}`;
+            } else {
+                stakeBankRefEl.textContent = '';
             }
         }
 
@@ -537,38 +560,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (verdictCard) {
             verdictCard.className = "insight-pro-card"; // Reset classes
 
+            const robustnessLabel = semaphore === 'bet' ? 'Robusto'
+                : semaphore === 'moderate' ? 'Moderado'
+                    : semaphore === 'low' ? 'Frágil'
+                        : 'Sin valor';
+
+            // Dynamic structured reason: EV | Robustez | Margen
+            const dynamicReason = `EV ${evNow >= 0 ? '+' : ''}${evNow.toFixed(1)}% | Robustez: ${robustnessLabel} | Margen: ${pMargin >= 0 ? '+' : ''}${pMargin.toFixed(1)}%`;
+
             const verdictConfig = {
-                'no-bet': {
-                    cssClass: 'verdict-no-bet',
-                    icon: '🔴',
-                    title: 'No Apostar',
-                    reason: 'Sin valor o riesgo demasiado alto para este mercado.'
-                },
-                'low': {
-                    cssClass: 'verdict-low',
-                    icon: '🟠',
-                    title: 'Apostar Bajo / Prueba',
-                    reason: 'Margen pequeño y frágil. Solo apuesta de prueba.'
-                },
-                'moderate': {
-                    cssClass: 'verdict-reduce',
-                    icon: '🟡',
-                    title: 'Apostar Moderado',
-                    reason: 'Valor positivo pero frágil. Stake limitado por riesgo.'
-                },
-                'bet': {
-                    cssClass: 'verdict-bet',
-                    icon: '🟢',
-                    title: 'Apostar',
-                    reason: 'Valor alto y robusto. Soporta escenarios adversos.'
-                }
+                'no-bet': { cssClass: 'verdict-no-bet', icon: '🔴', title: 'No Apostar' },
+                'low': { cssClass: 'verdict-low', icon: '🟠', title: 'Apostar Bajo / Prueba' },
+                'moderate': { cssClass: 'verdict-reduce', icon: '🟡', title: 'Apostar Moderado' },
+                'bet': { cssClass: 'verdict-bet', icon: '🟢', title: 'Apostar' }
             };
 
             const cfg = verdictConfig[semaphore];
             verdictCard.classList.add(cfg.cssClass);
             if (verdictIcon) verdictIcon.textContent = cfg.icon;
             if (verdictTitle) verdictTitle.textContent = cfg.title;
-            if (verdictReason) verdictReason.textContent = cfg.reason;
+            if (verdictReason) verdictReason.textContent = dynamicReason;
+
+            // Smart accordion: close on no-bet to reduce noise, open otherwise
+            const accordionEl = sectionEl ? sectionEl.querySelector('details') : null;
+            if (accordionEl) {
+                if (semaphore === 'no-bet') {
+                    accordionEl.removeAttribute('open');
+                } else {
+                    accordionEl.setAttribute('open', '');
+                }
+            }
         }
 
         // 6. Sensitivity Visuals
@@ -865,17 +886,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const p = clamp(((probA + probB) / 2) / 100, 0, 1);
         if (displayAverage) displayAverage.textContent = (p * 100).toFixed(1);
 
-        // Fair odd
+        // Fair odd — always 2 decimals
         const fairOdd = p > 0 ? (1 / p) : 0;
         singleOddDisplay.textContent = fairOdd > 0 ? fairOdd.toFixed(2) : '-.--';
 
-        if (houseOdd > 1) {
+        // Soft input validation for house odd
+        const houseOddWrapper = document.getElementById('house-odd-wrapper');
+        const houseOddHint = document.getElementById('house-odd-hint');
+        const isValidOdd = houseOdd > 1.00;
+
+        if (houseOddWrapper) {
+            if (!isValidOdd && houseOddInput.value !== '') {
+                houseOddWrapper.classList.add('input-invalid');
+            } else {
+                houseOddWrapper.classList.remove('input-invalid');
+            }
+        }
+        if (houseOddHint) {
+            houseOddHint.style.display = (!isValidOdd && houseOddInput.value !== '') ? 'block' : 'none';
+        }
+
+        if (isValidOdd) {
             if (summaryHouseOdd) summaryHouseOdd.textContent = houseOdd.toFixed(2);
 
             const p_house = 1 / houseOdd;
             if (displayHouseProb) displayHouseProb.textContent = (p_house * 100).toFixed(1) + '%';
 
-            // EV and Edge
+            // EV and Edge — consistent 2-decimal format
             const evPct = houseOdd > 0 ? (p * houseOdd - 1) * 100 : 0;
             const displayedFairOdd = parseFloat(fairOdd.toFixed(2));
             const edgePct = displayedFairOdd > 0 ? (houseOdd - displayedFairOdd) : 0;
@@ -885,41 +922,85 @@ document.addEventListener('DOMContentLoaded', () => {
                 edgeValueDisplay.style.color = edgePct > 0 ? "var(--accent-color)" : (edgePct < 0 ? "#ef4444" : "var(--text-primary)");
             }
             if (evValueDisplay) {
-                evValueDisplay.textContent = formatSigned(evPct, 2);
+                evValueDisplay.textContent = formatSigned(evPct, 2) + '%';
                 evValueDisplay.style.color = evPct > 0 ? "var(--accent-color)" : (evPct < 0 ? "#ef4444" : "var(--text-primary)");
             }
 
-            // Value Badge & Pro Sensitivity
+            // Value Badge & Pro Sensitivity (handles stake/verdict via updateProSensitivity)
             updateValueTag(evPct, p * 100, houseOdd, probBadge, probExplanation, probBadgeContainer);
             updateProSensitivity(p * 100, houseOdd, sensProbDown, sensProbUp, sensProbReading, proSectionProb, 'prob');
 
-            // Kelly 1/4
-            const f = kellyFraction(p, houseOdd, 0.25);
-            const stakePct = f * 100;
+            // Stake display (only if NOT in pro mode — pro mode shows its own)
+            if (!proModeProb) {
+                const f = kellyFraction(p, houseOdd, 0.25);
+                const stakePct = f * 100;
+                let units = clamp(Math.floor(stakePct), 0, 5);
+                const stakeAmountRounded = Math.round((bankroll * units / 100) / 10) * 10;
 
-            // Units mapping (1u = 1% bankroll)
-            let units = clamp(Math.floor(stakePct), 0, 5);
-            const stakeAmountRounded = Math.round((bankroll * units / 100) / 10) * 10;
-
-            // Update the new stake display UI
-            if (probStakeCard) probStakeCard.style.display = 'block';
-            if (probStakeUnits) {
-                probStakeUnits.textContent = units;
-                probStakeUnits.style.color = units === 0 ? 'var(--text-secondary)' : 'var(--accent-color)';
+                if (probStakeCard) probStakeCard.style.display = 'block';
+                if (probStakeUnits) {
+                    probStakeUnits.textContent = units;
+                    probStakeUnits.style.color = units === 0 ? 'var(--text-secondary)' : 'var(--accent-color)';
+                }
+                if (probStakeMoney) {
+                    probStakeMoney.textContent = units === 0 ? '' : `(≈ ${currencySymbol}${stakeAmountRounded.toLocaleString('es-CL')})`;
+                }
             }
-            if (probStakeMoney) {
-                probStakeMoney.textContent = units === 0 ? '(No apostar)' : `(≈ ${currencySymbol}${stakeAmountRounded})`;
-            }
 
-            // Legacy hidden kelly-card – keep always hidden
-            // (do not toggle its display)
         } else {
             if (summaryHouseOdd) summaryHouseOdd.textContent = '-.--';
             if (displayHouseProb) displayHouseProb.textContent = '0.0%';
+            if (edgeValueDisplay) { edgeValueDisplay.textContent = '0.00'; edgeValueDisplay.style.color = ''; }
+            if (evValueDisplay) { evValueDisplay.textContent = '0.00%'; evValueDisplay.style.color = ''; }
             if (probStakeUnits) probStakeUnits.textContent = '0';
             if (probStakeMoney) probStakeMoney.textContent = '';
+            const bankRefEl = document.getElementById('prob-stake-bankroll-ref');
+            if (bankRefEl) bankRefEl.textContent = '';
         }
     };
+
+    // Copy summary button (point 7 of polish)
+    const probCopyBtn = document.getElementById('prob-copy-btn');
+    if (probCopyBtn) {
+        probCopyBtn.addEventListener('click', () => {
+            const prob = displayAverage ? displayAverage.textContent + '%' : '--';
+            const odd = summaryHouseOdd ? summaryHouseOdd.textContent : '--';
+            const ev = evValueDisplay ? evValueDisplay.textContent : '--';
+            const edge = edgeValueDisplay ? edgeValueDisplay.textContent : '--';
+            const verdictTitleEl = document.getElementById('prob-verdict-title');
+            const verdict = verdictTitleEl ? verdictTitleEl.textContent : '--';
+            const unitsEl = document.getElementById('prob-stake-units');
+            const moneyEl = document.getElementById('prob-stake-money-ref');
+            const units = unitsEl ? unitsEl.textContent : '0';
+            const money = moneyEl ? moneyEl.textContent : '';
+
+            const summary = `Prob ${prob} | Cuota ${odd} | EV ${ev} | Edge ${edge} | Veredicto: ${verdict} | Stake: ${units}u ${money}`.trim();
+
+            navigator.clipboard.writeText(summary).then(() => {
+                probCopyBtn.textContent = 'Copiado ✓';
+                probCopyBtn.classList.add('copied');
+                setTimeout(() => {
+                    probCopyBtn.textContent = 'Copiar resumen';
+                    probCopyBtn.classList.remove('copied');
+                }, 1500);
+            }).catch(() => {
+                // Fallback for non-HTTPS
+                const ta = document.createElement('textarea');
+                ta.value = summary;
+                ta.style.cssText = 'position:fixed;opacity:0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                probCopyBtn.textContent = 'Copiado ✓';
+                probCopyBtn.classList.add('copied');
+                setTimeout(() => {
+                    probCopyBtn.textContent = 'Copiar resumen';
+                    probCopyBtn.classList.remove('copied');
+                }, 1500);
+            });
+        });
+    }
 
     // --- Ingreso de Partidos Logic ---
     let currentManualTeam = "";
@@ -1543,6 +1624,28 @@ document.addEventListener('DOMContentLoaded', () => {
             activeHistoryType = 'prob';
             renderHistory();
             if (historyModal) historyModal.style.display = 'flex';
+            if (btnShowHistory) btnShowHistory.classList.add('active');
+        });
+    }
+
+    // ── Focus Mode (Modo Enfoque) ──
+    const btnFocusMode = document.getElementById('btn-focus-mode');
+    let focusModeActive = localStorage.getItem('prob_focus_mode') === 'true';
+
+    const applyFocusMode = (active) => {
+        if (!calculatorView) return;
+        calculatorView.classList.toggle('focus-mode', active);
+        if (btnFocusMode) btnFocusMode.classList.toggle('active', active);
+        localStorage.setItem('prob_focus_mode', active);
+    };
+
+    // Restore persisted state on load
+    applyFocusMode(focusModeActive);
+
+    if (btnFocusMode) {
+        btnFocusMode.addEventListener('click', () => {
+            focusModeActive = !focusModeActive;
+            applyFocusMode(focusModeActive);
         });
     }
 
@@ -1551,12 +1654,26 @@ document.addEventListener('DOMContentLoaded', () => {
             activeHistoryType = 'btts';
             renderHistory();
             if (historyModal) historyModal.style.display = 'flex';
+            if (btnShowHistoryBtts) btnShowHistoryBtts.classList.add('active');
         });
     }
 
     if (historyCloseBtn) historyCloseBtn.onclick = () => {
-        if (historyModal) historyModal.style.display = 'none';
+        if (historyModal) {
+            historyModal.style.display = 'none';
+            if (btnShowHistory) btnShowHistory.classList.remove('active');
+            if (btnShowHistoryBtts) btnShowHistoryBtts.classList.remove('active');
+        }
     };
+
+    // Close on outside click
+    window.addEventListener('click', (e) => {
+        if (e.target === historyModal) {
+            historyModal.style.display = 'none';
+            if (btnShowHistory) btnShowHistory.classList.remove('active');
+            if (btnShowHistoryBtts) btnShowHistoryBtts.classList.remove('active');
+        }
+    });
 
     historyTabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
