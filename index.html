@@ -271,10 +271,18 @@
                     <h1>BTTS / O-U</h1>
                     <p class="subtitle">Predicción de ambos marcan y goles</p>
                 </div>
-                <!-- Segmented Control for Market -->
+                <!-- Segmented Control for Market + Cálculo integrado -->
                 <div class="market-selector glass-card">
                     <button id="btn-btts-mode" class="seg-option active" type="button">Ambos Marcan</button>
                     <button id="btn-ou-mode" class="seg-option" type="button">Over / Under</button>
+                    <div class="seg-divider"></div>
+                    <div class="seg-calc-wrapper">
+                        <select id="btts-mode" class="seg-calc-select">
+                            <option value="hybrid">Híbrido</option>
+                            <option value="model">Modelo</option>
+                            <option value="empirical">Histórico</option>
+                        </select>
+                    </div>
                 </div>
             </header>
 
@@ -309,6 +317,12 @@
                                 <span id="btts-local-prob" class="badge-value accent">0.0%</span>
                             </div>
                         </div>
+                        <div class="team-sample-row">
+                            <label class="sample-inline-label">Partidos (P)</label>
+                            <div class="input-wrapper-refined mini sample-input">
+                                <input type="number" id="btts-local-sample" value="10" min="1" max="20">
+                            </div>
+                        </div>
                         <button class="manual-btn-refined" id="btn-manual-local" type="button">⊕ Cargar
                             Partidos</button>
                     </section>
@@ -340,29 +354,16 @@
                                 <span id="btts-visitor-prob" class="badge-value accent">0.0%</span>
                             </div>
                         </div>
+                        <div class="team-sample-row">
+                            <label class="sample-inline-label">Partidos (P)</label>
+                            <div class="input-wrapper-refined mini sample-input">
+                                <input type="number" id="btts-visitor-sample" value="10" min="1" max="20">
+                            </div>
+                        </div>
                         <button class="manual-btn-refined" id="btn-manual-visitor" type="button">⊕ Cargar
                             Partidos</button>
                     </section>
 
-                    <!-- Calculator Settings -->
-                    <section class="glass-card settings-card">
-                        <div class="input-row">
-                            <div class="input-field">
-                                <label>Muestra (P)</label>
-                                <div class="input-wrapper-refined">
-                                    <input type="number" id="btts-sample" value="10">
-                                </div>
-                            </div>
-                            <div class="input-field">
-                                <label>Cálculo</label>
-                                <select id="btts-mode" class="select-refined">
-                                    <option value="hybrid">Híbrido</option>
-                                    <option value="model">Modelo</option>
-                                    <option value="empirical">Histórico</option>
-                                </select>
-                            </div>
-                        </div>
-                    </section>
                 </div>
 
                 <!-- RIGHT: Results & Analysis -->

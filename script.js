@@ -46,7 +46,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const bttsLocalXg = document.getElementById('btts-local-xg');
     const bttsVisitorXg = document.getElementById('btts-visitor-xg');
 
-    const bttsSample = document.getElementById('btts-sample');
+    const bttsLocalSample = document.getElementById('btts-local-sample');
+    const bttsVisitorSample = document.getElementById('btts-visitor-sample');
+    // Legacy alias kept for saveState/loadState compatibility (hidden input no longer in DOM)
+    const bttsSample = bttsLocalSample; // fallback
     const bttsHouseOdd = document.getElementById('btts-house-odd');
     const bttsMode = document.getElementById('btts-mode');
 
@@ -574,14 +577,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const visitorConceded = clamp(toNumber(bttsVisitorConceded.value), 0, 100);
 
         const houseOdd = toNumber(bttsHouseOdd.value, 0);
-        const sampleSizeRaw = Math.round(toNumber(bttsSample.value, 10));
-        const sampleSize = clamp(sampleSizeRaw, 1, 20);
+        const localSampleRaw = Math.round(toNumber(bttsLocalSample ? bttsLocalSample.value : 10, 10));
+        const visitorSampleRaw = Math.round(toNumber(bttsVisitorSample ? bttsVisitorSample.value : 10, 10));
+        const localSampleSize = clamp(localSampleRaw, 1, 20);
+        const visitorSampleSize = clamp(visitorSampleRaw, 1, 20);
+        const sampleSize = Math.round((localSampleSize + visitorSampleSize) / 2);
 
         const bankroll = Math.max(0, parseBankroll(bankrollInput.value));
         const currency = getCurrencySymbol(currencySelect);
         const mode = (bttsMode && bttsMode.value) ? bttsMode.value : "hybrid";
 
-        if (bttsSample && String(bttsSample.value) !== String(sampleSize)) bttsSample.value = sampleSize;
+        if (bttsLocalSample && String(bttsLocalSample.value) !== String(localSampleSize)) bttsLocalSample.value = localSampleSize;
+        if (bttsVisitorSample && String(bttsVisitorSample.value) !== String(visitorSampleSize)) bttsVisitorSample.value = visitorSampleSize;
 
         const pSLocal = clamp(toNumber(bttsLocalScored.value), 0, 99.9) / 100;
         const pCLocal = clamp(toNumber(bttsLocalConceded.value), 0, 99.9) / 100;
@@ -1027,7 +1034,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (bttsVisitorConceded) bttsVisitorConceded.value = cPercent.toFixed(0);
             if (bttsVisitorXg) bttsVisitorXg.textContent = avgS.toFixed(2);
         }
-        bttsSample.value = played > 0 ? played : 10;
+        if (currentManualTeam === 'Local') {
+            if (bttsLocalSample) bttsLocalSample.value = played > 0 ? played : 10;
+        } else {
+            if (bttsVisitorSample) bttsVisitorSample.value = played > 0 ? played : 10;
+        }
         saveState();
         debouncedCalculateBtts();
     };
@@ -1116,8 +1127,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (bttsVisitorConceded) bttsVisitorConceded.value = visitor.cPercent.toFixed(0);
                 if (bttsVisitorXg) bttsVisitorXg.textContent = visitor.avgS.toFixed(2);
 
-                const defaultSample = clamp(Math.max(local.played, visitor.played, 10), 1, 20);
-                if (bttsSample) bttsSample.value = defaultSample;
+                const defaultLocalSample = clamp(local.played > 0 ? local.played : 10, 1, 20);
+                const defaultVisitorSample = clamp(visitor.played > 0 ? visitor.played : 10, 1, 20);
+                if (bttsLocalSample) bttsLocalSample.value = defaultLocalSample;
+                if (bttsVisitorSample) bttsVisitorSample.value = defaultVisitorSample;
             };
 
             syncFromManualToInputs();
@@ -1134,11 +1147,38 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     // --- Navigation ---
     const showView = (view) => {
-        [mainMenu, calculatorView, bttsView, bttsManualView].forEach(v => {
-            if (v) v.style.display = 'none';
-        });
-        if (view) view.style.display = 'block';
-        saveState();
+        const all = [mainMenu, calculatorView, bttsView, bttsManualView];
+        const current = all.find(v => v && v.style.display !== 'none');
+
+        const doShow = (nextView) => {
+            all.forEach(v => {
+                if (v && v !== nextView) v.style.display = 'none';
+            });
+            if (nextView) {
+                nextView.style.display = 'block';
+                // Remove any leftover animation classes
+                nextView.classList.remove('view-enter', 'view-exit');
+                // Force reflow so the animation triggers fresh
+                void nextView.offsetWidth;
+                nextView.classList.add('view-enter');
+                nextView.addEventListener('animationend', () => {
+                    nextView.classList.remove('view-enter');
+                }, { once: true });
+            }
+            saveState();
+        };
+
+        if (current && current !== view) {
+            current.classList.remove('view-enter', 'view-exit');
+            void current.offsetWidth;
+            current.classList.add('view-exit');
+            current.addEventListener('animationend', () => {
+                current.classList.remove('view-exit');
+                doShow(view);
+            }, { once: true });
+        } else {
+            doShow(view);
+        }
     };
 
     const showManualEntry = (teamKey) => {
@@ -1259,7 +1299,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (bttsLocalConceded) bttsLocalConceded.value = "0";
                 if (bttsVisitorScored) bttsVisitorScored.value = "0";
                 if (bttsVisitorConceded) bttsVisitorConceded.value = "0";
-                if (bttsSample) bttsSample.value = "10";
+                if (bttsLocalSample) bttsLocalSample.value = "10";
+                if (bttsVisitorSample) bttsVisitorSample.value = "10";
 
                 // 3. Reset badges
                 [bttsLocalXg, bttsVisitorXg].forEach(b => { if (b) b.textContent = "0.00"; });

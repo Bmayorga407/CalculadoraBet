@@ -107,6 +107,43 @@ body {
     left: 150%;
 }
 
+/* ══════════════════════════════════════════
+   VIEW TRANSITIONS — Elegant enter / exit
+   ══════════════════════════════════════════ */
+
+@keyframes viewEnter {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.99);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes viewExit {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.99);
+    }
+}
+
+main.view-enter {
+    animation: viewEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+main.view-exit {
+    animation: viewExit 0.18s cubic-bezier(0.4, 0, 1, 1) both;
+    pointer-events: none;
+}
+
 /* Global Header - Brand Bar */
 .global-header {
     display: flex;
@@ -681,10 +718,11 @@ body {
 /* Market Selector */
 .market-selector {
     display: flex;
+    align-items: center;
     padding: 4px;
     gap: 4px;
     margin-bottom: var(--space-l);
-    border-radius: var(--radius-m);
+    border-radius: var(--radius-l);
 }
 
 .seg-option {
@@ -704,6 +742,117 @@ body {
     background: rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Divider between seg options and calc select */
+.seg-divider {
+    width: 1px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.12);
+    flex-shrink: 0;
+}
+
+/* Wrapper for Cálculo select — adds custom chevron */
+.seg-calc-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.seg-calc-wrapper::after {
+    content: '▾';
+    font-size: 10px;
+    color: var(--text-tertiary);
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
+/* Cálculo select integrated into market-selector */
+.seg-calc-select {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--font-family);
+    padding: 0 4px;
+    cursor: pointer;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    white-space: nowrap;
+}
+
+.seg-calc-select:focus {
+    color: var(--text-primary);
+}
+
+/* Cálculo method bar — tiny centered pill */
+.btts-calc-method-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    margin: -6px auto var(--space-m);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: var(--radius-l);
+    width: fit-content;
+}
+
+.calc-method-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+}
+
+.btts-mode-select {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: var(--font-family);
+    padding: 0;
+    cursor: pointer;
+    outline: none;
+    -webkit-appearance: auto;
+    appearance: auto;
+}
+
+/* Partidos (P) inline inside each team card */
+.team-sample-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-m);
+    margin: var(--space-m) 0 var(--space-s);
+    padding-top: var(--space-m);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sample-inline-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+}
+
+.sample-input {
+    width: 72px !important;
+    flex: 0 0 72px;
+}
+
+.sample-input input {
+    text-align: center;
+    font-size: 15px;
+    font-weight: 700;
 }
 
 /* Team Card */
@@ -787,6 +936,13 @@ body {
 /* Results Panels */
 .results-main-card {
     padding: var(--space-xl);
+    margin-bottom: var(--space-l);
+}
+
+/* Spacing between result columns cards — same breathing room as team cards */
+.btts-analysis-section,
+.details-section {
+    margin-bottom: var(--space-l);
 }
 
 .results-dual {
@@ -862,16 +1018,17 @@ body {
 /* Analysis Section BTTS */
 /* Pro Insight & Value section (Apple Level) */
 .insight-pro-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
-    padding: 24px;
-    margin-bottom: 24px;
+    /* Removed box-model: now just a section inside the parent card */
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0 0 var(--space-xl) 0;
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--card-border);
     position: relative;
     overflow: hidden;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(10px);
+    backdrop-filter: none;
 }
 
 .insight-pro-card::before {
@@ -922,7 +1079,7 @@ body {
 .value-highlight {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
+    border-radius: var(--radius-m);
     padding: 12px 16px;
     display: flex;
     align-items: center;
@@ -946,26 +1103,23 @@ body {
     font-weight: 500;
 }
 
-/* States for Insight Card */
+/* Verdict states: now communicate via background tint on the insight-pro-card's parent section */
 .verdict-bet {
-    background: radial-gradient(circle at top right, rgba(74, 222, 128, 0.08), transparent 60%),
-        rgba(255, 255, 255, 0.02) !important;
-    border-color: rgba(74, 222, 128, 0.25) !important;
-    box-shadow: 0 10px 40px rgba(74, 222, 128, 0.1);
+    background: radial-gradient(circle at top right, rgba(74, 222, 128, 0.06), transparent 60%);
+    border-color: transparent;
+    box-shadow: none;
 }
 
 .verdict-reduce {
-    background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.08), transparent 60%),
-        rgba(255, 255, 255, 0.02) !important;
-    border-color: rgba(245, 158, 11, 0.25) !important;
-    box-shadow: 0 10px 40px rgba(245, 158, 11, 0.1);
+    background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.06), transparent 60%);
+    border-color: transparent;
+    box-shadow: none;
 }
 
 .verdict-no-bet {
-    background: radial-gradient(circle at top right, rgba(239, 68, 68, 0.08), transparent 60%),
-        rgba(255, 255, 255, 0.02) !important;
-    border-color: rgba(239, 68, 68, 0.25) !important;
-    box-shadow: 0 10px 40px rgba(239, 68, 68, 0.1);
+    background: radial-gradient(circle at top right, rgba(239, 68, 68, 0.06), transparent 60%);
+    border-color: transparent;
+    box-shadow: none;
 }
 
 /* Market Odds & Stats Grid */
@@ -973,7 +1127,8 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
-    margin-bottom: 24px;
+    margin-bottom: 0;
+    padding-top: var(--space-l);
 }
 
 .input-pro label {
@@ -992,15 +1147,20 @@ body {
 
 .metric-group {
     flex: 1;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 14px;
-    padding: 14px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 4px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 4px;
+    border-right: 1px solid var(--card-border);
+}
+
+.metric-group:last-child {
+    border-right: none;
 }
 
 .m-label {
@@ -1020,12 +1180,13 @@ body {
 
 /* Stake display Refined */
 .stake-display-pro {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
-    padding: 20px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    border-top: 1px solid var(--card-border);
+    padding: var(--space-xl) 0 0;
     text-align: center;
-    margin-top: 2px;
+    margin-top: var(--space-l);
 }
 
 .stake-label {
@@ -1917,7 +2078,7 @@ input[type=number] {
     background-color: rgba(239, 68, 68, 0.05);
     /* Soft Red */
     border: 1px solid rgba(239, 68, 68, 0.1);
-    border-radius: var(--border-radius);
+    border-radius: var(--radius-l);
     color: #fca5a5;
     /* Light Red */
     cursor: pointer;
