@@ -287,6 +287,21 @@ main.view-exit {
     letter-spacing: 0.2px;
 }
 
+.copy-summary-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-m);
+    /* Unificado */
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--font-family);
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    letter-spacing: 0.2px;
+}
+
 .focus-toggle-pill:hover {
     background: rgba(255, 255, 255, 0.1);
     color: var(--text-primary);
@@ -488,7 +503,9 @@ main.view-exit {
 }
 
 .input-wrapper-refined:focus-within {
-    border-color: rgba(74, 222, 128, 0.45);
+    border-color: rgba(74, 222, 128, 0.4);
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.1);
+    /* Brillo unificado suave */
     background: rgba(255, 255, 255, 0.08);
 }
 
@@ -686,8 +703,11 @@ main.view-exit {
 
 .stake-display label {
     display: block;
-    font-size: 11px;
-    color: var(--text-secondary);
+    font-size: 10px;
+    /* Unificado Apple */
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
     margin-bottom: var(--space-s);
 }
 
@@ -1107,17 +1127,35 @@ main.view-exit {
 
 /* Analysis Section BTTS */
 /* Pro Insight & Value section (Apple Level) */
+.glass-card.value-section {
+    /* Forzar que los overlays radiales respeten el radio de la tarjeta base */
+    overflow: hidden;
+    position: relative;
+    padding: 0;
+    /* Padding movido a sus hijos para recortar bordes con limpieza total */
+    /* Evitar problemas de rendering en safari con overlays y radius */
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    mask-image: radial-gradient(white, black);
+}
+
 .insight-pro-card {
-    /* Removed box-model: now just a section inside the parent card */
+    /* Mantenemos el section visual dentro del parent card */
     background: transparent;
     border: none;
-    border-radius: 0;
-    padding: 0 0 var(--space-xl) 0;
+    border-radius: var(--radius-l) var(--radius-l) 0 0;
+    /* Radio consistente */
+    padding: var(--space-l) var(--space-l) var(--space-xl) var(--space-l);
     margin-bottom: 0;
     border-bottom: 1px solid var(--card-border);
     position: relative;
     overflow: hidden;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* APPLE/WEBKIT TRICK: Fuerza a container a renderizar en su propia capa y recortar gradientes */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    mask-image: radial-gradient(white, black);
     backdrop-filter: none;
 }
 
@@ -1125,61 +1163,108 @@ main.view-exit {
 .insight-header {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 12px;
+    justify-content: space-between;
+    /* Botón copiar a la derecha */
+    margin-bottom: 8px;
+    /* Reducido para compactar */
     position: relative;
     z-index: 1;
 }
 
+.insight-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .insight-icon {
-    font-size: 28px;
+    font-size: 26px;
+    /* Apenas más chico */
     filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
 }
 
 .insight-header h2 {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
     margin: 0;
     background: linear-gradient(135deg, #fff, rgba(255, 255, 255, 0.7));
+    background-clip: text;
+    /* Estándar */
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
-.insight-reason {
-    font-size: 14px;
-    color: var(--text-secondary);
-    line-height: 1.5;
-    margin: 0 0 16px 0;
-    position: relative;
-    z-index: 1;
-}
-
-.value-highlight {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: var(--radius-m);
-    padding: 12px 16px;
+/* Copy Button Icon */
+.copy-icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    /* Hyper subtle */
+    cursor: pointer;
+    padding: 6px;
+    margin: -6px;
+    /* Aumenta hit area sin afectar layout */
+    border-radius: 50%;
     display: flex;
     align-items: center;
-    gap: 12px;
-    animation: fadeInScale 0.4s ease-out;
+    justify-content: center;
+    transition: all 0.2s ease;
 }
 
-.badge-pill {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.copy-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
 }
 
-.value-text {
+.copy-icon-btn.copied {
+    color: var(--accent-color);
+}
+
+.copy-svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Compact Verdict Body */
+.compact-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    /* Menos capas visuales */
+}
+
+.compact-reason {
     font-size: 13px;
-    color: var(--text-primary);
+    color: var(--text-secondary);
+    line-height: 1.4;
     margin: 0;
-    font-weight: 500;
+}
+
+.compact-highlight {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.compact-text {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    /* Baja el contraste de la explicación */
+    margin: 0;
+    line-height: 1.3;
+    display: -webkit-box;
+    line-clamp: 2;
+    /* Estándar */
+    -webkit-line-clamp: 2;
+    /* Corte elegante a 2 líneas máx */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Verdict states: now communicate via background tint on the insight-pro-card's parent section */
@@ -1242,7 +1327,8 @@ main.view-exit {
     align-items: center;
     justify-content: center;
     gap: 4px;
-    border-right: 1px solid var(--card-border);
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+    /* Separador ultrasuave Apple */
 }
 
 .metric-group:last-child {
@@ -1251,10 +1337,11 @@ main.view-exit {
 
 .m-label {
     font-size: 10px;
+    /* Unificado Apple */
     color: var(--text-tertiary);
     text-transform: uppercase;
     font-weight: 700;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.6px;
 }
 
 .m-value {
@@ -1290,47 +1377,24 @@ main.view-exit {
 }
 
 /* Bankroll context under stake */
-.stake-bank-ref {
+.stake-sub-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     font-size: 11px;
     color: var(--text-tertiary);
-    margin-top: 6px;
+    opacity: 0.85;
+    margin-top: 4px;
+}
+
+.stake-bank-ref {
     font-weight: 500;
-    letter-spacing: 0.1px;
 }
 
-/* Copy summary button */
-.verdict-copy-row {
-    display: flex;
-    justify-content: flex-end;
-    padding-top: var(--space-m);
-    border-top: 1px solid var(--card-border);
-    margin-top: var(--space-m);
-}
-
-.copy-summary-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-s);
-    color: var(--text-secondary);
-    font-size: 11px;
-    font-weight: 600;
-    font-family: var(--font-family);
-    padding: 5px 12px;
-    cursor: pointer;
-    transition: all 0.18s ease;
-    letter-spacing: 0.2px;
-}
-
-.copy-summary-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-primary);
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
-.copy-summary-btn.copied {
-    background: rgba(74, 222, 128, 0.1);
-    border-color: rgba(74, 222, 128, 0.3);
-    color: var(--accent-color);
+.bank-divider {
+    opacity: 0.3;
+    font-size: 10px;
 }
 
 /* Stake display Refined */
@@ -1338,19 +1402,23 @@ main.view-exit {
     background: transparent;
     border: none;
     border-radius: 0;
-    border-top: 1px solid var(--card-border);
-    padding: var(--space-xl) 0 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    /* Línea más suave */
+    padding: var(--space-m) 0 0;
+    /* Padding rebajado para no verse caído */
     text-align: center;
-    margin-top: var(--space-l);
+    margin-top: var(--space-m);
 }
 
 .stake-label {
-    font-size: 12px;
+    font-size: 10px;
+    /* Unificado Apple */
     color: var(--text-tertiary);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 12px;
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+    /* Ajustado para mejor centrado óptico */
 }
 
 .stake-value-row {
@@ -1362,6 +1430,8 @@ main.view-exit {
     align-items: center;
     justify-content: center;
     gap: 4px;
+    line-height: 1;
+    /* Evita que el texto gigante empuje cajas hacia abajo */
 }
 
 .stake-value-row .u {
@@ -1425,8 +1495,11 @@ main.view-exit {
 .summary-item .label {
     display: block;
     font-size: 10px;
-    color: var(--text-secondary);
+    /* Unificado */
+    color: var(--text-tertiary);
     text-transform: uppercase;
+    letter-spacing: 0.6px;
+    /* Unificado */
     margin-bottom: 4px;
 }
 
@@ -1600,8 +1673,8 @@ h1 {
 }
 
 .input-wrapper input:focus {
-    border-color: var(--accent-color);
-    background-color: #252525;
+    border-color: rgba(74, 222, 128, 0.4);
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.1);
 }
 
 .input-wrapper .unit {
@@ -2085,6 +2158,11 @@ input[type=number] {
     border-radius: 10px;
 }
 
+.match-rows-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+/* Match Row */
 .match-row {
     background-color: var(--card-bg);
     border: 1px solid rgba(255, 255, 255, 0.05);
@@ -2799,6 +2877,7 @@ input[type=number] {
     letter-spacing: 0.4px;
     text-transform: uppercase;
     flex-shrink: 0;
+    text-decoration: none !important;
 }
 
 /* Neutral badges - Bajada fuerte de saturación (premium Apple feel) */
@@ -2838,8 +2917,10 @@ input[type=number] {
 
 .history-stat .label {
     font-size: 10px;
+    /* Unificado */
     text-transform: uppercase;
     letter-spacing: 0.6px;
+    /* Unificado */
     color: var(--text-tertiary);
     font-weight: 600;
 }
@@ -3222,9 +3303,10 @@ select:focus-visible {
 
 .hero-label {
     font-size: 10px;
-    color: var(--text-secondary);
+    /* Unificado Apple */
+    color: var(--text-tertiary);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.6px;
     font-weight: 500;
     margin-top: 6px;
     opacity: 0.7;
@@ -3717,8 +3799,9 @@ select:focus-visible {
     }
 
     .input-wrapper-refined:focus-within {
-        border-color: rgba(0, 163, 255, 0.5);
-        background: rgba(0, 163, 255, 0.04);
+        border-color: rgba(74, 222, 128, 0.5);
+        box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.1);
+        background: rgba(74, 222, 128, 0.02);
     }
 
     .input-wrapper-refined input {

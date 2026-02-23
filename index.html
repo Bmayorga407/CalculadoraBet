@@ -166,14 +166,25 @@
                 <section class="glass-card value-section">
                     <div id="prob-verdict-card" class="insight-pro-card">
                         <div class="insight-header">
-                            <span id="prob-verdict-icon" class="insight-icon">⛔</span>
-                            <h2 id="prob-verdict-title">Analizando...</h2>
+                            <div class="insight-title-group">
+                                <span id="prob-verdict-icon" class="insight-icon">⛔</span>
+                                <h2 id="prob-verdict-title">Analizando...</h2>
+                            </div>
+                            <!-- Copiar movido aquí -->
+                            <button id="prob-copy-btn" class="copy-icon-btn" type="button" title="Copiar resumen">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
                         </div>
-                        <div class="insight-body">
-                            <p id="prob-verdict-reason" class="insight-reason"></p>
-                            <div id="prob-value-badge-container" class="value-highlight" style="display: none;">
-                                <div id="prob-value-badge" class="badge-pill"></div>
-                                <p id="prob-value-explanation" class="value-text"></p>
+                        <div class="insight-body compact-body">
+                            <p id="prob-verdict-reason" class="insight-reason compact-reason"></p>
+                            <div id="prob-value-badge-container" class="value-highlight compact-highlight"
+                                style="display: none;">
+                                <div id="prob-value-badge" class="history-value-tag mix-badge"></div>
+                                <p id="prob-value-explanation" class="value-text compact-text"></p>
                             </div>
                         </div>
                     </div>
@@ -194,12 +205,12 @@
                         <div class="stake-label">Stake Recomendado</div>
                         <div class="stake-value-row">
                             <span id="prob-stake-units" class="units">0</span><span class="u">u</span>
-                            <span id="prob-stake-money-ref" class="money"></span>
                         </div>
-                        <div id="prob-stake-bankroll-ref" class="stake-bank-ref"></div>
-                    </div>
-                    <div class="verdict-copy-row">
-                        <button id="prob-copy-btn" class="copy-summary-btn" type="button">Copiar resumen</button>
+                        <div class="stake-sub-info">
+                            <span id="prob-stake-money-ref" class="money"></span>
+                            <span class="bank-divider" id="prob-bank-divider" style="display:none;">|</span>
+                            <span id="prob-stake-bankroll-ref" class="stake-bank-ref"></span>
+                        </div>
                     </div>
                 </section>
 

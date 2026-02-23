@@ -277,6 +277,30 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        const formatRelativeDate = (timestampMs) => {
+            const now = Date.now();
+            const diffMs = now - timestampMs;
+            const diffMins = Math.floor(diffMs / 60000);
+
+            const d = new Date(timestampMs);
+            const today = new Date();
+            const isToday = d.getDate() === today.getDate() && d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
+
+            const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            if (diffMins < 1) return `hace instantes`;
+            if (diffMins < 60) return `hace ${diffMins} min`;
+            if (isToday) return `hoy ${timeStr}`;
+
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const isYesterday = d.getDate() === yesterday.getDate() && d.getMonth() === yesterday.getMonth() && d.getFullYear() === yesterday.getFullYear();
+
+            if (isYesterday) return `ayer ${timeStr}`;
+
+            return d.toLocaleDateString([], { day: '2-digit', month: 'short' });
+        };
+
         list.forEach(item => {
             const div = document.createElement('div');
             div.className = 'history-item';
@@ -286,6 +310,17 @@ document.addEventListener('DOMContentLoaded', () => {
             let hBadgeText = 'Sin valor';
             if (item.ev > 5) { hBadgeClass = 'badge-positive'; hBadgeText = 'Valor'; }
             else if (item.ev > 0) { hBadgeClass = 'badge-low'; hBadgeText = 'Valor bajo'; }
+
+            // Verdict Semaphore Logic
+            const semConfig = {
+                'bet': { icon: '🟢', text: 'Apostar' },
+                'moderate': { icon: '🟡', text: 'Apostar mod' },
+                'low': { icon: '🟠', text: 'Apostar bajo' },
+                'no-bet': { icon: '🔴', text: 'No apostar' }
+            };
+            const semData = semConfig[item.semaphore] || semConfig['no-bet'];
+            const timeAgo = formatRelativeDate(item.id);
+            const fullDate = new Date(item.id).toLocaleString();
 
             // Premium SVG star
             const starSvg = `
@@ -299,7 +334,14 @@ document.addEventListener('DOMContentLoaded', () => {
             div.innerHTML = `
                 <div class="history-item-header">
                     <div class="history-title-group">
-                        <span class="history-item-title">${item.market} <span style="opacity:0.5; font-weight:400; font-size:11px; margin-left:4px;">${item.timestamp}</span></span>
+                        <span class="history-item-title">${item.market}</span>
+                        <div style="display: flex; align-items: center; gap: 6px; margin-top: 1px;">
+                            <span style="font-size: 10px; color: var(--text-tertiary); font-weight: 500;" title="${fullDate}">${timeAgo}</span>
+                            <span style="font-size: 8px; color: var(--text-tertiary); opacity: 0.5;">|</span>
+                            <span style="font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; display: inline-flex; align-items: center; gap: 3px;">
+                                <span style="font-size: 7px;">${semData.icon}</span> ${semData.text}
+                            </span>
+                        </div>
                     </div>
                     <button class="history-fav-btn ${item.favorite ? 'active' : ''}" onclick="window.toggleFav(${item.id})">
                         ${starSvg}
@@ -363,21 +405,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (evPct > 5) {
             status = "Valor Positivo";
-            badgeClass = "robust-green";
+            badgeClass = "badge-positive";
             explanation = `La cuota tiene un buen margen a tu favor (EV: ${evPct.toFixed(2)}%).`;
         } else if (evPct > 0) {
             status = "Margen Bajo";
-            badgeClass = "robust-yellow";
+            badgeClass = "badge-low";
             explanation = `Hay valor, pero el margen de error es estrecho (EV: ${evPct.toFixed(2)}%).`;
         } else {
             status = "Sin Valor";
-            badgeClass = "robust-red";
+            badgeClass = "badge-negative";
             explanation = `La cuota ofrecida no compensa el riesgo estimado (EV: ${evPct.toFixed(2)}%).`;
         }
 
         if (badgeObj) {
             badgeObj.textContent = status;
-            badgeObj.className = "badge-pill " + badgeClass;
+            badgeObj.className = "history-value-tag " + badgeClass;
+            badgeObj.style.textDecoration = 'none'; /* Asegura anti-link behavior */
         }
         if (explanationObj) explanationObj.textContent = explanation;
     };
@@ -450,6 +493,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Frágil y margen estrecho: solo prueba
             semaphore = 'low';
         }
+
+        // Export global semaphore for saving in history
+        if (prefix === 'prob') window.currentProbSemaphore = semaphore;
+        else window.currentBttsSemaphore = semaphore;
 
         // 4. Stake calculation
         //    - Robusto ('bet'): use conservative Kelly (pDown) — stricter baseline
@@ -530,11 +577,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Bankroll context (point 4 of polish)
         const stakeBankRefEl = document.getElementById(`${prefix}-stake-bankroll-ref`);
+        const bankDivider = document.getElementById('prob-bank-divider');
         if (stakeBankRefEl) {
             if (units > 0 && bankroll > 0) {
-                stakeBankRefEl.textContent = `Bank: ${currBase}${formatBankroll(bankroll)}`;
+                stakeBankRefEl.textContent = `Bank ${currBase}${formatBankroll(bankroll)}`;
+                if (bankDivider) bankDivider.style.display = 'inline';
             } else {
                 stakeBankRefEl.textContent = '';
+                if (bankDivider) bankDivider.style.display = 'none';
             }
         }
 
@@ -1342,7 +1392,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const ev = ((p * odd) - 1) * 100;
             saveToHistory({
                 type: 'prob', market: 'Probabilidades', prob: p * 100, odd, ev,
-                valA: inputA.value, valB: inputB.value
+                valA: inputA.value, valB: inputB.value,
+                semaphore: window.currentProbSemaphore || 'no-bet'
             });
         }
     }, 2000); // 2s delay for auto-save
@@ -1361,7 +1412,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 lS: bttsLocalScored ? bttsLocalScored.value : "0",
                 lC: bttsLocalConceded ? bttsLocalConceded.value : "0",
                 vS: bttsVisitorScored ? bttsVisitorScored.value : "0",
-                vC: bttsVisitorConceded ? bttsVisitorConceded.value : "0"
+                vC: bttsVisitorConceded ? bttsVisitorConceded.value : "0",
+                semaphore: window.currentBttsSemaphore || 'no-bet'
             });
         }
     }, 2000);
