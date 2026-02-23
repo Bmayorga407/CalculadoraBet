@@ -2633,11 +2633,13 @@ input[type=number] {
 /* Segmented Control Tabs - Apple Style */
 .history-tabs {
     display: flex;
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.08);
+    /* Slightly more solid dark backing */
     border-radius: 8px;
     margin: 16px 20px 8px;
     padding: 3px;
     flex-shrink: 0;
+    position: relative;
 }
 
 .tab-btn {
@@ -2647,23 +2649,29 @@ input[type=number] {
     border-radius: 6px;
     color: var(--text-tertiary);
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
     font-family: var(--font-family);
-    padding: 7px 0;
+    padding: 6px 0;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s cubic-bezier(0.34, 1.2, 0.64, 1);
     text-align: center;
     letter-spacing: -0.1px;
+    position: relative;
+    z-index: 1;
 }
 
 .tab-btn:hover:not(.active) {
     color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.04);
+    /* Inactive acts like a faint button */
 }
 
 .tab-btn.active {
-    background: rgba(255, 255, 255, 0.12);
-    color: var(--text-primary);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    background: rgba(255, 255, 255, 0.16);
+    /* Simulates the sliding thumb */
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25), 0 1px 1px inset rgba(255, 255, 255, 0.06);
 }
 
 /* Scrollable list */
@@ -2723,6 +2731,13 @@ input[type=number] {
     margin-bottom: 12px;
 }
 
+.history-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
 .history-item-title {
     font-size: 13px;
     color: #e4e4e7;
@@ -2733,101 +2748,7 @@ input[type=number] {
     text-overflow: ellipsis;
 }
 
-.history-value-tag {
-    font-size: 10px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 999px;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-    flex-shrink: 0;
-}
-
-/* More neutral badges */
-.badge-positive {
-    background: rgba(74, 222, 128, 0.1);
-    color: #4ade80;
-    border: 1px solid rgba(74, 222, 128, 0.15);
-}
-
-.badge-low {
-    background: rgba(255, 255, 255, 0.06);
-    color: #a1a1aa;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.badge-none {
-    background: rgba(239, 68, 68, 0.08);
-    color: #f87171;
-    border: 1px solid rgba(239, 68, 68, 0.15);
-}
-
-.history-item-body {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-bottom: 14px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.history-stat {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.history-stat .label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.6px;
-    color: var(--text-tertiary);
-    font-weight: 600;
-}
-
-.history-stat .value {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text-primary);
-    font-variant-numeric: tabular-nums;
-}
-
-/* Actions Row */
-.history-item-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-/* 'Usar de nuevo' — outline style, highly modest and elegant */
-.history-load-btn {
-    flex: 1;
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    color: var(--text-secondary);
-    font-size: 12px;
-    font-weight: 600;
-    font-family: var(--font-family);
-    padding: 6px 12px;
-    cursor: pointer;
-    text-align: center;
-    letter-spacing: 0.1px;
-    transition: all 0.2s ease;
-}
-
-.history-load-btn:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
-    border-color: rgba(255, 255, 255, 0.2);
-}
-
-.history-load-btn:active {
-    transform: scale(0.98);
-}
-
-/* SVG Favorite Star */
+/* SVG Favorite Star (moved to header) */
 .history-fav-btn {
     background: transparent;
     border: none;
@@ -2858,6 +2779,126 @@ input[type=number] {
 .history-fav-btn.active .fav-icon-svg {
     filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.4));
 }
+
+
+.history-item-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.history-value-tag {
+    font-size: 9px;
+    /* Aún más pequeño para no competir con EV */
+    font-weight: 600;
+    padding: 3px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+/* Neutral badges - Bajada fuerte de saturación (premium Apple feel) */
+.badge-positive {
+    background: rgba(74, 222, 128, 0.04);
+    color: #4ade80;
+    /* Texto verde pero rodeado de mucha transparencia */
+    border: 1px solid rgba(74, 222, 128, 0.1);
+}
+
+.badge-low {
+    background: rgba(255, 255, 255, 0.03);
+    color: #a1a1aa;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.badge-none {
+    background: rgba(239, 68, 68, 0.03);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.1);
+}
+
+
+.history-metrics {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.history-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* Align numbers neatly */
+    gap: 3px;
+}
+
+.history-stat .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-tertiary);
+    font-weight: 600;
+}
+
+.history-stat .value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* 'Usar de nuevo' — outline hyper-premium CTA (Opción A) */
+.history-load-btn {
+    display: block;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.15);
+    /* Fondo oscuro profundo */
+    border: 1px solid rgba(74, 222, 128, 0.25);
+    /* Borde verde fijo */
+    border-radius: 6px;
+    color: #ffffff;
+    /* Texto claro puro */
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--font-family);
+    padding: 6px 0;
+    cursor: pointer;
+    text-align: center;
+    letter-spacing: 0.3px;
+    /* Transición suave para todos los efectos (incluyendo transform y shadow) */
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+    will-change: transform, box-shadow;
+    /* Optimización Apple para fluidez GPU */
+}
+
+.history-load-btn:hover {
+    background: rgba(74, 222, 128, 0.08);
+    /* Brillo interior al hover */
+    color: #ffffff;
+    /* Mismo borde para evitar parpadeos visuales en el grosor general */
+    border-color: rgba(74, 222, 128, 0.25);
+    /* Táctil y Apple-like: Elevar ligeramente un pixel y mostrar sombra verde muy difusa */
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(74, 222, 128, 0.08);
+}
+
+.history-load-btn:active {
+    /* Estado press (al clickear) */
+    transform: translateY(0);
+    /* Vuelve a posición anclada base */
+    box-shadow: 0 0px 0px transparent;
+    /* Sombra se apaga de golpe */
+    background: rgba(74, 222, 128, 0.12);
+    /* Brilla un 4% más por contacto puro */
+    transition: all 0.1s ease;
+    /* Reducción súper rápida de tiempo */
+}
+
 
 
 /* Focus visible (teclado) */

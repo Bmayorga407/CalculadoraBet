@@ -298,22 +298,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
             div.innerHTML = `
                 <div class="history-item-header">
-                    <span class="history-item-title">${item.market} &middot; ${item.timestamp}</span>
-                    <span class="history-value-tag ${hBadgeClass}">${hBadgeText}</span>
-                </div>
-                
-                <div class="history-item-body">
-                    <div class="history-stat"><span class="label">Prob</span><span class="value">${item.prob.toFixed(1)}%</span></div>
-                    <div class="history-stat"><span class="label">Cuota</span><span class="value">${item.odd.toFixed(2)}</span></div>
-                    <div class="history-stat"><span class="label">EV</span><span class="value" style="color: ${item.ev > 0 ? 'var(--text-primary)' : 'var(--text-secondary)'}">${item.ev > 0 ? '+' : ''}${item.ev.toFixed(2)}%</span></div>
-                </div>
-                
-                <div class="history-item-actions">
-                    <button class="history-load-btn" onclick="window.loadItem(${item.id})">Usar de nuevo</button>
+                    <div class="history-title-group">
+                        <span class="history-item-title">${item.market} <span style="opacity:0.5; font-weight:400; font-size:11px; margin-left:4px;">${item.timestamp}</span></span>
+                    </div>
                     <button class="history-fav-btn ${item.favorite ? 'active' : ''}" onclick="window.toggleFav(${item.id})">
                         ${starSvg}
                     </button>
                 </div>
+                
+                <div class="history-item-body">
+                    <span class="history-value-tag ${hBadgeClass}">${hBadgeText}</span>
+                    <div class="history-metrics">
+                        <div class="history-stat"><span class="label">Prob</span><span class="value">${item.prob.toFixed(1)}%</span></div>
+                        <div class="history-stat"><span class="label">Cuota</span><span class="value">${item.odd.toFixed(2)}</span></div>
+                        <div class="history-stat"><span class="label">EV</span><span class="value" style="color: ${item.ev > 0 ? 'var(--text-primary)' : 'var(--text-secondary)'}">${item.ev > 0 ? '+' : ''}${item.ev.toFixed(2)}%</span></div>
+                    </div>
+                </div>
+                
+                <button class="history-load-btn" onclick="window.loadItem(${item.id})">Usar de nuevo</button>
             `;
             historyListContainer.appendChild(div);
         });
